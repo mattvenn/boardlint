@@ -54,8 +54,9 @@ Three decisions shape it:
 ### The design model
 
 - **Schematic reader and netlister** (`kicad_sch.py`): pure Python, KiCad 6 to 10, hierarchical
-  sheets, labels, power symbols. No KiCad install needed. On the test board it reproduces the
-  board's netlist exactly (84 of 84 multi-pin nets).
+  sheets, labels, power symbols. No KiCad install needed. It reproduces the board's netlist
+  exactly on six of the seven projects tried that have both files (up to 165 nets over nine
+  sheets); the seventh differs in 3 of 351 net groups. Schematic buses are not expanded.
 - **Board reader** (`kicad_pcb.py`): pads with positions, tracks, vias, filled zones, copper polygons, stack-up.
 - When both exist the board supplies positions and (by default) nets, the schematic supplies pin
   names and types, and the two netlists are compared.
