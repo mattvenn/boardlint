@@ -1,5 +1,8 @@
 # Test run: DinoLight board
 
+This review was produced by Claude (Anthropic's AI model): it ran boardlint, read each finding, and
+wrote the verdicts below. Nothing here has been checked on hardware.
+
 Board: <https://github.com/mo-seph/dino-board> at commit `4da182c` (2026-11-22):
 a mosasaurus-shaped ESP32-S3 toy with 21 SK6812 LEDs, an MPR121 touch controller, a LIS2DH12, a LiPo
 charger and USB-C. KiCad 10, two layers, 144 parts, routing unfinished. No known issues were given.
@@ -12,13 +15,13 @@ schematic and board netlists agree (84 multi-pin nets)
 all 7 ICs, 21 LEDs, 3 FETs, the fuse, switches and USB connector matched a part model
 ```
 
-## What it found, triaged by hand
+## What it found, triaged by Claude
 
 The 13 errors and warnings come from 7 root causes.
 
-| # | Finding | My reading | Verdict |
+| # | Finding | Claude's reading | Verdict |
 |---|---|---|---|
-| 1 | `power.droop` (error) and `power.regulator`: +3V3 falls below the ESP32's 3.0 V minimum at transmit peaks unless the cell is well charged | The RT9080's dropout is 310 mV typ / 530 mV max at 600 mA (datasheet), so about 0.3 V at the module's 355 mA peak. Add the source path (FET, polyfuse, cell: about 0.45 ohm) and the 0.4 mm supply track between U3 and U4, which sit 101 mm apart (about 185 mohm, estimated from pad distance x 1.4), and the rail is at 3.06 V with the cell at 3.6 V and the LEDs off. With the LEDs fully on as well, or the cell lower, it is under 3.0 V. The numbers that are assumptions (cell resistance, loop bandwidth) are marked; the dropout and the copper are not assumptions. | **Real, and the most important finding.** Options: move the regulator next to the module or widen the 3V3 route; put the 22 uF the module datasheet shows at the module; choose a lower-dropout or buck-boost regulator; cap LED brightness in firmware. |
+| 1 | `power.droop` (error) and `power.regulator`: +3V3 falls below the ESP32's 3.0 V minimum at transmit peaks unless the cell is well charged | The RT9080's dropout is 310 mV typ / 530 mV max at 600 mA (datasheet), so about 0.3 V at the module's 355 mA peak. Add the source path (FET, polyfuse, cell: about 0.45 Ω) and the 0.4 mm supply track between U3 and U4, which sit 101 mm apart (about 185 mΩ, estimated from pad distance x 1.4), and the rail is at 3.06 V with the cell at 3.6 V and the LEDs off. With the LEDs fully on as well, or the cell lower, it is under 3.0 V. The numbers that are assumptions (cell resistance, loop bandwidth) are marked; the dropout and the copper are not assumptions. | **Real, and the most important finding.** Options: move the regulator next to the module or widen the 3V3 route; put the 22 µF the module datasheet shows at the module; choose a lower-dropout or buck-boost regulator; cap LED brightness in firmware. |
 | 2 | `power.budget`: F1 (1.1 A hold) may carry 1.27 A | 21 LEDs at 43.5 mA maximum plus 355 mA. All-white full brightness while transmitting. The polyfuse model has no datasheet behind it. | Real in the worst case; a firmware brightness limit settles it. Record it as a waiver. |
 | 3 | `layout.track_current`: 0.4 mm battery-path tracks for up to 1.27 A | Same worst-case current; IPC-2221 gives 1.23 A at this width. | Real but marginal; the routing is a draft. Pour or widen +BATT and VLED. |
 | 4 | `decoupling.per_part` x3: nearest 100 nF is 8 to 11 mm from U5, U6, U7 | Measured pad to pad. U5's datasheet says "as near as possible". | Real placement issues. |
@@ -26,11 +29,11 @@ The 13 errors and warnings come from 7 root causes.
 | 6 | `power.supply_range` x2: SK6812 specified from 3.7 V, VLED goes to 3.0 V | True. The board's own notes already list this as unverified. | Real, known. |
 | 7 | `layout.return_path`: SPINE_DATA has no ground under half its length | True; the pours are incomplete. At 800 kHz the consequence is small. | True, low value. |
 
-So: one finding I would act on before ordering (1), four worth fixing during layout (2 to 5) and two
+So: one finding to act on before ordering (1), four worth fixing during layout (2 to 5) and two
 true-but-known (6, 7). An eighth warning in the first run (the USBLC6-2's 5.25 V stand-off voltage
 against a 5.5 V VBUS maximum) was a false positive in practice, and the rule now allows a TVS that margin.
 
-I have not checked any of this on hardware. Findings 1 to 3 depend on currents that are sums of
+None of this has been checked on hardware. Findings 1 to 3 depend on currents that are sums of
 datasheet maxima, and 1 also on an assumed cell resistance.
 
 The notes are worth reading too. Among them: the I2C address map (0x19, 0x5A), the charge current
@@ -53,7 +56,7 @@ requires a *new* error or warning from the check that should own it.
 
 **26 of 26 are flagged.** On the first run it was 20 of 22: an address clash on a newly added part
 and a too-low logic divider were missed, and a crossed I2C device and a P-FET with no gate
-pull-down were caught only by unrelated findings. All four led to fixes in the checks. This is a test of the checks against mistakes I chose, on the
+pull-down were caught only by unrelated findings. All four led to fixes in the checks. This is a test of the checks against mistakes Claude chose, on the
 board they were developed on: it shows the mechanisms work, not what fraction of real mistakes they catch.
 The [regression corpus](regression-corpus.md) is the less flattering measure.
 
@@ -82,7 +85,7 @@ The [regression corpus](regression-corpus.md) is the less flattering measure.
 | Regulator enable tied to ground | `pin.floating_control` |
 | Battery-sense divider moved to a pin with no ADC | `mcu.pin_use` |
 | **Historical:** status dividers 100k/100k, as first drawn | `power.logic_level` |
-| **Historical:** regulator capacitors 1 uF 0402, as first drawn | `decoupling.regulator_caps` |
+| **Historical:** regulator capacitors 1 µF 0402, as first drawn | `decoupling.regulator_caps` |
 
 The last two are mistakes this board really had. Its `NOTES.md` records them as found by a design
 review and fixed before the first commit; putting the old values back makes boardlint report both.
@@ -140,8 +143,8 @@ Reset: EN has a 100k pull-up and 100 nF (10 ms), is pulled low by the TLV803S su
   the old routing. One thing to carry into the re-route: the MINI-012's pin order is not the
   MINI-E's (1 DIN, 2 VDD, 3 DOUT, 4 GND against 1 GND, 2 DIN, 3 VDD, 4 DOUT), so the old pad nets
   must not survive.
-- **`load.inductive` (warning):** the buzzer gets about 0.63 V. R35 and R37 in parallel (50 ohm)
-  in series with a 12 ohm coil from 3.3 V; the part is specified from 2 V. The board's notes
+- **`load.inductive` (warning):** the buzzer gets about 0.63 V. R35 and R37 in parallel (50 Ω)
+  in series with a 12 Ω coil from 3.3 V; the part is specified from 2 V. The board's notes
   already call the loudness "an estimate", and the resistors are there on purpose (they cap the
   current if the pin sticks high). This puts a number on it. The flyback diode D24 is present and
   the right way round.

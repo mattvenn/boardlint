@@ -42,10 +42,10 @@ small sample.
   net without any model. Low confidence, and cheap.
 - **The schematic reader had two bugs that one board could not show.** A mirrored symbol rotated
   by 90 or 270 degrees had its pins exchanged (rotation is applied before the mirror, not after),
-  and coordinates ending in 5 um were rounded apart. Both hid on the reference board and showed up
+  and coordinates ending in 5 µm were rounded apart. Both hid on the reference board and showed up
   as schematic-versus-board differences here. After the fixes the built-in netlister agrees with
   the board exactly on six of the seven projects that have both files. The seventh (launch) differs
-  in 3 of 351 net groups, where two ground nets are one on the board; I did not find out why.
+  in 3 of 351 net groups, where two ground nets are one on the board; the cause was not found.
   rocket-pcb uses schematic buses, which are not expanded.
 - **Unannotated schematics are real input.** RC-1's parts were all `U?`, `C?`. The loader merged
   them; it now keeps them apart.
@@ -74,7 +74,7 @@ All of these were fixed the same day:
 The pattern: almost every false positive came from a part with no model. That is the case for
 investing in the model library first.
 
-Real findings on the fixed revisions that look worth the owners' attention, but which I have not
+Real findings on the fixed revisions that look worth the owners' attention, but which have not been
 verified: a 3.3 V ESP32 driving 5 V-powered addressable LEDs directly (valrob), USB data lines
 running 0.2 mm from analog inputs for 10 mm (Crystal), and an M.2 1.8 V GPIO on a 3.3 V net after
 the RC-1 fix.

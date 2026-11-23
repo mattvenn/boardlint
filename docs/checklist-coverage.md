@@ -45,7 +45,7 @@ Three limits apply to every `covered` and `partial` row:
 |---|---|---|
 | Fuse or reverse-polarity protection at inlet | `planned` | Walk the power path from inlet connectors; look for a fuse, series diode or FET. `power.budget` checks a fuse's rating only when one exists |
 | TVS at inlet | `planned` | Look for a TVS-class part from the inlet net to ground |
-| Input capacitance and inrush | `partial` | `usb.wiring`: warns above 10 uF directly on VBUS of a Type-C receptacle. Other inlets not checked |
+| Input capacitance and inrush | `partial` | `usb.wiring`: warns above 10 µF directly on VBUS of a Type-C receptacle. Other inlets not checked |
 
 ### Regulators
 

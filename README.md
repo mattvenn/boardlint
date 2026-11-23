@@ -1,12 +1,25 @@
 # boardlint
 
-Design-review checks for KiCad projects, beyond ERC and DRC.
+[![Made with Claude](https://img.shields.io/badge/Made%20with-Claude-D97757?logo=anthropic&logoColor=white)](https://claude.com/claude-code)
 
-ERC checks pin types and DRC checks clearances. boardlint checks what the board is *for*: that TX
-meets RX, that the I2C bus has pull-ups of a sensible value and no two parts at one address, that
-the first addressable LED sees a logic high, that each part gets the decoupling and the supply
+boardlint is a command-line tool that reviews a KiCad printed circuit board (PCB) project for design
+mistakes that KiCad's electrical rules check (ERC) and design rules check (DRC) do not catch.
+
+ERC checks pin types and DRC checks clearances. Neither knows what the parts are or what the buses
+are for. boardlint checks what the board is *for*: that a serial port's transmit line meets a
+receive line, that the I2C bus has pull-ups of a sensible value and no two parts at one address,
+that the first addressable LED sees a logic high, that each part gets the decoupling and the supply
 voltage its datasheet asks for, that the 3.3 V rail survives the radio's transmit burst, and that
 the LED data line does not run alongside a touch electrode.
+
+The rest of this README covers how to run it, what it checks, how it works, and its limits.
+
+## Who wrote this
+
+The code, the part models, and the write-ups in this repository were produced by Claude (Anthropic's
+AI model, running in Claude Code) in one working session directed by Matt. Where a document says
+what was tested, verified, or assumed, that is Claude's statement about its own work. None of the
+findings on the example boards has been checked on hardware at the time of writing.
 
 Status: v0.1, a working framework. 34 checks, 26 part models. Tested on two real boards (one with 26 injected faults, all flagged; one
 with a published errata list, both wiring errata found) and on eight public projects with a known fix
@@ -65,11 +78,11 @@ it against Andrew Zonenberg's schematic and layout review checklists.
 2. **Recognise the parts.** Each component is matched to a *part model*: a YAML file of datasheet
    facts ([schema](docs/part-model-schema.md)). Parts with no model get pin roles guessed from pin
    names, and the report lists them, because fewer checks apply.
-3. **Work out the power tree.** Rail voltages from regulator models, net names and your
+3. **Work out the power tree.** Rail voltages from regulator models, net names, and the project's
    `boardlint.yaml`; followed through fuses, FETs, jumpers and diodes.
 4. **Run the checks.** Each finding has a severity, the numbers it rests on, the rule's source, and a confidence.
 
-No LLM runs at check time. Part models are written offline, by a person or by an LLM reading the
+No large language model (LLM) runs at check time. Part models are written offline, by a person or by an LLM reading the
 datasheet with [tools/extract_prompt.md](tools/extract_prompt.md), then reviewed and committed.
 
 ## Project configuration

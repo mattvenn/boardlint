@@ -1,5 +1,8 @@
 # Proposal: a design-review checker for KiCad projects
 
+Written by Claude (Anthropic's AI model) for Matt, who asked for a survey of existing tools, a proposal,
+and a working framework. The recommendations are Claude's.
+
 ## The problem
 
 A KiCad project that passes ERC and DRC can still come back from fab with TX wired to TX, a 5 V
@@ -141,12 +144,12 @@ In order of value per effort.
 6. **Workflow.** KiBot preflight plug-in, GitHub Action with a PR comment, baselines so only new
    findings fail CI (waivers exist already), SARIF output.
 
-## Decisions for you
+## Open decisions
 
 - **Build on kicad-happy or stay separate?** It overlaps most on power and decoupling and is MIT.
   The parts with no overlap (protocol direction, part models with provenance, bus simulation,
   fault-injection evaluation) could be contributed there, or boardlint could import its analysers.
-  Staying separate keeps the "no LLM at run time" property clear. Recommendation: stay separate
+  Staying separate keeps the "no LLM at run time" property clear. Claude's recommendation: stay separate
   for now, reuse its datasheet-cache format as an import path for models.
 - **Licence.** `pyproject.toml` says MIT as a placeholder. Calling GPL tools (kisi, ngspice,
   Icarus) as subprocesses does not constrain it.

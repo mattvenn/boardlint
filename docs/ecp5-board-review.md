@@ -1,5 +1,7 @@
 # Test run: basic-ecp5-pcb
 
+This review was produced by Claude (Anthropic's AI model). Nothing here has been checked on hardware.
+
 Board: <https://github.com/mattvenn/basic-ecp5-pcb> at `f5ee05d` (2020-12-05). An ECP5 FPGA dev
 board: LFE5U in CABGA256, W25Q128 configuration flash shared with a Raspberry Pi header, a 16 MHz
 SiT2001 oscillator, two buck converters and an LDO, six PMODs. KiCad 5, four layers.
@@ -24,8 +26,8 @@ basic-ecp5-pcb: 2 errors, 6 warnings, 9 notes
 
 Two of four, and they are the two that are wiring mistakes.
 
-The computed 1.08 V matches the README's "about 1v". It comes from the weak pull-up current I
-remembered for ECP5 configuration pins (up to 150 uA); the model is marked unverified, so read the
+The computed 1.08 V matches the README's "about 1v". It comes from the weak pull-up current Claude
+recalled for ECP5 configuration pins (up to 150 µA); the model is marked unverified, so read the
 agreement as encouraging, not as proof.
 
 ## Other things it reported
