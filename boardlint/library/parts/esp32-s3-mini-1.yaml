@@ -1,0 +1,152 @@
+id: esp32-s3-mini-1
+match:
+  lcsc: [C2913206]
+  value: ["ESP32-S3-MINI-1*"]
+kind: IC
+class: mcu_module
+description: "ESP32-S3 Wi-Fi + Bluetooth LE module, PCB antenna (MINI-1) or connector (MINI-1U), 8 MB flash (-N8) or 4 MB flash + 2 MB PSRAM (-N4R2), 65 pins"
+datasheet: "Espressif ESP32-S3-MINI-1 & MINI-1U Datasheet v1.7 (datasheets/ESP32-S3-MINI-1_en.pdf); datasheets/C2913206.pdf is the Chinese v1.2 of the same document"
+provenance:
+  source: "datasheets/ESP32-S3-MINI-1_en.pdf"
+  verified: true
+  notes: >
+    Pin definitions Table 3-1 p.11-12 (EN: "Do not leave the EN pin floating"; note b: IO26 is
+    used by the PSRAM on -N4R2). The datasheet's pin names for pins 23 / 24 are IO19 / IO20
+    (functions USB_D- / USB_D+); the KiCad symbol on the board names them USB_D- / USB_D+, hence
+    the alias keys. Table 3-1 has no IO22-IO25 and no IO27-IO32: those GPIO numbers are not
+    brought out (the module schematic, chapter 8, wires the chip's SPICS0 / SPICLK / SPID / SPIQ /
+    SPIWP / SPIHD pins to the in-package flash; the GPIO numbers of those chip pins are given in
+    the ESP32-S3 Series Datasheet, which is not in the repo, so they are not listed here).
+    Strapping: Table 4-1 p.13 (defaults), Table 4-2 p.14 (hold time 3 ms after EN high),
+    Table 4-3 p.14 (boot mode), Table 4-4 p.15 (GPIO45 / VDD_SPI), section 4.4 and Table 4-5
+    p.15-16 (GPIO3: no internal pull, "must be controlled by the external circuit that cannot
+    be in a high impedance state"; ignored while EFUSE_STRAP_JTAG_SEL = 0, the default).
+    Power-up / reset timing Table 4-6 p.16 (50 us). Absolute maximum Table 6-1 p.27 lists only
+    VDD33 (-0.3 to 3.6 V); recommended operating conditions Table 6-2 p.27 (3.0 / 3.3 / 3.6 V,
+    "Current delivered by external power supply" 0.5 A min). DC characteristics Table 6-3
+    p.27-28 (VIH 0.75 VDD min to VDD + 0.3 V max, VIL 0.25 VDD max, VOH 0.8 VDD min, VOL
+    0.1 VDD max with high-impedance load, weak pull-up / pull-down 45 kOhm typ, VIH_nRST /
+    VIL_nRST for EN). io.abs_max_over_supply is taken from the VIH maximum in Table 6-3 because
+    the absolute-maximum table has no per-pin limit; tolerant_5v false follows from that same
+    VDD + 0.3 V limit (the datasheet never claims 5 V tolerance). Current: Table 6-4 p.28 (peak,
+    3.3 V, 25 C: TX 802.11b 1 Mbps @ 20.5 dBm 355 mA; RX HT20 95 mA), Table 6-5 (BLE TX @ 20 dBm
+    340 mA), Table 6-7 p.30 (light-sleep 240 uA, deep-sleep 7 to 8 uA, 18 uA with ULP / touch at
+    1 % duty, power off 1 uA). i_step_ma is the peak TX current as asked for; the datasheet
+    gives no rise time. Decoupling and EN RC: Figure 9-1 and notes p.41 (C1 22 uF and C3 0.1 uF
+    on VDD33; "it is advised to add an RC delay circuit at the EN pin ... usually R = 10 kOhm and
+    C = 1 uF"; R1 / C2 are drawn TBD).
+    Errata entries: the two docs.espressif.com / espressif.com / esp32.com sources were found
+    with a web search on 2026-11-23 and are quoted from the search result summaries; the pages
+    themselves could not be opened from the extraction session (host not reachable), so a
+    reviewer should open them once.
+
+gpio_pattern: "^IO\\d+$"      # every IOxx pin not listed under pins: is role gpio
+
+supplies:
+  - pins: ["3V3"]
+    vmin: 3.0
+    vmax: 3.6
+    abs_max: 3.6
+    i_typ_ma: 95              # Wi-Fi RX (802.11b/g/n HT20), peak
+    i_max_ma: 355             # Wi-Fi TX 802.11b 1 Mbps @ 20.5 dBm, peak
+    i_step_ma: 355            # peak RF TX burst
+    supply_capability_min_ma: 500   # Table 6-2: the external supply must deliver 0.5 A or more
+    i_deep_sleep_ma: 0.008
+    i_off_ma: 0.001           # EN low
+    decoupling:
+      - {c_min: 22u, count: 1, note: "C1 22 uF on VDD33 in the peripheral schematic (Figure 9-1)"}
+      - {c_min: 100n, count: 1, note: "C3 0.1 uF on VDD33 in the peripheral schematic (Figure 9-1)"}
+
+io:
+  vih_frac: 0.75
+  vil_frac: 0.25
+  voh_frac: 0.8
+  vol_frac: 0.1
+  abs_max_over_supply: 0.3
+  tolerant_5v: false
+  internal_pull_ohm: 45k      # weak pull-up and pull-down, typ
+  i_source_ma: 40             # typ, VOH >= 2.64 V, PAD_DRIVER = 3
+  i_sink_ma: 28               # typ, VOL = 0.495 V, PAD_DRIVER = 3
+
+pins:
+  "3V3": {role: power_in}
+  GND: {role: gnd}
+  EN:
+    role: enable
+    active: high              # high: chip on; low: chip powers off (reset)
+    vih_frac: 0.75            # VIH_nRST
+    vil_frac: 0.25            # VIL_nRST
+    drive: input
+    require:
+      - {not_floating: true, note: "Do not leave the EN pin floating (Table 3-1)"}
+      - {pullup: {}, note: "RC delay circuit advised at EN: usually R = 10 kOhm to 3V3", when: "advised, not mandatory; adjust to the power-up timing of the supply (p.41)"}
+      - {cap_to_gnd: {}, note: "RC delay circuit advised at EN: usually C = 1 uF to GND", when: "advised, not mandatory; EN must stay below VIL_nRST for 50 us after the rails are stable (Table 4-6)"}
+  IO0:
+    role: boot_strap
+    internal_pull: up
+    internal_pull_ohm: 45k
+  IO3:
+    role: boot_strap
+    internal_pull: none
+    require:
+      - {not_floating: true, note: "GPIO3 has no internal pull; its strapping value must be controlled by an external circuit that cannot be high impedance (section 4.4)", when: "only if EFUSE_STRAP_JTAG_SEL has been burnt to 1; with the default eFuses GPIO3 is ignored (Table 4-5)"}
+  IO45:
+    role: boot_strap
+    internal_pull: down
+    internal_pull_ohm: 45k
+  IO46:
+    role: boot_strap
+    internal_pull: down
+    internal_pull_ohm: 45k
+  TXD0: {role: uart_tx}       # U0TXD, GPIO43
+  RXD0: {role: uart_rx}       # U0RXD, GPIO44
+  "IO20/USB_D+": {role: usb_dp}   # pin 24, GPIO20
+  "IO19/USB_D-": {role: usb_dm}   # pin 23, GPIO19
+  IO26:
+    role: gpio
+    note: "On part numbers ending -N4R2 IO26 connects to the embedded PSRAM and is not available (Table 3-1 note b). Free on -N8."
+
+mcu:
+  strap_hold_ms: 3            # strapping levels are latched at reset; hold 3 ms after EN goes high (Table 4-2)
+  strapping:
+    IO0:
+      default: high           # weak pull-up
+      boot_high: "SPI boot: normal boot from flash (IO46 any value)"
+      boot_low: "joint download boot (UART0 / USB), needs IO46 low"
+    IO46:
+      default: low            # weak pull-down
+      must_be: low
+      when: "entering download boot with IO0 low (Table 4-3 lists only IO0 = 0 with IO46 = 0)"
+      boot_low: "download boot allowed; ROM messages per eFuse"
+    IO45:
+      default: low            # weak pull-down
+      boot_low: "VDD_SPI = 3.3 V from VDD3P3_RTC (default)"
+      boot_high: "VDD_SPI = 1.8 V from the flash voltage regulator (Table 4-4, EFUSE_VDD_SPI_FORCE = 0)"
+    IO3:
+      default: floating       # no internal pull
+      boot_high: "JTAG from the USB Serial/JTAG controller (only if EFUSE_STRAP_JTAG_SEL = 1)"
+      boot_low: "JTAG from the pins MTDI/MTCK/MTMS/MTDO (only if EFUSE_STRAP_JTAG_SEL = 1)"
+      when: "ignored with default eFuses"
+  not_brought_out: [IO22, IO23, IO24, IO25, IO27, IO28, IO29, IO30, IO31, IO32]   # absent from Table 3-1; in-package flash uses the chip's SPI pins
+  psram_pins: {IO26: "-N4R2 only"}
+  usb_pins: {dm: IO19, dp: IO20}
+  uart0_pins: {tx: TXD0, rx: RXD0}
+  adc1_pins: [IO1, IO2, IO3, IO4, IO5, IO6, IO7, IO8, IO9, IO10]
+  adc2_pins: [IO11, IO12, IO13, IO14, IO15, IO16, IO17, IO18, IO19, IO20]
+  touch_pins: [IO1, IO2, IO3, IO4, IO5, IO6, IO7, IO8, IO9, IO10, IO11, IO12, IO13, IO14]
+  rtc_pins: "IO0 to IO21"
+  jtag_pins: {mtck: IO39, mtdo: IO40, mtdi: IO41, mtms: IO42}
+
+errata:
+  - id: usb-pins-glitch-at-power-up
+    summary: "GPIO19/GPIO20 (USB D-/D+) are not quiet at power-up: Espressif documents high-level glitches of about 60 us on both and D+ toggling until the USB pull-up settles, so anything else wired to these pins sees pulses at power-up and reset."
+    source: "https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/schematic-checklist.html ; forum report of GPIO20 held high about 170 ms during boot: https://esp32.com/viewtopic.php?t=36423"
+    severity: info
+  - id: strap-io0-low-io46-high-invalid
+    summary: "IO46 high together with IO0 low at reset is not a defined boot mode (the ESP32-S3 Series Datasheet calls the combination invalid); do not pull IO46 up."
+    source: "https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf (section Boot Configurations); module datasheet Table 4-3"
+    severity: warning
+  - id: strap-io45-high-selects-1v8-flash-supply
+    summary: "IO45 high at reset switches VDD_SPI, the supply of the in-package flash, from 3.3 V to the 1.8 V regulator; keep IO45 low or floating during reset unless that is intended."
+    source: "datasheets/ESP32-S3-MINI-1_en.pdf Table 4-4, p.15"
+    severity: warning

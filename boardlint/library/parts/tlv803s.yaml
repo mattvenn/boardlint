@@ -1,0 +1,64 @@
+id: tlv803s
+match:
+  lcsc: [C132016]
+  value: ["TLV803S*"]
+kind: IC
+class: supervisor
+description: "3-pin voltage supervisor, 2.93 V threshold, 200 ms delay, open-drain active-low RESET, SOT-23 (TLV803SDBZR)"
+datasheet: "Texas Instruments TLV803 / TLV853 / TLV863, ZHCS187C (Chinese edition of SBVS157), revised September 2015 (datasheets/C132016.pdf)"
+provenance:
+  source: "datasheets/C132016.pdf"
+  verified: true
+  notes: >
+    Pin functions p.3 (TLV803 DBZ: 1 GND, 2 RESET, 3 VDD; "RESET is an open-drain output ...
+    Use a 10-kOhm to 1-MOhm pullup resistor on this pin. The pullup voltage is not limited by
+    VDD"; VDD: "good analog design practice to place a 0.1-uF ceramic capacitor close to this
+    pin"). Absolute maximum ratings p.4 (VDD 0 to 7 V; all other pins -0.3 to +7 V; maximum
+    low output current IOL 5 mA; not more than 1000 h continuously at 7 V). Recommended
+    operating conditions p.4 (VDD 1.1 to 6 V). Thermal p.4 (R theta JA 328.5 C/W). Electrical
+    characteristics p.5 (VIT- TLV803S 2.87 / 2.93 / 2.99 V over -40 to +125 C; hysteresis 40 mV
+    typ; VOL 0.4 V max at 2 mA, VDD = 3.3 V; supply current 9 uA typ / 15 max at VDD = 2 V and
+    20 uA typ / 30 max at 6 V; output leakage 100 nA max; RESET valid from VDD = 1.1 V).
+    Switching p.5 (delay td 120 / 200 / 280 ms). Section 9.1.2 p.9: the output "can be pulled
+    to a maximum voltage of 6 V". Layout p.11: place the decoupling capacitor close to the
+    device. The schema has no supervisor section or reset-output role; the threshold, delay
+    and output limits are in a `supervisor:` block added for this part.
+
+supplies:
+  - pins: [VDD]
+    vmin: 1.1
+    vmax: 6
+    abs_max: 7
+    i_typ_ma: 0.009           # at VDD = 2 V; 0.020 typ at 6 V
+    i_max_ma: 0.030           # at VDD = 6 V (0.015 at 2 V)
+    decoupling:
+      - {c_min: 100n, count: 1, note: "0.1 uF ceramic close to VDD (good practice; also 'to ensure best stability of the threshold voltage')"}
+
+pins:
+  GND: {role: gnd}
+  VDD: {role: power_in}
+  RESET:
+    active: low
+    drive: open_drain
+    abs_max: 7
+    require:
+      - {pullup: {min: 10k, max: 1M}, note: "Open-drain output: use a 10 k to 1 M pull-up; the pull-up rail is not limited by VDD (6 V maximum)"}
+
+supervisor:
+  sense: VDD
+  out: RESET
+  out_active: low
+  out_drive: open_drain
+  threshold_v: 2.93           # VIT-, falling
+  threshold_min_v: 2.87
+  threshold_max_v: 2.99
+  hysteresis_mv: 40
+  delay_ms: 200
+  delay_min_ms: 120
+  delay_max_ms: 280
+  vdd_valid_min: 1.1          # below this the output is high impedance (undefined)
+  out_pullup_max_v: 6
+  out_abs_max: 7
+  i_sink_max_ma: 5            # absolute maximum low-level output current
+  vol_max: 0.4                # at IOL = 2 mA, VDD = 3.3 V
+  theta_ja: 328.5

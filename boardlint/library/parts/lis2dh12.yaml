@@ -1,0 +1,107 @@
+id: lis2dh12
+match:
+  lcsc: [C110926]
+  value: ["LIS2DH12*"]
+kind: IC
+class: accelerometer
+description: "3-axis MEMS accelerometer, I2C / SPI, two interrupt outputs, LGA-12 2 x 2 mm"
+datasheet: "ST LIS2DH12, DocID025056 Rev 6, May 2017 (datasheets/C110926.pdf)"
+provenance:
+  source: "datasheets/C110926.pdf"
+  verified: true
+  notes: >
+    Pin description Table 2 p.9 (1 SCL/SPC, 2 CS, 3 SDO/SA0, 4 SDA/SDI/SDO, 5 Res "Connect to
+    GND", 6-8 GND, 9 Vdd, 10 Vdd_IO, 11 INT2, 12 INT1) and Table 3 p.9 (SDO/SA0 internal pull-up
+    typ: 54.4 k at Vdd_IO 1.7 V, 49.2 k at 1.8 V, 30.4 k at 2.5 V, 20.4 k at 3.6 V). Electrical
+    characteristics Table 6 p.12 (Vdd 1.71 / 2.5 / 3.6 V; Vdd_IO 1.71 V to Vdd + 0.1 V; VIH
+    0.8 Vdd_IO, VIL 0.2 Vdd_IO, VOH 0.9 Vdd_IO, VOL 0.1 Vdd_IO; 11 uA at 50 Hz normal mode,
+    0.5 uA power-down). SPI Table 7 p.13 (10 MHz max), I2C Table 8 p.14 (400 kHz max). Absolute
+    maximum Table 9 p.15 (Vdd and Vdd_IO -0.3 to 4.8 V; control pins -0.3 V to Vdd_IO + 0.3 V;
+    "Supply voltage on any pin should never exceed 4.8 V"). Current by mode Table 12 p.17
+    (185 uA at 1344 Hz). Application hints p.20 ("decoupling capacitors (100 nF ceramic, 10 uF
+    aluminum) should be placed as near as possible to pin 9"; "When using the I2C, CS must be
+    tied high"); internal pin status p.21 (CS input high impedance; SA0 input with internal
+    pull-up, disconnected by writing 90h to CTRL_REG0 (1Eh); INT1/INT2 "push-pull output forced
+    to GND" by default). I2C section p.24-25 (SCL and SDA "must be connected to Vdd_IO through
+    an external pull-up resistor"; address 001100xb, SA0 to supply = 0011001b, to ground =
+    0011000b). WHO_AM_I 0Fh = 00110011b (33h), register map p.31 and section 8.3 p.33.
+    SPI mode 3 is inferred from the timing text p.27 (SPC idles high; data driven on the
+    falling edge and captured on the rising edge); the datasheet does not name the mode.
+    Pin 4 is printed "SDA/SDI/SDO" in the datasheet; it is keyed "SDA/SDI" here because the
+    matcher splits aliases on '/' and a key containing SDO would also match pin 3 (SDO/SA0).
+    vmax of Vdd_IO is Vdd + 0.1 V, recorded as 3.7 V (= 3.6 + 0.1): the schema cannot express a
+    limit relative to another rail.
+
+supplies:
+  - pins: [Vdd]
+    vmin: 1.71
+    vmax: 3.6
+    abs_max: 4.8
+    i_typ_ma: 0.011           # normal mode, 50 Hz ODR
+    i_max_ma: 0.185           # highest mode in Table 12 (1344 Hz normal / high resolution), typ
+    decoupling:
+      - {c_min: 100n, count: 1, note: "100 nF ceramic as near as possible to pin 9 (Vdd)"}
+      - {c_min: 10u, count: 1, note: "10 uF (aluminum) as near as possible to pin 9 (Vdd); 'common design practice'"}
+  - pins: [Vdd_IO]
+    vmin: 1.71
+    vmax: 3.7                 # Vdd + 0.1 V
+    abs_max: 4.8
+    note: "Vdd_IO must not exceed Vdd + 0.1 V. All supplies must be present at the same time; Vdd may be removed while Vdd_IO stays (measurement chain off)."
+
+io:
+  vih_frac: 0.8               # of Vdd_IO
+  vil_frac: 0.2
+  voh_frac: 0.9
+  vol_frac: 0.1
+  abs_max_over_supply: 0.3    # over Vdd_IO
+  abs_max: 4.8
+  tolerant_5v: false
+
+pins:
+  "SA0/SDO":                  # pin 3; listed before pin 4 on purpose
+    role: i2c_addr
+    internal_pull: up
+    internal_pull_ohm: 20.4k  # typ at Vdd_IO = 3.6 V; 30.4 k at 2.5 V, 49.2 k at 1.8 V, 54.4 k at 1.7 V
+    note: "Leave open or tie to Vdd_IO for 0x19; tie to GND for 0x18 (current then flows in the internal pull-up unless it is disconnected with CTRL_REG0 = 90h)."
+  "SCL/SPC":
+    role: i2c_scl
+    require:
+      - {pullup: {}, note: "SCL must be connected to Vdd_IO through an external pull-up resistor", when: "I2C mode"}
+  "SDA/SDI":
+    role: i2c_sda
+    require:
+      - {pullup: {}, note: "SDA must be connected to Vdd_IO through an external pull-up resistor", when: "I2C mode"}
+  CS:
+    role: spi_cs
+    active: low
+    internal_pull: none       # default: input high impedance
+    require:
+      - {tie: supply, note: "When using the I2C, CS must be tied high (connected to Vdd_IO); 0 = SPI mode / I2C disabled", when: "I2C mode"}
+  RES:
+    require:
+      - {tie: gnd, note: "Pin 5 (Res): connect to GND"}
+  GND: {role: gnd}
+  Vdd: {role: power_in}
+  Vdd_IO: {role: power_in}
+  INT1: {role: irq, drive: push_pull, note: "default after power-up: push-pull output forced to GND"}
+  INT2: {role: irq, drive: push_pull, note: "default after power-up: push-pull output forced to GND"}
+
+i2c:
+  addresses: [0x18, 0x19]
+  max_khz: 400
+  address_bits: {base: 0x18, pins: [{pin: SA0, bit: 0, default: 1}]}   # default 1: internal pull-up on SA0
+
+spi:
+  modes: [3]
+  max_mhz: 10
+
+sim:
+  model: i2c_target
+  params: {ID_REG: 0x0F, ID_VAL: 0x33}
+  enable: [{pin: CS, level: 1}]   # CS high selects I2C; CS low is SPI mode and the part ignores I2C
+
+errata:
+  - id: sa0-low-pullup-current
+    summary: "Tying SA0 to GND (address 0x18) draws Vdd_IO / R through the internal SDO/SA0 pull-up (20.4 k at 3.6 V, 30.4 k at 2.5 V typ), about 0.1 mA or more at 3.3 V, many times the sensor's own current, until firmware writes 90h to CTRL_REG0 (1Eh)."
+    source: "datasheets/C110926.pdf Table 3 p.9 and CTRL_REG0 p.33; ST community: https://community.st.com/mems-sensors-48/lis2dh12-excessive-current-draw-72791"
+    severity: info

@@ -1,0 +1,78 @@
+id: rt9080-33
+match:
+  lcsc: [C841192]
+  value: ["RT9080-33*"]
+kind: IC
+class: ldo
+description: "600 mA, 2 uA Iq low-dropout regulator with enable, 3.3 V fixed, TSOT-23-5"
+datasheet: "Richtek RT9080, DS9080-05, June 2017 (datasheets/C841192.pdf)"
+provenance:
+  source: "datasheets/C841192.pdf"
+  verified: true
+  notes: >
+    Pin table p.2 (TSOT-23-5: 1 VIN, 2 GND, 3 EN, 4 SNS/NC, 5 VOUT). Absolute maximum ratings,
+    thermal resistance and recommended operating conditions p.4. Electrical characteristics
+    p.4-5: dropout at ILOAD = 600 mA for VOUT >= 3 V is 0.31 V typ / 0.53 V max (the only current
+    the table gives; the 1 mA to 600 mA curves on p.8 "Dropout Voltage vs. Temperature" are a
+    graph only, so no 300 mA figure is recorded); IQ 2 uA typ / 4 uA max; shutdown 0.1 uA typ /
+    0.5 uA max; current limit 610 mA min / 1100 mA typ; EN VIH 0.9 V min, VIL 0.4 V max (at
+    VIN = 5 V); EN input current 0.1 uA max. Output capacitance: "minimum required ... 1 uF
+    effective capacitance after consideration of the temperature and voltage coefficient" p.3,
+    figures 1-2 p.6, application information p.11 ("Use a 1 uF or larger input capacitor and
+    place it close to the IC's VIN and GND pins"; output capacitor ESR >= 1 mOhm; "The Enable
+    input is CMOS logic and cannot be left floating"). 600 mA output needs VIN >= 2.3 V
+    (features, p.1). Tj max 125 C is the recommended operating junction temperature (p.4, used
+    in the PD(MAX) formula p.12); the absolute maximum junction temperature is 150 C.
+    dropout_mv is the table MAXIMUM (530 mV); the typical value is in dropout_typ_mv.
+    The datasheet calls the enable pin EN; the KiCad symbol used on the board calls it CE.
+
+supplies:
+  - pins: [VIN]
+    vmin: 1.2
+    vmax: 5.5
+    abs_max: 6.5
+    i_typ_ma: 0.002          # IQ, no load
+    i_max_ma: 0.004
+    i_shutdown_typ_ma: 0.0001
+    i_shutdown_max_ma: 0.0005
+    decoupling:
+      - {c_min: 1u, count: 1, note: "input capacitor, 1 uF or larger, close to the VIN and GND pins (p.11)"}
+
+pins:
+  VIN: {role: power_in}
+  GND: {role: gnd}
+  "CE/EN":
+    role: enable
+    active: high
+    vih: 0.9
+    vil: 0.4
+    abs_max: 6.5
+    internal_pull: none      # "cannot be left floating"; EN input current 0.1 uA max
+    drive: input
+    require:
+      - {not_floating: true, note: "The Enable input is CMOS logic and cannot be left floating; may be tied directly to VIN (p.11)"}
+  NC: {role: nc}             # pin 4, no internal connection on the RT9080 (SNS on the RT9080N)
+  VOUT:
+    role: power_out
+    abs_max: 6.5
+
+regulator:
+  type: ldo
+  vin: VIN
+  vout: VOUT
+  en: "CE/EN"
+  vout_v: 3.3
+  tol: 0.02                  # DC output accuracy at ILOAD = 1 mA
+  i_max_ma: 600              # requires VIN >= 2.3 V
+  vin_min_for_i_max: 2.3
+  i_limit_min_ma: 610
+  dropout_mv: 530            # maximum at 600 mA, VOUT >= 3 V
+  dropout_typ_mv: 310
+  dropout_at_ma: 600
+  cin_min: 1u
+  cout_min: 1u               # effective capacitance, after temperature and DC-bias derating
+  cout_esr_min: 0.001
+  theta_ja: 230.6            # TSOT-23-5, JEDEC 51-7 four-layer board
+  tj_max: 125
+  thermal_shutdown_c: 150
+  discharge_ohm: 80          # output discharge when EN = 0 V (typ)

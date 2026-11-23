@@ -1,0 +1,40 @@
+id: 2n7002
+match:
+  lcsc: [C8545]
+  value: ["2N7002"]
+kind: Q
+class: mosfet
+description: "60 V N-channel small-signal MOSFET, 115 mA, SOT-23"
+datasheet: "Jiangsu Changjiang Electronics (CJ) 2N7002, J, Sep 2016 (datasheets/C8545.pdf)"
+provenance:
+  source: "datasheets/C8545.pdf"
+  verified: true
+  notes: >
+    Page 1: SOT-23 pins 1 GATE, 2 SOURCE, 3 DRAIN; maximum ratings VDS 60 V, VGS +/-20 V,
+    ID 0.115 A, PD 0.225 W, R theta JA 556 C/W, TJ 150 C. Page 2: gate threshold 1 / 1.6 / 2.5 V
+    at 250 uA; RDS(on) 0.9 typ / 5 Ohm max at VGS = 10 V, 500 mA and 1.1 typ / 7 Ohm max at
+    VGS = 5 V, 50 mA; body diode 0.55 to 1.2 V at 115 mA; Ciss 50 pF max. No RDS(on) is
+    specified below VGS = 5 V, and the threshold can be as high as 2.5 V, so the on-resistance
+    with a 3.3 V gate drive is not guaranteed by this datasheet.
+
+pins:
+  G: {drive: input}           # pin 1
+  S: {}                       # pin 2
+  D: {}                       # pin 3
+
+fet:
+  channel: n
+  vds_max: 60
+  vgs_max: 20
+  id_max_a: 0.115
+  vgs_th_min: 1
+  vgs_th_typ: 1.6
+  vgs_th_max: 2.5
+  rds_on:                     # maximum at 25 C
+    - {vgs: 10, mohm: 5000}
+    - {vgs: 5, mohm: 7000}
+  body_diode_vf: 1.2          # max at 115 mA
+  ciss_pf: 50
+  pd_w: 0.225
+  theta_ja: 556
+  tj_max: 150

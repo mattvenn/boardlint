@@ -1,0 +1,39 @@
+id: usblc6-2
+match:
+  lcsc: [C7519]
+  value: ["USBLC6-2*"]
+kind: IC
+class: tvs
+description: "Very low capacitance ESD protection for two data lines and VBUS, SOT23-6L (USBLC6-2SC6)"
+datasheet: "ST USBLC6-2, Doc ID 11265 Rev 5, October 2011 (datasheets/C7519.pdf)"
+provenance:
+  source: "datasheets/C7519.pdf"
+  verified: true
+  notes: >
+    Functional diagram p.1 (1 and 6 I/O1, 2 GND, 3 and 4 I/O2, 5 VBUS). Table 1 absolute ratings
+    p.2 gives only ESD peak pulse voltage (IEC 61000-4-2 air 15 kV, contact 15 kV; MIL-STD-883G
+    25 kV) and temperatures: there is no absolute maximum voltage for VBUS or the I/O pins.
+    Table 2 p.2: leakage 150 nA max at VRM = 5.25 V (used as vrwm); breakdown VBUS to GND 6 V
+    min at 1 mA; clamping 12 V max at 1 A and 17 V max at 5 A (8/20 us, any I/O to GND);
+    capacitance I/O to GND 2.5 pF typ / 3.5 pF max, I/O to I/O 1.2 / 1.7 pF. Layout p.5-6:
+    tracks to the I/O, VBUS and GND pins as short as possible, device close to the connector.
+
+supplies:
+  - pins: [VBUS]
+    vmax: 5.25                # stand-off voltage at which leakage is specified; breakdown 6 V min
+
+pins:
+  "I/O1": {drive: analog}
+  "I/O2": {drive: analog}
+  GND: {role: gnd}
+  VBUS: {role: power_in}
+
+tvs:
+  vrwm: 5.25
+  vbr_min: 6
+  c_line_pf: 3.5              # I/O to GND, max (2.5 typ)
+  c_line_to_line_pf: 1.7      # max (1.2 typ)
+  v_clamp: [{ipp_a: 1, v: 12}, {ipp_a: 5, v: 17}]
+  i_leak_max_na: 150
+  esd_contact_kv: 15
+  esd_air_kv: 15

@@ -1,0 +1,30 @@
+id: polyfuse-1812-1.1a
+match:
+  lcsc: [C21000]
+kind: FUSE
+class: pptc
+description: "Resettable fuse (PPTC), 1812, 1.1 A hold. UNVERIFIED generic figures, no datasheet in the repo"
+datasheet: "none in the repo (no datasheets/C21000.pdf); manufacturer and exact series of C21000 not confirmed"
+provenance:
+  source: "general knowledge of 1812-size 1.1 A hold PPTC parts (typical of the Bourns MF-MSMF110 class); NOT read from a datasheet"
+  verified: false
+  unverified_fields: [fuse.i_hold_a, fuse.i_trip_a, fuse.v_max, fuse.i_max_a, fuse.r_min, fuse.r_max, fuse.t_trip_s]
+  notes: >
+    Every number in this file is unverified. No datasheet for LCSC C21000 is in the repo and
+    none was read. The figures are the usual ones for an 1812 PPTC with 1.1 A hold current
+    (hold 1.1 A and trip 2.2 A at 23 C, initial resistance about 0.04 Ohm minimum, post-trip
+    resistance up to about 0.21 Ohm, trip in a few tenths of a second at 8 A). The voltage
+    rating differs between otherwise identical parts (6 V, 8 V, 16 V and higher variants
+    exist); 6 V, the lowest common rating, is recorded so that a check errs on the safe side.
+    Hold current falls with temperature (roughly 15 to 25 % lower at 60 C); that derating is a
+    general PPTC property and is not quantified for this part. Replace this file with values
+    from the real datasheet before trusting any finding that depends on it.
+
+fuse:
+  i_hold_a: 1.1
+  i_trip_a: 2.2
+  v_max: 6
+  i_max_a: 100
+  r_min: 0.04
+  r_max: 0.21
+  t_trip_s: 0.3               # at 8 A, typical of the class

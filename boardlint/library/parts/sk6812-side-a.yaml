@@ -1,0 +1,74 @@
+id: sk6812-side-a
+match:
+  lcsc: [C5378721]
+  value: ["SK6812SIDE*"]
+kind: LED
+class: addressable_led
+description: "SK6812 side-emitting addressable RGB LED, 4.0 x 2.0 x 1.6 mm, 12 mA per colour, single-wire 800 kbit/s"
+datasheet: "OPSCO SK6812SIDE-A-012, Rev. B/2 (datasheets/C5378721.pdf)"
+provenance:
+  source: "datasheets/C5378721.pdf"
+  verified: true
+  notes: >
+    Overview p.3 (5 V @ 12 mA per output; "When monochromatic light is lit, it can be used in
+    100% grayscale; when illuminating the tricolor light, use 70% grayscale"; 800 kbit/s; MSL
+    5a; ESD 2 kV). Pins p.4-5: 1 DIN, 2 VDD, 3 DOUT, 4 GND. "IC limit parameter" table p.5:
+    VDD +3.7 to +5.5 V, the only maximum the datasheet gives, so abs_max is that same 5.5 V
+    (no separate absolute-maximum rating, and none at all for DIN). IC electrical parameters
+    p.6: VDD 3.7 / 5.0 / 5.5 V; VIH 0.65 VDD min, VIL 0.3 VDD max (at VDD = 5.0 V); output drive
+    current per colour 10 / 12 / 14.5 mA; PWM 1.0 kHz; static consumption 0.6 mA typ at
+    VDD = 4.5 V with outputs off; data rate 800 kbit/s. Timing p.7: symbol period 1.20 us min,
+    T0H 0.25 / 0.30 / 0.40 us, T0L 0.80 us min, T1H 0.70 / 0.90 / 1.00 us, T1L 0.25 us min, low
+    time within a bit under 20 us, reset low over 200 us. Data order GRB, MSB first p.8.
+    Application circuit p.9: a decoupling capacitor C1 at each LED "is essential" but NO VALUE
+    is printed (checked on the rendered page too), so the decoupling entry has no c_min;
+    series protection resistors R1 (first DIN) and R2 (last DOUT) "about 500 ohms".
+    Computed, not printed: i_max_ma = 3 x 14.5 mA and i_typ_all_on_ma = 3 x 12 mA.
+    Operation below 3.7 V is not specified.
+
+supplies:
+  - pins: [VDD]
+    vmin: 3.7
+    vmax: 5.5
+    abs_max: 5.5
+    i_typ_ma: 0.6             # static, outputs off, VDD = 4.5 V
+    i_max_ma: 43.5            # 3 x 14.5 mA, all three colours at 100 % (maker advises 70 %)
+    decoupling:
+      - {count: 1, note: "one decoupling capacitor per LED between VDD and GND is 'essential' (section 14); the datasheet prints no value"}
+
+io:
+  vih_frac: 0.65
+  vil_frac: 0.3
+
+pins:
+  DIN: {role: led_din, drive: input}
+  DOUT: {role: led_dout, drive: push_pull}
+  VDD: {role: power_in}
+  "GND/VSS": {role: gnd}
+
+serial_led:
+  protocol: sk6812
+  vih_frac: 0.65              # of the LED's own VDD
+  vil_frac: 0.3
+  i_color_ma: 12              # typ per colour (10 min, 14.5 max)
+  i_color_max_ma: 14.5
+  i_typ_all_on_ma: 36         # 3 x 12 mA
+  i_max_ma: 43.5              # 3 x 14.5 mA
+  all_colors_max_duty: 0.7    # "when illuminating the tricolor light, use 70% grayscale"
+  i_idle_ma: 0.6
+  khz: 800
+  bit_period_min_us: 1.2
+  t0h_us: [0.25, 0.30, 0.40]
+  t0l_min_us: 0.80
+  t1h_us: [0.70, 0.90, 1.00]
+  t1l_min_us: 0.25
+  reset_us: 200               # low for more than 200 us
+  color_order: GRB
+  pwm_khz: 1.0
+  series_r_ohm: 500           # "about 500 ohms" in series at the first DIN and the last DOUT
+
+errata:
+  - id: 3v3-data-with-5v-supply
+    summary: "VIH is 0.65 x VDD, 3.25 V at a 5 V supply (3.58 V at 5.5 V): a 3.3 V MCU output (guaranteed high level typically 0.8 x 3.3 V = 2.64 V) does not meet it, so the first LED's DIN needs a level shifter or a lower LED supply (VDD of 4.0 V or less for 2.64 V)."
+    source: "datasheets/C5378721.pdf IC electrical parameters p.6; https://learn.adafruit.com/neopixel-levelshifter/shifting-levels"
+    severity: warning

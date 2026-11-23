@@ -1,0 +1,23 @@
+id: ts-1187a
+match:
+  lcsc: [C318884]             # value on the board is the button's function ("RESET", "BOOT"), so LCSC only
+kind: SW
+class: tact_switch
+description: "SMD tactile switch 5.1 x 5.1 mm, SPST normally open, 12 V DC 50 mA (XKB TS-1187A-B-A-B)"
+datasheet: "XKB TS-1187A-X-X-X drawing, revision A0 (datasheets/C318884.pdf)"
+provenance:
+  source: "datasheets/C318884.pdf"
+  verified: true
+  notes: >
+    The PDF is a single drawing with no text layer; values were read from the rendered image.
+    Specification block: contact rating 50 mA, 12 V DC; contact resistance 100 mOhm max;
+    dielectric strength 250 V AC / 1 minute; travel 0.25 mm; operating temperature -30 to
+    +85 C. Circuit: terminals A and B are joined, C and D are joined, the switch closes A/B to
+    C/D. The insulation resistance line is printed "100mOhm min. 500V DC" (presumably MOhm) and
+    is not recorded.
+
+switch:
+  type: tact_spst_no
+  i_max_ma: 50
+  v_max: 12
+  contact_resistance_max_mohm: 100

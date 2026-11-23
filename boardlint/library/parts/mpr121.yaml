@@ -1,0 +1,121 @@
+id: mpr121
+match:
+  lcsc: [C91322]
+  value: ["MPR121*"]
+kind: IC
+class: touch_controller
+description: "12-electrode capacitive touch / proximity sensor controller, I2C, open-collector IRQ, QFN-20 3 x 3 mm (MPR121QR2)"
+datasheet: "Freescale (NXP) MPR121, Rev. 4, 02/2013 (datasheets/C91322.pdf)"
+provenance:
+  source: "datasheets/C91322.pdf"
+  verified: true
+  notes: >
+    Pin descriptions Table 1 p.2 (1 IRQ "Open Collector Interrupt Output Pin, active low",
+    2 SCL, 3 SDA, 4 ADDR "Connect the ADDR pin to the VSS, VDD, SDA or SCL line, the resulting
+    I2C addresses are 0x5A, 0x5B, 0x5C and 0x5D", 5 VREG "Connect a 0.1 uF bypass cap to VSS",
+    6 VSS, 7 REXT "Connect a 75 kOhm 1% resistor to VSS", 8-19 ELE0-ELE11, 20 VDD "Connect a
+    0.1 uF bypass cap to VSS"). Power configurations figures 1-2 p.3 and text p.4: VDD 1.71 to
+    3.6 V; the internal regulator works from 2.0 to 3.6 V with a separate 0.1 uF on VREG;
+    for a 1.71 to 2.75 V supply VDD and VREG are connected together (regulator bypassed) and
+    the supply must then not exceed 2.75 V, the VREG limit; above 2.75 V the supply must go to
+    VDD only. Absolute maximum Table 3 p.8 (VDD -0.3 to +3.6 V, VREG -0.3 to +2.75 V, SCL / SDA /
+    IRQ VSS - 0.3 to VDD + 0.3 V, GPIO source 12 mA, sink 1.2 mA). DC characteristics Table 5 p.9
+    (VDD 2.0 / 3.3 / 3.6 V; VREG 1.71 / 1.8 / 2.75 V; average supply current 29 uA at 16 ms
+    sample period up to 393 uA at 1 ms; measurement peak 1 mA; stop mode 3 uA; VIH 0.7 VDD, VIL
+    0.3 VDD on SDA / SCL; VOL 0.5 V at 6 mA on SDA / IRQ). I2C Table 7 p.10 (400 kHz max, bus
+    load 400 pF max). Reset values p.6 and p.11: all registers cleared after power-on or soft
+    reset except 0x5C (default 0x10) and 0x5D (default 0x24); ECR 0x00 = stop mode p.16; soft
+    reset = write 0x63 to register 0x80 p.19. Serial interface p.21 ("A pullup resistor,
+    typically 4.7 kOhm, is required on SDA"; on SCL only with multiple masters or an open-drain
+    master) and slave address Table 10 p.21. There is no identification register, so the sim
+    binding uses register 0x5C, which has a documented non-zero reset value (0x10); 0x5D reads
+    0x24. Note the absolute maximum on VDD (3.6 V) equals the operating maximum.
+    The IRQ pull-up is not stated as a sentence in the datasheet; it follows from "open
+    collector". Errata URLs come from web search result summaries (2026-11-23); the pages were
+    not opened from the extraction session.
+
+supplies:
+  - pins: [VDD]
+    vmin: 1.71                # 2.0 V when the internal regulator is used (VREG on its own capacitor)
+    vmax: 3.6
+    abs_max: 3.6
+    i_typ_ma: 0.029           # run mode, 16 ms sample period
+    i_max_ma: 0.393           # run mode, 1 ms sample period (typ)
+    i_step_ma: 1              # peak of the measurement duty cycle (typ)
+    i_idle_ma: 0.003          # stop mode, the state after power-on reset
+    decoupling:
+      - {c_min: 100n, count: 1, note: "VDD is always decoupled with a 0.1 uF ceramic capacitor to VSS"}
+
+io:
+  vih_frac: 0.7               # SDA, SCL
+  vil_frac: 0.3
+  abs_max_over_supply: 0.3    # SCL, SDA, IRQ: VSS - 0.3 V to VDD + 0.3 V
+  tolerant_5v: false
+
+pins:
+  IRQ:
+    role: irq
+    active: low
+    drive: open_drain         # "open collector"
+  SCL:
+    role: i2c_scl
+    drive: input
+    require:
+      - {pullup: {}, note: "Pull-up, typically 4.7 kOhm, required on SCL", when: "multiple masters, or a master with an open-drain SCL output"}
+  SDA:
+    role: i2c_sda
+    drive: open_drain
+    require:
+      - {pullup: {}, note: "A pull-up resistor, typically 4.7 kOhm, is required on SDA"}
+  ADDR:
+    role: i2c_addr
+    require:
+      - {not_floating: true, note: "Connect ADDR to VSS (0x5A), VDD (0x5B), SDA (0x5C) or SCL (0x5D)"}
+  VREG:
+    abs_max: 2.75
+    require:
+      - {cap_to_gnd: {min: 100n}, note: "0.1 uF bypass capacitor from VREG to VSS", when: "VDD supply 2.0 to 3.6 V (power configuration 2, mandatory above 2.75 V). Alternative for a 1.71 to 2.75 V supply: connect VREG directly to VDD (configuration 1); VREG must never exceed 2.75 V."}
+  VSS: {role: gnd}
+  VDD: {role: power_in}
+  REXT:
+    drive: analog
+    require:
+      - {res_to_gnd: {value: 75k, tol: 0.01}, note: "75 kOhm 1 % resistor to VSS sets the internal reference current"}
+  ELE0: {role: touch}
+  ELE1: {role: touch}
+  ELE2: {role: touch}
+  ELE3: {role: touch}
+  ELE4: {role: touch}         # ELE4-ELE11 can also be GPIO / LED drivers (LED0-LED7)
+  ELE5: {role: touch}
+  ELE6: {role: touch}
+  ELE7: {role: touch}
+  ELE8: {role: touch}
+  ELE9: {role: touch}
+  ELE10: {role: touch}
+  ELE11: {role: touch}
+
+i2c:
+  addresses: [0x5A, 0x5B, 0x5C, 0x5D]
+  max_khz: 400
+  address_pin: {pin: ADDR, map: {GND: 0x5A, VDD: 0x5B, SDA: 0x5C, SCL: 0x5D}}   # GND = VSS in the datasheet
+
+touch:
+  electrodes: 12
+  c_min_pf: 10                # "can measure capacitances ranging from 10 pF to over 2000 pF"
+  c_max_pf: 2000
+  gpio_source_max_ma: 12      # ELE4-ELE11 in GPIO / LED mode, absolute maximum per pin
+  gpio_sink_max_ma: 1.2
+
+sim:
+  model: i2c_target
+  params: {ID_REG: 0x5C, ID_VAL: 0x10}   # no ID register; 0x5C resets to 0x10 (0x5D resets to 0x24)
+
+errata:
+  - id: early-datasheet-wrong-address
+    summary: "Rev 0 (9/2009) of the datasheet and of AN3895 gave a wrong I2C address; the address with ADDR at VSS is 0x5A (as in Rev 4), so do not rely on copies of the old revision."
+    source: "https://community.nxp.com/thread/62485"
+    severity: info
+  - id: read-needs-repeated-start
+    summary: "Register reads need a repeated START between the register-address write and the read; a STOP in between has been reported to make every register read back as zero."
+    source: "https://community.nxp.com/t5/Sensors/MPR121-all-registers-read-zero/m-p/228651 ; datasheet read format p.22"
+    severity: info

@@ -1,0 +1,31 @@
+id: 1n4148w
+match:
+  value: ["1N4148W*"]
+kind: D
+class: signal_diode
+description: "Small-signal switching diode, SOD-123. UNVERIFIED: no datasheet in the repo"
+datasheet: "none in the repo (the board's BOM lists LCSC C81598; that part's datasheet was not available)"
+provenance:
+  source: "general knowledge of the 1N4148 family; NOT read from a datasheet"
+  verified: false
+  unverified_fields: [diode.vr_max, diode.vrrm, diode.if_max_ma, diode.vf, diode.vf_max, diode.ir_max_ua, diode.trr_ns]
+  notes: >
+    No datasheet for this part is in the repo, so nothing here was read from a source.
+    75 V continuous reverse voltage (100 V repetitive peak) and 150 mA average forward current
+    are the standard ratings of the JEDEC-registered 1N4148 and are what manufacturers of the
+    SOD-123 1N4148W publish; treat them as standard but still unconfirmed for the exact part
+    fitted. Forward voltage: the 1N4148 registration limit is 1.0 V maximum at 10 mA; 0.7 V is
+    a typical value at a few mA, and at microamp currents (for example in series with a 200 k
+    resistor) the drop is nearer 0.3 to 0.5 V. Reverse leakage (commonly 1 uA max at 75 V,
+    25 nA at 20 V, rising steeply with temperature) and 4 ns recovery are likewise typical
+    family figures. The 1N4148W glob also matches 1N4148WS / 1N4148WT (smaller packages, lower
+    power rating).
+
+diode:
+  vr_max: 75
+  vrrm: 100
+  if_max_ma: 150
+  vf: 0.7
+  vf_max: 1.0                 # at 10 mA
+  ir_max_ua: 1                # at 75 V, 25 C
+  trr_ns: 4

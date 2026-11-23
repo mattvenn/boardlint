@@ -1,0 +1,33 @@
+id: usb-c-hro-type-c-31-m-12
+match:
+  lcsc: [C165948]
+kind: CONN
+class: usb_c_receptacle
+description: "USB Type-C receptacle, 16 contacts (USB 2.0 signals only), HRO TYPE-C-31-M-12"
+datasheet: "HRO Electronics TYPE-C-31-M-12 drawing, 2020.12.08 (datasheets/C165948.pdf)"
+provenance:
+  source: "datasheets/C165948.pdf"
+  verified: true
+  notes: >
+    The PDF is a single drawing whose text layer is empty; values were read from the rendered
+    image. Notes block 4 "Electrical performance": current rating 5 A, voltage rating 20 V,
+    insulation resistance 100 MOhm min, dielectric withstand 100 V AC for 1 minute; durability
+    10000 cycles; operating temperature -30 to +80 C. The drawing does not say whether 5 A is
+    per contact or for the VBUS contacts together. Signal table: A1 / A12 / B1 / B12 GND,
+    A4 / A9 / B4 / B9 VBUS, A5 CC1, B5 CC2, A6 DP1, A7 DN1, B6 DP2, B7 DN2, A8 SBU1, B8 SBU2.
+    The CC pull-down a sink needs (5.1 k) is a USB Type-C specification requirement, not a
+    statement of this drawing, so it is not encoded here.
+
+connector:
+  type: usb_c_receptacle
+  i_max_a: 5
+  v_max: 20
+  mating_cycles: 10000
+
+pins:
+  CC1: {role: usb_cc}         # A5
+  CC2: {role: usb_cc}         # B5
+  VBUS: {role: usb_vbus}      # A4, A9, B4, B9
+  "D+/DP1/DP2": {role: usb_dp}   # A6, B6
+  "D-/DN1/DN2": {role: usb_dm}   # A7, B7
+  GND: {role: gnd}            # A1, A12, B1, B12

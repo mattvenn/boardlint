@@ -1,0 +1,85 @@
+id: mcp73831
+match:
+  lcsc: [C424093]
+  value: ["MCP7383*"]         # NOTE: also matches the MCP73832 (open-drain STAT) and the -3/-4/-5
+                              # float-voltage options; this model is the MCP73831-2 (4.20 V), option AC
+kind: IC
+class: charger
+description: "Single-cell Li-Ion/Li-Po linear charger, 4.20 V, 15 to 500 mA, tri-state STAT, SOT-23-5 (MCP73831T-2ACI/OT)"
+datasheet: "Microchip MCP73831/2, DS20001984H (datasheets/C424093.pdf)"
+provenance:
+  source: "datasheets/C424093.pdf"
+  verified: true
+  notes: >
+    Absolute maximum ratings p.3 (VDD 7.0 V; all inputs and outputs -0.3 V to VDD + 0.3 V).
+    DC characteristics p.3-4: supply voltage 3.75 to 6 V; supply current 510 uA typ / 1500 uA
+    max charging, 53 / 200 uA charge complete, 25 / 50 uA PROG floating; UVLO start 3.3 / 3.45 /
+    3.6 V, stop 3.2 / 3.38 / 3.5 V; VREG 4.168 / 4.20 / 4.232 V (MCP7383X-2); fast charge 90 /
+    100 / 110 mA at PROG = 10 k, 450 / 505 / 550 mA at 2 k; STAT sink 25 mA max, source 35 mA
+    max, VOL 0.4 V typ / 1 V max at 4 mA, VOH VDD - 0.4 V typ / VDD - 1 V at 4 mA; RPROG charge
+    range 2 to 67 k, shutdown above 70 to 200 k. Thermal p.5: SOT-23-5 theta JA 230 C/W, TJ
+    operating -40 to +125 C. Pin table and pin descriptions p.11 (SOT-23-5: 1 STAT, 2 VSS,
+    3 VBAT, 4 VDD, 5 PROG; "Bypass to VSS with a minimum of 4.7 uF" on VDD and on VBAT; section
+    3.1 recommends a supply of VREG + 0.3 V to 6 V; "STAT is a tri-state logic output on the
+    MCP73831 and an open-drain output on the MCP73832"). IREG = 1000 V / RPROG (mA, kOhm) and
+    Table 5-1 status output p.15. External capacitors 6.1.1.4 p.18. Option AC (IPREG/IREG 10 %,
+    VPTH/VREG 66.5 %, ITERM/IREG 7.5 %, VRTH/VREG 96.5 %) from the product identification
+    system p.26.
+
+supplies:
+  - pins: [VDD]
+    vmin: 3.75                # DC characteristics; section 3.1 recommends VREG + 0.3 V (4.5 V) to 6 V
+    vmax: 6
+    abs_max: 7.0
+    i_typ_ma: 0.51            # while charging, excluding the charge current itself
+    i_max_ma: 1.5
+    uvlo_start_max: 3.6
+    uvlo_stop_min: 3.2
+    decoupling:
+      - {c_min: 4.7u, count: 1, note: "Bypass VDD to VSS with a minimum of 4.7 uF (section 3.1)"}
+
+io:
+  abs_max_over_supply: 0.3    # all inputs and outputs -0.3 V to VDD + 0.3 V
+
+pins:
+  VDD: {role: power_in}
+  VSS: {role: gnd}
+  VBAT:
+    role: power_out
+    require:
+      - {cap_to_gnd: {min: 4.7u}, note: "Bypass VBAT to VSS with a minimum of 4.7 uF to ensure loop stability when the battery is disconnected (sections 3.2, 6.1.1.4)"}
+  STAT:
+    drive: tri_state          # MCP73831; the MCP73832 is open drain
+    states: {shutdown: hi_z, no_battery: hi_z, preconditioning: low, fast_charge: low, constant_voltage: low, charge_complete: high}
+    high_level: VDD           # driven to VDD (VOH = VDD - 0.4 V typ at 4 mA), i.e. up to 6 V
+    i_sink_max_ma: 25
+    i_source_max_ma: 35
+    note: "High level is the charger's VDD (USB 5 V), not the logic rail: a 3.3 V input needs a divider or level shift. A pull-up resistor can be applied for interfacing to a host microcontroller (section 3.3)."
+  PROG:
+    role: enable
+    drive: analog
+    require:
+      - {res_to_gnd: {min: 2k, max: 67k}, note: "Charge current set resistor to VSS, IREG[mA] = 1000 / RPROG[kOhm]. PROG floating (or above 70 to 200 k, or driven high) disables the charger."}
+
+charger:
+  vin: VDD
+  vbat: VBAT
+  prog: PROG
+  stat: STAT
+  ma_kohm: 1000               # IREG[mA] = 1000 V / RPROG[kOhm]
+  v_float: 4.2
+  v_float_min: 4.168
+  v_float_max: 4.232
+  i_min_ma: 15
+  i_max_ma: 500
+  rprog_min: 2k
+  rprog_max: 67k
+  i_tol: 0.10                 # 90 / 100 / 110 mA at RPROG = 10 k
+  precondition_ratio: 0.10    # option AC
+  precondition_vth_ratio: 0.665
+  termination_ratio: 0.075
+  recharge_vth_ratio: 0.965
+  cin_min: 4.7u
+  cbat_min: 4.7u
+  theta_ja: 230               # SOT-23-5, 4-layer JC51-7 board
+  tj_max: 125

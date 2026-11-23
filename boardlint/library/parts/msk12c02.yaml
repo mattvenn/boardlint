@@ -1,0 +1,31 @@
+id: msk12c02
+match:
+  lcsc: [C431540]
+  value: ["MSK12C02"]
+kind: SW
+class: slide_switch
+description: "Miniature SMD slide switch, 3 terminals plus frame, 12 V DC 50 mA"
+datasheet: "Shenzhen Shouhan MSK12C02 specification for approval, version A/0, 2024.12.14 (datasheets/C431540.pdf)"
+provenance:
+  source: "datasheets/C431540.pdf"
+  verified: true
+  notes: >
+    Drawing sheet (PDF p.1, read from the rendered image): terminals 1, 2, 3 in a row and frame
+    tabs 4; circuit diagram shows terminal 2 as the common, connected to 3 or to 1 by the
+    slider, with 4 the grounded frame; rated load DC 12 V 50 mA; contact resistance 100 mOhm
+    max; insulation 100 MOhm min at DC 100 V; withstand 250 V AC 1 min; operating force
+    150 +/- 100 gf; mechanical life 10000 operations; -20 to 70 C. Specification text section
+    2.5 ("Ratings: 12V DC, 50mA (effective value)") and 3.1-3.3 repeat these. Section 2.4 of
+    the text says "Contact arrangement: 1 pole, 1 throw", which contradicts the drawing (one
+    pole, two positions); the drawing is followed here.
+
+switch:
+  type: slide_spdt
+  common: "#2"
+  throws: ["#1", "#3"]
+  frame: "#4"                 # shell tabs, drawn grounded in the maker's circuit diagram
+  i_max_ma: 50
+  v_max: 12
+  contact_resistance_max_mohm: 100
+  insulation_min_mohm: 100
+  life_cycles: 10000
