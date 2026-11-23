@@ -136,7 +136,9 @@ def pin_voltage(d):
                 rsrc = div[0].num if div else (min(r.num for r, _ in ups_) if ups_ and 'pulled up' in src else None)
                 inj = (((div[3][1] if div else vmax) - lim) / rsrc * 1e6) if rsrc else None
                 weak = inj is not None and inj < 100
-                yield F('power.pin_voltage', 'info' if weak and marginal else 'warning' if marginal or weak or not c.model else 'error',
+                m_drv = re.match(r'driven by ([^.]+)\.', src or '')
+                guessed = bool(m_drv) and m_drv.group(1) in d.components and not d.components[m_drv.group(1)].model
+                yield F('power.pin_voltage', 'info' if (weak and marginal) or guessed else 'warning' if marginal or weak or not c.model else 'error',
                         f"{p.label} can see {vmax:g} V; its limit is {lim:.2f} V",
                         f"Net {n.name} ({src}). Limit: {why}. " +
                         ("The excess is within a few hundred millivolts: it arises when the two supplies are at "

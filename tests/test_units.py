@@ -112,3 +112,12 @@ def test_relay_without_flyback_diode():
     fz.swap_nets(d, fz.pin(d, 'D1', 'K'), fz.pin(d, 'D1', 'A'))
     fz.reanalyse(d)
     assert any('wrong way round' in f.title for f in run(d, only=['load.inductive'])[0])
+
+
+def test_pin_name_against_net_name():
+    d = Design(name='i2s')
+    fz.add_part(d, 'U3', 'SOMECODEC', {'23': ('LRCLK', 'input', 'BCLK'), '24': ('BCLK', 'input', 'LRCLK'),
+                                        '25': ('SDA', 'bidirectional', 'SDA'), '26': ('IO5/MOSI/SDA', 'bidirectional', 'SCL')})
+    fz.reanalyse(d)
+    errs = [f.title for f in run(d, only=['net.name_mismatch'])[0]]
+    assert len(errs) == 2 and all('U3.2' in t for t in errs)      # the multi-function pin 26 is not judged

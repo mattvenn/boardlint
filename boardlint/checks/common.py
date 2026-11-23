@@ -27,7 +27,7 @@ def is_controller_pin(p: Pin) -> bool:
             (p.comp.model or {}).get('class') in ('mcu', 'mcu_module'):
         return True
     # no model: a general-purpose pin of some IC may well be the host
-    return p.comp.kind == 'IC' and not p.comp.model and not p.role and p.etype in ('bidirectional', 'output', 'tri_state')
+    return p.comp.kind == 'IC' and not p.comp.model and not p.role and p.etype in ('bidirectional', 'output', 'tri_state', '', 'unspecified')
 
 
 def is_active_pin(p: Pin) -> bool:

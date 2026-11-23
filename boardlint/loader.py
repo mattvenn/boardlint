@@ -90,8 +90,9 @@ def load_project(path: str, pcb: str | None = None, sch: str | None = None, netl
                 continue
             sc.pos, sc.side = bc.pos, bc.side
             sc.footprint = bc.footprint or sc.footprint
-            sc.props['_sch_pins'] = sorted(sc.pins)
-            sc.props['_fp_pads'] = sorted(bc.pins)
+            if sc.pins:                      # no pins: the symbol was not found, nothing to compare
+                sc.props['_sch_pins'] = sorted(sc.pins)
+                sc.props['_fp_pads'] = sorted(bc.pins)
             for num, bp in bc.pins.items():
                 sp = sc.pins.get(num)
                 if sp is None:

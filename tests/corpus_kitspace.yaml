@@ -1,0 +1,272 @@
+- repo: https://github.com/BeeHive-org/BeeHive
+  fix: b9695c1051fbd9bc6139c42311fa51848553dbad
+  parent: b9695c1051fbd9bc6139c42311fa51848553dbad^
+  dir: hardware/training_board
+  class: short
+  bug: 5V and GND were shorted on the temperature breakout
+  status: not-run
+  why: commit spans several boards; the right project directory was not picked
+- repo: https://github.com/rbaron/b-parasite
+  fix: 7f652ce75d91e1acc49f7075efb42b3dcce0b4a0
+  parent: 7f652ce75d91e1acc49f7075efb42b3dcce0b4a0^
+  dir: kicad
+  class: footprint
+  bug: wrong symbol/footprint for MMBT3906 transistor Q1
+  status: visible
+  why: 'transistor pin mapping: needs the part''s pinout in a model to compare with the symbol'
+- repo: https://github.com/rbaron/b-parasite
+  fix: d3ed9a331143af93b3d20e2962c725161a9a7bf6
+  parent: d3ed9a331143af93b3d20e2962c725161a9a7bf6^
+  dir: kicad
+  class: footprint
+  bug: phototransistor Q4 footprint
+  status: not-visible
+  why: 'no connectivity change: a value, footprint or label changed'
+- repo: https://github.com/bschwind/key-ripper
+  fix: 7b0be433561c4b08f0d143b6468d7dd146c27a9c
+  parent: 7b0be433561c4b08f0d143b6468d7dd146c27a9c^
+  dir: pcb
+  class: pullup
+  bug: pull-up added on the RP2040 RUN pin
+  status: visible
+  why: RUN has an internal pull-up, so the missing external one is not an error by the datasheet
+- repo: https://github.com/joeycastillo/The-Open-Book
+  fix: 6bb483f92e58f4b75d8fcfc72c7c8022f19fe40b
+  parent: 6bb483f92e58f4b75d8fcfc72c7c8022f19fe40b^
+  dir: OSO-BOOK-B1
+  class: pullup
+  bug: EN pull-up added on the ESP32-S3
+  status: caught
+  why: 'pin.floating_control: EN has no defined level (flagged on the first, blind run)'
+- repo: https://github.com/joeycastillo/The-Open-Book
+  fix: 81a50ddd70397386436eb29c2bfe54b5f8537c09
+  parent: 81a50ddd70397386436eb29c2bfe54b5f8537c09^
+  dir: Open Book Feather
+  class: pullup
+  bug: pull-ups on SPI devices, headphone bias
+  status: not-kicad
+  why: the files changed are Eagle, not KiCad
+- repo: https://github.com/joeycastillo/The-Open-Book
+  fix: c35f5291131b9b669b0cc79631cf0a20c90f2837
+  parent: c35f5291131b9b669b0cc79631cf0a20c90f2837^
+  dir: eBook Feather Wing
+  class: pullup
+  bug: chip-select pull-ups added
+  status: not-kicad
+  why: the files changed are Eagle, not KiCad
+- repo: https://github.com/joeycastillo/The-Open-Book
+  fix: 60249067b5b9f2a7aa5530f5f9e6ab413e8eb17d
+  parent: 60249067b5b9f2a7aa5530f5f9e6ab413e8eb17d^
+  dir: Open Book Feather
+  class: pulldown
+  bug: buttons fixed, pull-down resistors added
+  status: not-kicad
+  why: the files changed are Eagle, not KiCad
+- repo: https://github.com/hutscape/oak
+  fix: e68675ad1b9ed25e8d25ac863c1c575ca6286291
+  parent: e68675ad1b9ed25e8d25ac863c1c575ca6286291^
+  dir: hardware
+  class: spi
+  bug: SPI conflict solved with a pull-down resistor
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/hutscape/oak
+  fix: 460f1581bce8179f9cc36d5168ad3e4bedaf8c8b
+  parent: 460f1581bce8179f9cc36d5168ad3e4bedaf8c8b^
+  dir: hardware
+  class: pullup
+  bug: pull-up / pull-down added for SPI CLK
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/hutscape/oak
+  fix: 5cf03c8d2d81a833879d7b5a0952c0607f94a454
+  parent: 5cf03c8d2d81a833879d7b5a0952c0607f94a454^
+  dir: hardware
+  class: decoupling
+  bug: decoupling caps added, net labels fixed
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/fossasia/pslab-hardware
+  fix: af41b3aa5c3246604090ab9062b93793727c5895
+  parent: af41b3aa5c3246604090ab9062b93793727c5895^
+  dir: schematics
+  class: pullup
+  bug: pull-ups added on SPI_CS and SD_CS
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/intergalaktik/ulx4m
+  fix: 8ac8e260237b030c991fdf5660c271fda81a03e6
+  parent: 8ac8e260237b030c991fdf5660c271fda81a03e6^
+  dir: ''
+  class: clockpin
+  bug: RGMII_RX_CLK moved to another FPGA pin, pull-down added
+  status: visible
+  why: 'clock moved between two clock-capable FPGA pins: needs clock-region data and PHY pin roles'
+- repo: https://github.com/intergalaktik/ulx4m
+  fix: af1738a25f3fb957ecf7c6ff6bcfc465f2829547
+  parent: af1738a25f3fb957ecf7c6ff6bcfc465f2829547^
+  dir: ''
+  class: pullup
+  bug: pull-up resistors added
+  status: visible
+  why: pull-ups added on ID and power-enable lines of parts with no model
+- repo: https://github.com/emard/ulx3s
+  fix: 19d34652d7bc24132536a315f6f0e50819ce27ad
+  parent: 19d34652d7bc24132536a315f6f0e50819ce27ad^
+  dir: ''
+  class: swap
+  bug: WIFI_GPIO0 and WIFI_GPIO22 swapped
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/emard/ulx3s
+  fix: 10e0b9c174e8f5e457202632981ba956cc33ebff
+  parent: 10e0b9c174e8f5e457202632981ba956cc33ebff^
+  dir: ''
+  class: wrongpart
+  bug: wrongly placed zener D30 at GPDI
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/emard/ulx3s
+  fix: 4965879df84a3f8dfe5cf1164204994dd9caea1b
+  parent: 4965879df84a3f8dfe5cf1164204994dd9caea1b^
+  dir: ''
+  class: led
+  bug: WiFi/JTAG LED moved to 3.3 V
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/GlasgowEmbedded/glasgow
+  fix: 56c17893c32087d2598af18d8400e5daad06652c
+  parent: 56c17893c32087d2598af18d8400e5daad06652c^
+  dir: hardware/boards/glasgow
+  class: pullup
+  bug: 10k pull-up added on SYNC pin
+  status: visible
+  why: pull-up added on an open-drain SYNC line of a part with no model
+- repo: https://github.com/GlasgowEmbedded/glasgow
+  fix: 4500338bacc478baa57e5abeb3feeb28ed7768b5
+  parent: 4500338bacc478baa57e5abeb3feeb28ed7768b5^
+  dir: hardware/boards/glasgow
+  class: pulldown
+  bug: regulator EN pull-downs 100k to 10k
+  status: not-visible
+  why: 'no connectivity change: a value, footprint or label changed'
+- repo: https://github.com/GlasgowEmbedded/glasgow
+  fix: e741c1703ac521decfd3224034e12f67c8774510
+  parent: e741c1703ac521decfd3224034e12f67c8774510^
+  dir: hardware/boards/glasgow
+  class: swap
+  bug: D1/D2 pins swapped
+  status: visible
+  why: USB lines crossed at an ESD array with no model (pins named D1, D2)
+- repo: https://github.com/GlasgowEmbedded/glasgow
+  fix: eef7829a70af002fbb2c62dd22ccdeaba6f69a57
+  parent: eef7829a70af002fbb2c62dd22ccdeaba6f69a57^
+  dir: hardware/boards/glasgow
+  class: footprint
+  bug: ESD protection footprint fixed
+  status: visible
+  why: 'ESD array footprint with a different pin order: needs the package pinout in a model'
+- repo: https://github.com/eez-open/modular-psu
+  fix: ded8813b03150ea88817ce7bc2098045e555e20d
+  parent: ded8813b03150ea88817ce7bc2098045e555e20d^
+  dir: mcu/Eagle files
+  class: pullup
+  bug: MCU I2C pull-up update
+  status: not-kicad
+  why: the files changed are Eagle, not KiCad
+- repo: https://github.com/eez-open/modular-psu
+  fix: 0207966806fefa40293cd7955b373b29fc6ba63b
+  parent: 0207966806fefa40293cd7955b373b29fc6ba63b^
+  dir: dcm220/Eagle files
+  class: pulldown
+  bug: OE pull-down added
+  status: not-kicad
+  why: the files changed are Eagle, not KiCad
+- repo: https://github.com/eez-open/modular-psu
+  fix: 11bddbb4ecb23077403c51c37cd6bb203563bf4c
+  parent: 11bddbb4ecb23077403c51c37cd6bb203563bf4c^
+  dir: aux-ps/Eagle files
+  class: pullup
+  bug: pull-up on fan controller SHDN pin
+  status: not-kicad
+  why: the files changed are Eagle, not KiCad
+- repo: https://github.com/xengi/darling
+  fix: 9928be50f91a43a59d9e7ae5d2285813ba668fca
+  parent: 9928be50f91a43a59d9e7ae5d2285813ba668fca^
+  dir: ''
+  class: usb
+  bug: USB-C made reversible
+  status: visible
+  why: 'USB-C made reversible: the board-side change is visible, the rule for it is not written'
+- repo: https://github.com/descampsa/DynamixelShield
+  fix: 566f4b8b40dc8c865a2747f9ff520e919bbb4c58
+  parent: 566f4b8b40dc8c865a2747f9ff520e919bbb4c58^
+  dir: ''
+  class: power
+  bug: fuse moved before the reverse-voltage protection
+  status: visible
+  why: 'fuse moved ahead of the reverse-polarity FET: a power-path ordering rule does not exist yet'
+- repo: https://github.com/sci-bots/dropbot-control-board.kicad
+  fix: bbafe168eebef56f6758dadd829b0162c28568d0
+  parent: bbafe168eebef56f6758dadd829b0162c28568d0^
+  dir: ''
+  class: i2c
+  bug: I2C pull-ups lowered from 4.75k to 2k
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/sci-bots/dropbot-40-channel-HV-switching-board.kicad
+  fix: fdaa8f8d8fdd13954c827f6c7153e78af108f980
+  parent: fdaa8f8d8fdd13954c827f6c7153e78af108f980^
+  dir: ''
+  class: swap
+  bug: HV and GND swapped on BNC jacks
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/sci-bots/dropbot-40-channel-HV-switching-board.kicad
+  fix: d65afd769765270ab2ce2d82048b6d06ae49c6a4
+  parent: d65afd769765270ab2ce2d82048b6d06ae49c6a4^
+  dir: ''
+  class: decoupling
+  bug: decoupling capacitor added to 7400 chip
+  status: visible
+  why: 'decoupling capacitor added for a logic IC with no model: the generic rule only asks for one per rail'
+- repo: https://github.com/mattvenn/esp8266-breakout
+  fix: f06ae535435fa7abe493f9706e3fee67be2203af
+  parent: f06ae535435fa7abe493f9706e3fee67be2203af^
+  dir: ''
+  class: swap
+  bug: GPIO 4 and 5 swapped
+  status: visible
+  why: 'GPIO4 and GPIO5 labels crossed on an ESP8266 module: needs a model of that module'
+- repo: https://github.com/less-smog/hardware
+  fix: b7c0bf8bb87e1528ea4885804a59d35bf755697a
+  parent: b7c0bf8bb87e1528ea4885804a59d35bf755697a^
+  dir: ''
+  class: pinuse
+  bug: 'ESP pinout reverted: hardware SPI for the LoRa module not available'
+  status: not-visible
+  why: only a KiCad 5 schematic changed and the legacy schematic is not netlisted
+- repo: https://github.com/Jana-Marie/Otter-Iron
+  fix: f14b43227631f6ef670fe3e06b0152bca8cb5c21
+  parent: f14b43227631f6ef670fe3e06b0152bca8cb5c21^
+  dir: KiCAD
+  class: pullup
+  bug: pull-up added
+  status: visible
+  why: pull-up added on a connector signal
+- repo: https://github.com/Neotron-Compute/Neotron-32-Hardware
+  fix: 73d67f4286ac0998f13fabd3f3cc3597f8ed1fe8
+  parent: 73d67f4286ac0998f13fabd3f3cc3597f8ed1fe8^
+  dir: ''
+  class: short
+  bug: 5 V removed from the 3.3 V plane
+  status: visible
+  why: 'header pin order changed: connector pinouts are outside the design files'
+- repo: https://github.com/mattvenn/teensy-audio-fx
+  fix: 1c48464e517ce12f0a1c7636046c4b49ce48010e
+  parent: 99c1038
+  dir: hardware
+  class: swap
+  bug: LRCLK and BCLK swapped at the audio codec (README errata for hardware V1)
+  status: caught
+  why: 'net.name_mismatch: LRCLK pin on the BCLK net and the reverse (check added after the blind run)'

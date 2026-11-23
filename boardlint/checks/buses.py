@@ -579,3 +579,51 @@ def alt_function(d):
                             f"{_NICE.get(same[0], same[0])}; the two lines are swapped at the MCU, or the wrong pin "
                             f"was chosen. Only a software (bit-banged) bus would work here.",
                             refs=[c.ref], nets=nets, basis=model_basis(c, 'pin function table'), confidence='medium')
+
+
+# ----------------------------------------------------------------------------- names that contradict
+# Signals that are easy to cross.  TX / RX are left out on purpose: a net is often named from the
+# far end's point of view, so "TX pin on a net called RX" is normal.
+_CONFUSABLE = [
+    {'LRCLK': 'LRCLK', 'LRCK': 'LRCLK', 'WCLK': 'LRCLK', 'WS': 'LRCLK', 'FS': 'LRCLK', 'BCLK': 'BCLK', 'BCK': 'BCLK',
+     'SCLK': 'BCLK', 'MCLK': 'MCLK', 'SCKI': 'MCLK'},
+    {'SDA': 'SDA', 'SCL': 'SCL'},
+    {'MOSI': 'MOSI', 'COPI': 'MOSI', 'MISO': 'MISO', 'CIPO': 'MISO'},
+    {'D+': 'D+', 'DP': 'D+', 'USB_DP': 'D+', 'USBDP': 'D+', 'D-': 'D-', 'DM': 'D-', 'DN': 'D-', 'USB_DM': 'D-', 'USBDM': 'D-'},
+    {'CANH': 'CANH', 'CAN_H': 'CANH', 'CANL': 'CANL', 'CAN_L': 'CANL'},
+    {'SWDIO': 'SWDIO', 'SWCLK': 'SWCLK', 'SWDCLK': 'SWCLK'},
+    {'TDI': 'TDI', 'TDO': 'TDO', 'TCK': 'TCK', 'TMS': 'TMS'},
+]
+
+
+def _signal_id(name):
+    """(group index, canonical signal) if a pin or net name is one of the confusable signals."""
+    n = (name or '').split('/')[-1].upper().strip()
+    n = re.sub(r'^(I2C|I2S|SPI|USB|CAN|JTAG|SAI)\d*_', '', n)
+    n = re.sub(r'\d+$', '', n) if not n.endswith(('D+', 'D-')) else n
+    for i, grp in enumerate(_CONFUSABLE):
+        if n in grp:
+            return i, grp[n]
+    return None
+
+
+@check('net.name_mismatch', 'protocol', doc='A pin named for one signal sits on a net named for its partner (LRCLK on BCLK, SDA on SCL, MOSI on MISO)')
+def name_mismatch(d):
+    seen = set()
+    for c in d.components.values():
+        if c.dnp or c.kind in PASSIVE_KINDS or c.kind in ('CONN', 'SW'):
+            continue
+        for p in c.pins.values():
+            if not p.net or not p.name:
+                continue
+            ids = [x for x in (_signal_id(a) for a in pin_aliases(p.name)) if x]
+            net = _signal_id(p.net)
+            if not ids or not net or len(pin_aliases(p.name)) > 2:
+                continue            # multi-function pins take whatever role the net gives them
+            pid = ids[0]
+            if pid[0] == net[0] and pid[1] != net[1] and (c.ref, p.net) not in seen:
+                seen.add((c.ref, p.net))
+                yield F('net.name_mismatch', 'error', f"{p.label} is on the net called {p.net}",
+                        f"{c.desc}: the pin is {pid[1]} and the net is named for {net[1]}. Either the two lines are "
+                        f"crossed at this part or the net label is wrong.", refs=[c.ref], nets=[p.net],
+                        basis='pin name against net name', confidence='medium')

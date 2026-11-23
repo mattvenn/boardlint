@@ -88,11 +88,11 @@ unmodelled part means "not checked".
 
 ## What exists today (v0.1)
 
-34 checks. `python3 -m boardlint checks` lists them.
+35 checks. `python3 -m boardlint checks` lists them.
 
 | Family | Checks | State |
 |---|---|---|
-| Protocol | `uart.direction`, `i2c.bus`, `spi.bus`, `led.chain`, `usb.wiring`, `mcu.alt_function` | Working. SPI is tested only on synthetic designs. `mcu.alt_function` has one MCU (RP2040) so far. |
+| Protocol | `uart.direction`, `i2c.bus`, `spi.bus`, `led.chain`, `usb.wiring`, `mcu.alt_function`, `net.name_mismatch` | Working. SPI is tested only on synthetic designs. `mcu.alt_function` has one MCU (RP2040) so far. |
 | Signals at pins | `mcu.pin_use`, `clock.source`, `reset.circuit`, `pin.strap_strength`, `sync.schematic_board`, `load.inductive` | Working on the two test boards. The crystal half of `clock.source` has not met a real crystal yet. |
 | Pins | `pin.requirements`, `pin.floating_control`, `mcu.strapping`, `pin.name_voltage`, `footprint.pin_map` | Working; the first three depend on models. |
 | Power | `power.rails`, `power.supply_range`, `power.pin_voltage`, `power.logic_level`, `power.regulator`, `power.budget`, `decoupling.per_part`, `decoupling.regulator_caps` | Working. Currents are worst-case sums of model maxima. |
