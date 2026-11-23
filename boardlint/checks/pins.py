@@ -1,8 +1,9 @@
 """Per-pin requirements from part models, plus generic 'must not float' rules."""
 from __future__ import annotations
+import re
 from . import check, F
 from .common import can_drive, model_basis, names, PASSIVE_KINDS, supply_v
-from ..classify import pulls, caps_to_ground, parse_value, fmt_r, fmt_c, signal_group, group_pins
+from ..classify import pulls, caps_to_ground, parse_value, fmt_r, fmt_c, signal_group, group_pins, norm_pin_name
 from ..power import supply_net_of
 
 
@@ -112,13 +113,22 @@ def floating_control(d):
         if c.dnp or c.kind in PASSIVE_KINDS or c.kind in ('CONN', 'SW'):
             continue
         for p in c.pins.values():
+            if p.role in ('enable', 'reset') and p.net and p.spec.get('active') in ('high', 'low'):
+                n = d.net_of(p)
+                en_high = (p.spec['active'] == 'high') == (p.role == 'enable')     # level at which the part runs
+                if (n.is_ground and en_high) or (n.is_power and not n.is_ground and not en_high):
+                    yield F('pin.floating_control', 'error', f"{p.label} is tied to {n.name}: {c.ref} is held "
+                            f"{'off' if p.role == 'enable' else 'in reset'}",
+                            f"{c.desc}: the pin is active {p.spec['active']} and is wired straight to "
+                            f"{'ground' if n.is_ground else 'a supply'}, so the part never runs.",
+                            refs=[c.ref], nets=[n.name], basis=model_basis(c), confidence='high')
             if p.role in ('enable', 'reset') and not any('not_floating' in r for r in p.spec.get('require') or []):
                 pull = p.spec.get('internal_pull')
                 if pull in ('up', 'down'):
                     continue
                 ok, why = _has_level(d, p)
                 if not ok:
-                    yield F('pin.floating_control', 'error' if c.model else 'warning',
+                    yield F('pin.floating_control', 'error' if c.model else 'warning' if p.role == 'enable' else 'info',
                             f"{p.label} ({p.role}) has no defined level",
                             f"{c.desc}: {why}. A floating {p.role} pin makes the part start or stop at random; "
                             f"check the datasheet for an internal pull.", refs=[c.ref], nets=[p.net] if p.net else [],
@@ -173,3 +183,48 @@ def strapping(d):
                             f"Whatever is attached must not hold the wrong level while the module comes out of reset.",
                             refs=[c.ref] + sorted({q.comp.ref for q in others})[:4], nets=[n.name],
                             basis=model_basis(c), confidence='medium')
+
+
+_VHINT = re.compile(r'(?<![\d.])(\d)V(\d)(?!\d)|(?<![\d.])(\d+(?:\.\d+)?)\s?V(?![A-Za-z0-9])')
+_CORE = re.compile(r'^(VDDCORE|VCORE|VCAP\d*|VDD_?CORE|DVDD_?CORE|VREGOUT|REGOUT)$', re.I)
+
+
+@check('pin.name_voltage', 'power', doc="A pin whose name states a voltage (1V8, '0/1.8V', 3V3) sits on a net at that voltage")
+def name_voltage(d):
+    from .power_checks import net_levels
+    from ..power import supply_net_of
+    seen = set()
+    for c in d.components.values():
+        if c.dnp or c.kind in PASSIVE_KINDS or c.kind in ('SW', 'TP') or (c.model and c.model.get('supplies')):
+            continue
+        for p in c.pins.values():
+            n = d.net_of(p)
+            if n is None or n.is_ground or not p.name:
+                continue
+            if _CORE.match(norm_pin_name(p.name)) and n.is_power and n.vmin is not None and n.vmin > 2.0 \
+                    and not n.vsrc.startswith(c.ref):
+                if (c.ref, n.name, 'core') not in seen:
+                    seen.add((c.ref, n.name, 'core'))
+                    yield F('pin.name_voltage', 'warning', f"{p.label} is tied to {n.name} ({n.vmin:g}-{n.vmax:g} V)",
+                            f"{c.desc}: pins with this name are normally the output of the part's internal core "
+                            f"regulator (1.0 to 1.8 V) and want only a capacitor. Tying one to a main rail can "
+                            f"destroy the part. Check the datasheet.", refs=[c.ref], nets=[n.name],
+                            basis='pin name (no part model)', confidence='low')
+                continue
+            vals = [float(f"{a}.{b}") if a else float(x) for a, b, x in _VHINT.findall(p.name)]
+            vals = [v for v in vals if 0.8 <= v <= 60]
+            if not vals:
+                continue
+            hint = max(vals)
+            vmax, vmin, src = net_levels(d, n, exclude=c)
+            if vmax is None:
+                continue
+            if vmax > hint * 1.15 + 0.1:
+                key = (c.ref, p.number)
+                if key in seen:
+                    continue
+                seen.add(key)
+                yield F('pin.name_voltage', 'warning', f"{p.label} is a {hint:g} V pin on a net that reaches {vmax:g} V",
+                        f"{c.desc}: the pin name says {hint:g} V; net {n.name} is {src}.", refs=[c.ref], nets=[n.name],
+                        evidence={'pin_name_voltage': hint, 'net_vmax': vmax},
+                        basis='voltage stated in the pin name (no part model)', confidence='low')

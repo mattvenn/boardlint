@@ -1,0 +1,57 @@
+id: rp2040
+match:
+  value: ["RP2040*"]
+  lib: ["RP2040*"]
+kind: IC
+class: mcu
+description: Raspberry Pi RP2040 dual Cortex-M0+ microcontroller, QFN-56
+datasheet: "Raspberry Pi RP2040 datasheet, section 1.4.3 (GPIO functions)"
+provenance:
+  source: "written from memory of the GPIO function table; the datasheet was not open"
+  verified: false
+  notes: >
+    Function pattern of the table: I2C SDA on even GPIOs, SCL on odd; UART TX on GPIO n with
+    n mod 4 = 0, RX on 1 (CTS 2, RTS 3); SPI RX on 0, CSn on 1, SCK on 2, TX on 3. Supply range and
+    pin limits are from memory as well. Review against the datasheet before relying on a finding.
+supplies:
+  - pins: [IOVDD]
+    vmin: 1.62
+    vmax: 3.63
+    abs_max: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1, note: "100 nF per IOVDD pin (hardware design guide)"}
+io: {abs_max_over_supply: 0.5, tolerant_5v: false}
+pins:
+  "GPIO0": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO1": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  "GPIO2": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck]}
+  "GPIO3": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi]}
+  "GPIO4": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO5": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  "GPIO6": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck]}
+  "GPIO7": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi]}
+  "GPIO8": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO9": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  "GPIO10": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck]}
+  "GPIO11": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi]}
+  "GPIO12": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO13": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  "GPIO14": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck]}
+  "GPIO15": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi]}
+  "GPIO16": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO17": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  "GPIO18": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck]}
+  "GPIO19": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi]}
+  "GPIO20": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO21": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  "GPIO22": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck]}
+  "GPIO23": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi]}
+  "GPIO24": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO25": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  "GPIO26_ADC0/GPIO26": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck]}
+  "GPIO27_ADC1/GPIO27": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi]}
+  "GPIO28_ADC2/GPIO28": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}
+  "GPIO29_ADC3/GPIO29": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}
+  USB_DP: {role: usb_dp}
+  USB_DM: {role: usb_dm}
+  RUN: {role: reset, active: low, internal_pull: up}

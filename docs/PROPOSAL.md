@@ -73,7 +73,7 @@ regulator and FET parameters, a simulation binding, and known errata. Extraction
 
 Sixteen models were extracted for the test board in about twelve minutes of unattended work.
 Fourteen are marked verified (every number read from the datasheet in the repository); two had no
-datasheet and say so.
+datasheet and say so. A seventeenth (RP2040 pin functions) was written from memory and is marked unverified.
 
 ### Honest findings
 
@@ -84,14 +84,14 @@ unmodelled part means "not checked".
 
 ## What exists today (v0.1)
 
-24 checks. `python3 -m boardlint checks` lists them.
+28 checks. `python3 -m boardlint checks` lists them.
 
 | Family | Checks | State |
 |---|---|---|
-| Protocol | `uart.direction`, `i2c.bus`, `spi.bus`, `led.chain`, `usb.wiring` | Working. SPI is tested only on synthetic designs. |
-| Pins | `pin.requirements`, `pin.floating_control`, `mcu.strapping` | Working; depends on models. |
+| Protocol | `uart.direction`, `i2c.bus`, `spi.bus`, `led.chain`, `usb.wiring`, `mcu.alt_function` | Working. SPI is tested only on synthetic designs. `mcu.alt_function` has one MCU (RP2040) so far. |
+| Pins | `pin.requirements`, `pin.floating_control`, `mcu.strapping`, `pin.name_voltage`, `footprint.pin_map` | Working; the first three depend on models. |
 | Power | `power.rails`, `power.supply_range`, `power.pin_voltage`, `power.logic_level`, `power.regulator`, `power.budget`, `decoupling.per_part`, `decoupling.regulator_caps` | Working. Currents are worst-case sums of model maxima. |
-| Ratings | `ratings.passives`, `ratings.fets` | Working. Capacitor voltage ratings need a property on the part; most schematics have none. |
+| Ratings | `ratings.passives`, `ratings.fets`, `polarity.polarised_parts` | Working. Capacitor voltage ratings need a property on the part; most schematics have none. |
 | Layout | `layout.coupling`, `layout.return_path`, `layout.track_current` | Working as estimates. Closed-form capacitance, no field solver. |
 | Simulation | `power.droop` (ngspice), `sim.i2c`, `sim.led_chain` (Icarus Verilog) | Working for LDOs, I2C targets and single-wire LEDs. |
 
@@ -102,11 +102,13 @@ Two methods, because a clean report on a good board proves nothing.
 1. **Fault injection** (`tools/fault_report.py`, `tests/test_dino.py`). Start from a board believed
    good, apply one classic mistake in memory (swap SDA/SCL, leave off a pull-up, reverse an LED,
    tie both CC pins to one resistor, ...), and require a new finding from the expected check.
-   Currently 22 faults, 22 flagged. The first run flagged 20; the two misses and two
+   Currently 25 faults, 25 flagged. The first run flagged 20 of 22; the two misses and two
    caught-for-the-wrong-reason cases became fixes.
 2. **Historical bugs.** Public KiCad repositories where a commit fixes a real hardware mistake:
-   check out the parent, expect a finding; check out the fix, expect it gone. See
-   [regression-corpus.md](regression-corpus.md) for the candidates and results.
+   check out the parent, expect a finding; check out the fix, expect it gone. Eight so far
+   (`tools/regress.py`): three were flagged on the first, blind run; six after three checks
+   were added because of the misses; two cannot be detected from the design files.
+   See [regression-corpus.md](regression-corpus.md).
 
 False-positive rate is tracked the same way: every warning on the reference board is triaged by
 hand in [dino-board-review.md](dino-board-review.md).

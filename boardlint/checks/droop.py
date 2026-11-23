@@ -94,15 +94,17 @@ def trace_rl(d, net, a, b):
     if not d.board or not a or not b:
         return 0.02, 5e-9, 'no board: 20 mohm, 5 nH assumed'
     length = max(dist(a, b) * 1.4, 1.0)
-    ws = [t.width for t in d.board.tracks if t.net == net.name]
+    tr = [t for t in d.board.tracks if t.net == net.name and t.length > 0]
+    ws = [t.width for t in tr]
     in_zone = any(z.net == net.name for z in d.board.zones)
-    w = max(min(ws), 0.1) if ws else 1.0
+    # width that gives the same resistance as the net's tracks laid end to end
+    w = max(sum(t.length for t in tr) / sum(t.length / t.width for t in tr), 0.1) if tr else 1.0
     if in_zone and not ws:
         w = 3.0
     t = d.board.copper_um * 1e-3
     r = 1.72e-5 * length / (w * t)                                   # ohm, copper resistivity in ohm*mm
     l = 2e-10 * length * (math.log(2 * length / (w + t)) + 0.5)      # H, straight flat conductor
-    return r, l, f"{length:.0f} mm of {w:g} mm track: {r * 1000:.0f} mohm, {l * 1e9:.0f} nH"
+    return r, l, f"{length:.0f} mm (pad to pad x 1.4) of {w:.2f} mm track: {r * 1000:.0f} mohm, {l * 1e9:.0f} nH"
 
 
 def build_netlist(p):

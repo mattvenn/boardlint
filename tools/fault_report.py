@@ -64,6 +64,14 @@ FAULTS = [
      ['decoupling.per_part']),
     ('ldo-5v-in', 'regulator input taken from a 12 V rail',
      lambda d: fz.move_pin(d, fz.pin(d, 'U3', 'VIN'), '+12V'), ['power.supply_range']),
+    # two mistakes this board really had, found by its own design review and fixed before the first commit
+    ('hist-divider-vih', 'as first drawn: CHG_STAT and VBUS_DET dividers 100k/100k (half of a sagging VBUS is below VIH)',
+     lambda d: (fz.set_value(d, 'R9', '100k'), fz.set_value(d, 'R19', '100k')), ['power.logic_level']),
+    ('hist-cap-bias', 'as first drawn: regulator capacitors C3, C4 were 1 uF 0402 (too little left under DC bias)',
+     lambda d: [(fz.set_value(d, r, '1uF'), setattr(d.components[r], 'footprint', 'Capacitor_SMD:C_0402_1005Metric'))
+                for r in ('C3', 'C4')], ['decoupling.regulator_caps']),
+    ('ldo-en-low', 'regulator enable tied to ground',
+     lambda d: fz.move_pin(d, fz.pin(d, 'U3', 'CE'), 'GND'), ['pin.floating_control']),
     ('fet-gate', 'Q2 gate pull-down path removed (R13): P-FET never turns on',
      lambda d: fz.remove(d, 'R13'), ['ratings.fets', 'pin.floating_control', 'power.rails']),
 ]

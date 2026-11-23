@@ -119,6 +119,7 @@ def load_schematic(root_path: str):
     names = defaultdict(list)  # node -> [(priority, name)]
     global_nodes = defaultdict(list)   # global/power name -> nodes
     cache = {}
+    unannotated = [0]
     base_dir = os.path.dirname(os.path.abspath(root_path))
 
     def read(path):
@@ -192,6 +193,9 @@ def load_schematic(root_path: str):
                     for pth in children(proj, 'path'):
                         if str(pth[1]) == inst_path:
                             ref = str(value(pth, 'reference', ref))
+            if ref.endswith('?') and not ref.startswith('#'):
+                ref = f"{ref}{str(value(s, 'uuid', ''))[:6]}"      # not annotated yet: keep parts apart
+                unannotated[0] += 1
             upins = [p for p in lsym['pins'] if p['unit'] in (0, unit) and p['style'] in (0, style)]
             placed = None
             if mirror and len(upins) > 1:
@@ -253,6 +257,9 @@ def load_schematic(root_path: str):
         return hier
 
     do_sheet(os.path.abspath(root_path), '', '/')
+    if unannotated[0]:
+        notes.append(f"{unannotated[0]} symbol(s) are not annotated (reference ends in '?'): shown with a "
+                     f"suffix from their UUID; multi-unit parts are not merged")
     for nm, nodes in global_nodes.items():
         for n in nodes[1:]:
             uf.union(nodes[0], n)

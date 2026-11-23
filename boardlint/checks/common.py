@@ -23,8 +23,11 @@ def role_groups(d: Design, roles):
 
 def is_controller_pin(p: Pin) -> bool:
     """A pin that could be the host side of a bus: MCU GPIO, or a connector pin (off-board host)."""
-    return p.role == 'gpio' or p.role.startswith('spi_ctrl') or p.comp.kind == 'CONN' or \
-        (p.comp.model or {}).get('class') in ('mcu', 'mcu_module')
+    if p.role == 'gpio' or p.role.startswith('spi_ctrl') or p.comp.kind == 'CONN' or \
+            (p.comp.model or {}).get('class') in ('mcu', 'mcu_module'):
+        return True
+    # no model: a general-purpose pin of some IC may well be the host
+    return p.comp.kind == 'IC' and not p.comp.model and not p.role and p.etype in ('bidirectional', 'output', 'tri_state')
 
 
 def is_active_pin(p: Pin) -> bool:
@@ -47,6 +50,11 @@ def supply_v(d: Design, c: Component):
     n = supply_net_of(d, c)
     if n is None or n.vmin is None:
         return None
+    if not (c.model and c.model.get('supplies')):
+        rails = {q.net for q in c.pins.values() if q.etype == 'power_in' and q.net and not d.nets[q.net].is_ground}
+        levels = {(d.nets[r].vmin, d.nets[r].vmax) for r in rails}
+        if len(levels) > 1:
+            return None          # level shifter, FPGA with several I/O banks...: cannot tell without a model
     return n.vmin, n.vmax, n.name
 
 

@@ -45,7 +45,8 @@ def supply_range(d):
             if s.get('abs_max') is not None and n.vmax > float(s['abs_max']):
                 yield F('power.supply_range', 'error', f"{c.value} {p.name}: {n.name} can reach {n.vmax:g} V, absolute maximum is {s['abs_max']:g} V",
                         c.model.get("description", c.value) + ".", refs=same, nets=[n.name], evidence=ev, basis=model_basis(c), confidence='high')
-            elif s.get('vmax') is not None and n.vmax > float(s['vmax']) + 1e-6:
+            elif s.get('vmax') is not None and n.vmax > float(s['vmax']) + 1e-6 and \
+                    not (c.model.get('class') == 'tvs' and n.vmax <= float(s['vmax']) * 1.06):
                 yield F('power.supply_range', 'warning', f"{c.value} {p.name}: {n.name} can reach {n.vmax:g} V, above the operating maximum of {s['vmax']:g} V",
                         c.model.get("description", c.value) + ".", refs=same, nets=[n.name], evidence=ev, basis=model_basis(c), confidence='high')
             if s.get('vmin') is not None and n.vmin < float(s['vmin']) - 1e-6:
@@ -123,6 +124,8 @@ def pin_voltage(d):
                 continue
             if (c.model or {}).get('fet') or (c.model or {}).get('diode') or (c.model or {}).get('fuse') or (c.model or {}).get('switch'):
                 continue
+            if not c.model and re.match(r'^(VBUS|VIN|VCC|VDD|VBAT|VSYS|VS|V\+|VOUT|PWR|VPP|HV|SENSE)', p.name or '', re.I):
+                continue          # no model: a pin named like a supply or sense input is meant to see that rail
             lim, why = _pin_limit(d, c, p)
             if lim is None:
                 continue

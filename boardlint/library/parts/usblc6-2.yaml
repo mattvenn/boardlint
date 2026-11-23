@@ -37,3 +37,7 @@ tvs:
   i_leak_max_na: 150
   esd_contact_kv: 15
   esd_air_kv: 15
+
+# Pins 1 and 6 are the two ends of line I/O1, pins 3 and 4 of line I/O2: each pair is one node
+# inside the part (flow-through layout).  Added by hand from the pinout drawing; not re-read from the PDF.
+internal_links: [["#1", "#6"], ["#3", "#4"]]

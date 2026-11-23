@@ -1,0 +1,1227 @@
+{
+ "tool": "boardlint",
+ "version": "0.1.0",
+ "design": "dinolight",
+ "sources": [
+  "/home/user/testdata/dino-board/dinolight.kicad_sch",
+  "/home/user/testdata/dino-board/dinolight.kicad_pcb"
+ ],
+ "netlist_source": "pcb",
+ "notes": [
+  "schematic and board netlists agree (84 multi-pin nets)"
+ ],
+ "summary": {
+  "error": 1,
+  "warning": 12,
+  "info": 31
+ },
+ "checks": [
+  {
+   "id": "decoupling.per_part",
+   "status": "ran",
+   "detail": "4 finding(s), 0.00 s"
+  },
+  {
+   "id": "decoupling.regulator_caps",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "footprint.pin_map",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "i2c.bus",
+   "status": "ran",
+   "detail": "5 finding(s), 0.00 s"
+  },
+  {
+   "id": "layout.coupling",
+   "status": "ran",
+   "detail": "8 finding(s), 0.52 s"
+  },
+  {
+   "id": "layout.return_path",
+   "status": "ran",
+   "detail": "6 finding(s), 0.35 s"
+  },
+  {
+   "id": "layout.track_current",
+   "status": "ran",
+   "detail": "2 finding(s), 0.00 s"
+  },
+  {
+   "id": "led.chain",
+   "status": "ran",
+   "detail": "4 finding(s), 0.00 s"
+  },
+  {
+   "id": "mcu.alt_function",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "mcu.strapping",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
+  },
+  {
+   "id": "pin.floating_control",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "pin.name_voltage",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "pin.requirements",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
+  },
+  {
+   "id": "polarity.polarised_parts",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "power.budget",
+   "status": "ran",
+   "detail": "2 finding(s), 0.00 s"
+  },
+  {
+   "id": "power.droop",
+   "status": "ran",
+   "detail": "1 finding(s), 0.84 s"
+  },
+  {
+   "id": "power.logic_level",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "power.pin_voltage",
+   "status": "ran",
+   "detail": "2 finding(s), 0.01 s"
+  },
+  {
+   "id": "power.rails",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
+  },
+  {
+   "id": "power.regulator",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
+  },
+  {
+   "id": "power.supply_range",
+   "status": "ran",
+   "detail": "2 finding(s), 0.00 s"
+  },
+  {
+   "id": "ratings.fets",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
+  },
+  {
+   "id": "ratings.passives",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
+  },
+  {
+   "id": "sim.i2c",
+   "status": "ran",
+   "detail": "1 finding(s), 0.02 s"
+  },
+  {
+   "id": "sim.led_chain",
+   "status": "ran",
+   "detail": "1 finding(s), 0.04 s"
+  },
+  {
+   "id": "spi.bus",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "uart.direction",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "usb.wiring",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  }
+ ],
+ "parts": [
+  {
+   "ref": "D1",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D10",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D11",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D12",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D13",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D14",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D15",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D16",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D17",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D18",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D19",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D2",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D20",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D21",
+   "value": "SK6812MINI-E",
+   "kind": "LED",
+   "model": "sk6812mini-e"
+  },
+  {
+   "ref": "D23",
+   "value": "1N4148W",
+   "kind": "D",
+   "model": "1n4148w"
+  },
+  {
+   "ref": "D3",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D4",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D5",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D6",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D7",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D8",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "D9",
+   "value": "SK6812SIDE-A",
+   "kind": "LED",
+   "model": "sk6812-side-a"
+  },
+  {
+   "ref": "F1",
+   "value": "1.1A",
+   "kind": "FUSE",
+   "model": "polyfuse-1812-1.1a"
+  },
+  {
+   "ref": "J1",
+   "value": "USB-C",
+   "kind": "CONN",
+   "model": "usb-c-hro-type-c-31-m-12"
+  },
+  {
+   "ref": "Q1",
+   "value": "AO3401A",
+   "kind": "Q",
+   "model": "ao3401a"
+  },
+  {
+   "ref": "Q2",
+   "value": "AO3401A",
+   "kind": "Q",
+   "model": "ao3401a"
+  },
+  {
+   "ref": "Q3",
+   "value": "2N7002",
+   "kind": "Q",
+   "model": "2n7002"
+  },
+  {
+   "ref": "SW1",
+   "value": "MSK12C02",
+   "kind": "SW",
+   "model": "msk12c02"
+  },
+  {
+   "ref": "SW2",
+   "value": "RESET",
+   "kind": "SW",
+   "model": "ts-1187a"
+  },
+  {
+   "ref": "SW3",
+   "value": "BOOT",
+   "kind": "SW",
+   "model": "ts-1187a"
+  },
+  {
+   "ref": "U1",
+   "value": "USBLC6-2SC6",
+   "kind": "IC",
+   "model": "usblc6-2"
+  },
+  {
+   "ref": "U2",
+   "value": "MCP73831T-2ACI/OT",
+   "kind": "IC",
+   "model": "mcp73831"
+  },
+  {
+   "ref": "U3",
+   "value": "RT9080-33GJ5",
+   "kind": "IC",
+   "model": "rt9080-33"
+  },
+  {
+   "ref": "U4",
+   "value": "ESP32-S3-MINI-1-N8",
+   "kind": "IC",
+   "model": "esp32-s3-mini-1"
+  },
+  {
+   "ref": "U5",
+   "value": "LIS2DH12TR",
+   "kind": "IC",
+   "model": "lis2dh12"
+  },
+  {
+   "ref": "U6",
+   "value": "TLV803SDBZR",
+   "kind": "IC",
+   "model": "tlv803s"
+  },
+  {
+   "ref": "U7",
+   "value": "MPR121QR2",
+   "kind": "IC",
+   "model": "mpr121"
+  }
+ ],
+ "findings": [
+  {
+   "check": "power.droop",
+   "severity": "error",
+   "title": "+3V3 sags to 2.04 V under load",
+   "detail": "U4 (ESP32-S3-MINI-1-N8) needs 3 V. Worst corner: minimum input, everything switching (source at 3.00 V): +3V3 dips to 2.04 V and settles at 2.04 V, with +BATT pulled down to 2.42 V across 0.45 ohm of source path. At nominal input on its own the rail holds 3.06 V.",
+   "refs": [
+    "U3",
+    "U4"
+   ],
+   "nets": [
+    "+3V3",
+    "+BATT"
+   ],
+   "evidence": {
+    "load_step": "95 -> 356 mA in 10 us (U4 355 mA, U7 0.393 mA, U5 0.185 mA, U6 0.03 mA)",
+    "source_path": "0.45 ohm: Q1 Rds(on) 85 mohm at |Vgs| 2.5 V; SJ1 10 mohm; F1 fuse 0.21 ohm max; cell and its protection circuit 0.15 ohm assumed",
+    "output_caps_effective": "20.8uF",
+    "copper": "150 mm (pad to pad x 1.4) of 0.40 mm track: 185 mohm, 212 nH",
+    "regulator_model": "PI loop, 50 kHz crossover (assumed), dropout 0.88 ohm, limit 780 mA",
+    "other_loads_on_input": "914 mA (D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, D4 43.5 mA, +17 more)",
+    "nominal input, this rail only": "Vin 3.60 V: +3V3 min 3.058 V, settles 3.058 V; +BATT min 3.438 V",
+    "minimum input, this rail only": "Vin 3.00 V: +3V3 min 2.458 V, settles 2.458 V; +BATT min 2.838 V",
+    "nominal input, everything switching": "Vin 3.60 V: +3V3 min 2.643 V, settles 2.643 V; +BATT min 3.023 V",
+    "minimum input, everything switching": "Vin 3.00 V: +3V3 min 2.043 V, settles 2.043 V; +BATT min 2.423 V"
+   },
+   "basis": "part model parts/rt9080-33.yaml (verified against datasheet): dropout, current limit; simplified ngspice model, see docs/simulation.md. Source resistance and loop bandwidth are assumptions unless set in boardlint.yaml",
+   "confidence": "low"
+  },
+  {
+   "check": "decoupling.per_part",
+   "severity": "warning",
+   "title": "U5 supply +3V3: nearest 100nF+ capacitor is 8.4 mm away",
+   "detail": "U5 (LIS2DH12TR) wants 1 within 6 mm of its supply pin; closest are C34 at 8.4 mm, C33 at 9.7 mm, C4 at 23.8 mm (pad to pad, straight line). Distance adds loop inductance: about 1 nH per mm of trace.",
+   "refs": [
+    "U5",
+    "C34"
+   ],
+   "nets": [
+    "+3V3"
+   ],
+   "evidence": {
+    "required_mm": 6.0,
+    "nearest_mm": 8.39
+   },
+   "basis": "part model parts/lis2dh12.yaml (verified against datasheet): 100 nF ceramic as near as possible to pin 9 (Vdd); distance measured on the board",
+   "confidence": "high"
+  },
+  {
+   "check": "decoupling.per_part",
+   "severity": "warning",
+   "title": "U6 supply +3V3: nearest 100nF+ capacitor is 11.4 mm away",
+   "detail": "U6 (TLV803SDBZR) wants 1 within 6 mm of its supply pin; closest are C36 at 11.4 mm, C37 at 13.8 mm, C6 at 31.9 mm (pad to pad, straight line). Distance adds loop inductance: about 1 nH per mm of trace.",
+   "refs": [
+    "U6",
+    "C36"
+   ],
+   "nets": [
+    "+3V3"
+   ],
+   "evidence": {
+    "required_mm": 6.0,
+    "nearest_mm": 11.37
+   },
+   "basis": "part model parts/tlv803s.yaml (verified against datasheet): 0.1 uF ceramic close to VDD (good practice; also 'to ensure best stability of the threshold voltage'); distance measured on the board",
+   "confidence": "high"
+  },
+  {
+   "check": "decoupling.per_part",
+   "severity": "warning",
+   "title": "U7 supply +3V3: nearest 100nF+ capacitor is 11.4 mm away",
+   "detail": "U7 (MPR121QR2) wants 1 within 6 mm of its supply pin; closest are C36 at 11.4 mm, C37 at 19.8 mm, C6 at 38.4 mm (pad to pad, straight line). Distance adds loop inductance: about 1 nH per mm of trace.",
+   "refs": [
+    "U7",
+    "C36"
+   ],
+   "nets": [
+    "+3V3"
+   ],
+   "evidence": {
+    "required_mm": 6.0,
+    "nearest_mm": 11.42
+   },
+   "basis": "part model parts/mpr121.yaml (verified against datasheet): VDD is always decoupled with a 0.1 uF ceramic capacitor to VSS; distance measured on the board",
+   "confidence": "high"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "warning",
+   "title": "USB_DM couples into PAD_SPINE6 (capacitive-touch electrode of U7)",
+   "detail": "USB_DM (USB data) runs 31 mm side by side on one layer, down to 1.44 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.36 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.36 pF; closed-form estimate, not a field solve.",
+   "refs": [],
+   "nets": [
+    "PAD_SPINE6",
+    "USB_DM"
+   ],
+   "evidence": {
+    "coupled_C_est_pF": 0.362,
+    "side_by_side_mm": 30.5,
+    "min_gap_mm": 1.44,
+    "crossing_over_mm": 0.0,
+    "of_which_over_ground_mm": 28.7,
+    "aggressor": "USB_DM: USB data, 3.366 V swing",
+    "victim": "PAD_SPINE6: capacitive-touch electrode of U7"
+   },
+   "basis": "coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:)",
+   "confidence": "low"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "warning",
+   "title": "USB_DP couples into PAD_SPINE4 (capacitive-touch electrode of U7)",
+   "detail": "USB_DP (USB data) runs 25 mm side by side on one layer, down to 1.34 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.31 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.31 pF; closed-form estimate, not a field solve.",
+   "refs": [],
+   "nets": [
+    "PAD_SPINE4",
+    "USB_DP"
+   ],
+   "evidence": {
+    "coupled_C_est_pF": 0.307,
+    "side_by_side_mm": 25.2,
+    "min_gap_mm": 1.34,
+    "crossing_over_mm": 0.0,
+    "of_which_over_ground_mm": 25.2,
+    "aggressor": "USB_DP: USB data, 3.366 V swing",
+    "victim": "PAD_SPINE4: capacitive-touch electrode of U7"
+   },
+   "basis": "coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:)",
+   "confidence": "low"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "warning",
+   "title": "USB_DP couples into PAD_SPINE6 (capacitive-touch electrode of U7)",
+   "detail": "USB_DP (USB data) runs 33 mm side by side on one layer, down to 0.62 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.72 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.72 pF; closed-form estimate, not a field solve.",
+   "refs": [],
+   "nets": [
+    "PAD_SPINE6",
+    "USB_DP"
+   ],
+   "evidence": {
+    "coupled_C_est_pF": 0.723,
+    "side_by_side_mm": 32.6,
+    "min_gap_mm": 0.62,
+    "crossing_over_mm": 0.0,
+    "of_which_over_ground_mm": 29.7,
+    "aggressor": "USB_DP: USB data, 3.366 V swing",
+    "victim": "PAD_SPINE6: capacitive-touch electrode of U7"
+   },
+   "basis": "coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:)",
+   "confidence": "low"
+  },
+  {
+   "check": "layout.return_path",
+   "severity": "warning",
+   "title": "SPINE_DATA: 51% of its 32 mm has no ground copper on the other layer",
+   "detail": "SPINE_DATA (addressable-LED data (800 kHz, nanosecond edges)). Where the reference copper is missing the return current detours, the loop area grows, and the trace both radiates and picks up more. 16 stretch(es) without cover.",
+   "refs": [],
+   "nets": [
+    "SPINE_DATA"
+   ],
+   "evidence": {
+    "length_mm": 31.8,
+    "uncovered_mm": 16.3,
+    "stretches": 16
+   },
+   "basis": "filled ground zones in the board file, sampled every 0.5 mm along the tracks",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.track_current",
+   "severity": "warning",
+   "title": "0.4 mm supply tracks carry up to 1269 mA (+BATT, BAT_P1, BAT_P1F, BAT_RAW)",
+   "detail": "IPC-2221 gives 1.23 A for a 10 C rise at this width in 35 um copper. +BATT: 1269 mA, 160 mm at this width; BAT_P1: 1269 mA, 7 mm at this width; BAT_P1F: 1269 mA, 6 mm at this width; BAT_RAW: 1269 mA, 16 mm at this width. Not every segment carries a net's whole current: check the ones between the source and the loads, and widen or pour them. The resistance also costs voltage: see the droop result.",
+   "refs": [],
+   "nets": [
+    "+BATT",
+    "BAT_P1",
+    "BAT_P1F",
+    "BAT_RAW"
+   ],
+   "evidence": {
+    "narrowest_mm": 0.4,
+    "length_at_that_width_mm": 160.2,
+    "capacity_A": 1.23,
+    "load_max_mA": 1269,
+    "loads": "U4 355 mA, D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, +21 more",
+    "drop_mV_at_max": 249.8
+   },
+   "basis": "IPC-2221 external-layer formula; load is the sum of model maxima, all on at once",
+   "confidence": "low"
+  },
+  {
+   "check": "power.budget",
+   "severity": "warning",
+   "title": "F1 may carry 1269 mA; its hold current is 1100 mA",
+   "detail": "F1 (1.1A) feeds BAT_P1F. Sum of the maximum currents of everything behind it: U4 355 mA, D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, +21 more. This is the all-on worst case; if firmware limits it, record the limit in boardlint.yaml.",
+   "refs": [
+    "F1"
+   ],
+   "nets": [
+    "BAT_P1",
+    "BAT_P1F"
+   ],
+   "evidence": {
+    "through_mA_max": 1269,
+    "rating_mA": 1100.0,
+    "loads": "U4 355 mA, D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, +21 more"
+   },
+   "basis": "part model parts/polyfuse-1812-1.1a.yaml (NOT verified against datasheet)",
+   "confidence": "medium"
+  },
+  {
+   "check": "power.regulator",
+   "severity": "warning",
+   "title": "U3 drops out of regulation when +BATT is below 3.61 V at peak load",
+   "detail": "+BATT spans 3 to 4.2 V. Below 3.61 V with 356 mA drawn the output follows the input down, about 314 mV beneath it. U4 (ESP32-S3-MINI-1-N8) needs 3 V: at peak load that is lost once +BATT is under 3.31 V, well before 3 V. Expect brown-out resets on current peaks with a part-discharged source.",
+   "refs": [
+    "U3",
+    "U4"
+   ],
+   "nets": [
+    "+3V3",
+    "+BATT"
+   ],
+   "evidence": {
+    "load_max_mA": 355.6,
+    "load_typ_mA": 95.0,
+    "loads": "U4 355 mA, U7 0.393 mA, U5 0.185 mA, U6 0.03 mA",
+    "vin": "+BATT 3-4.2 V (U2 charger float voltage; 3.0 V empty cell assumed)",
+    "dropout": "530 mV at 600 mA, scaled to 314 mV at 356 mA",
+    "vin_needed": 3.614,
+    "brownout_below_vin": 3.31
+   },
+   "basis": "part model parts/rt9080-33.yaml (verified against datasheet): dropout; load is the sum of model maxima",
+   "confidence": "medium"
+  },
+  {
+   "check": "power.supply_range",
+   "severity": "warning",
+   "title": "SK6812MINI-E VDD: VLED can fall to 3 V, below the operating minimum of 3.7 V",
+   "detail": "SK6812 reverse-mount addressable RGB LED (3.2 x 2.8 mm class), 12 mA per colour, single-wire 800 kbit/s: out of specification over the bottom part of the rail's range.",
+   "refs": [
+    "D21"
+   ],
+   "nets": [
+    "VLED"
+   ],
+   "evidence": {
+    "rail": "VLED 3-4.2 V (+BATT through Q2)",
+    "part": "3.7-5.5 V, abs max 5.5 V"
+   },
+   "basis": "part model parts/sk6812mini-e.yaml (verified against datasheet)",
+   "confidence": "high"
+  },
+  {
+   "check": "power.supply_range",
+   "severity": "warning",
+   "title": "SK6812SIDE-A VDD: VLED can fall to 3 V, below the operating minimum of 3.7 V",
+   "detail": "SK6812 side-emitting addressable RGB LED, 4.0 x 2.0 x 1.6 mm, 12 mA per colour, single-wire 800 kbit/s: out of specification over the bottom part of the rail's range.",
+   "refs": [
+    "D1"
+   ],
+   "nets": [
+    "VLED"
+   ],
+   "evidence": {
+    "rail": "VLED 3-4.2 V (+BATT through Q2)",
+    "part": "3.7-5.5 V, abs max 5.5 V"
+   },
+   "basis": "part model parts/sk6812-side-a.yaml (verified against datasheet)",
+   "confidence": "high"
+  },
+  {
+   "check": "decoupling.per_part",
+   "severity": "info",
+   "title": "U4 supply +3V3: needs 1 x 22uF or more, the rail has 0 (30.4uF in total)",
+   "detail": "U4 (ESP32-S3-MINI-1-N8) pins U4.3(3V3). Capacitors on +3V3: 3 x 10uF, 4 x 100nF.",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "+3V3"
+   ],
+   "evidence": {},
+   "basis": "part model parts/esp32-s3-mini-1.yaml (verified against datasheet): C1 22 uF on VDD33 in the peripheral schematic (Figure 9-1)",
+   "confidence": "high"
+  },
+  {
+   "check": "i2c.bus",
+   "severity": "info",
+   "title": "I2C bus SDA / SCL address map",
+   "detail": "0x19 U5 LIS2DH12TR (U5.3(SA0/SDO)=1); 0x5A U7 MPR121QR2 (U7.4(ADDR) on GND)",
+   "refs": [
+    "U5",
+    "U7"
+   ],
+   "nets": [
+    "SCL",
+    "SDA"
+   ],
+   "evidence": {},
+   "basis": "",
+   "confidence": "high"
+  },
+  {
+   "check": "i2c.bus",
+   "severity": "info",
+   "title": "I2C net SCL leaves the board with 4.7k already fitted",
+   "detail": "Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one plugged in lowers the total. Budget for the 3 mA limit.",
+   "refs": [],
+   "nets": [
+    "SCL"
+   ],
+   "evidence": {
+    "pullups": {
+     "R18": "4.7k"
+    },
+    "effective": "4.7k",
+    "rail": "+3V3",
+    "r_min_3mA": "989R",
+    "bus_c_est_pF": 99,
+    "t_rise_ns": 393
+   },
+   "basis": "",
+   "confidence": "medium"
+  },
+  {
+   "check": "i2c.bus",
+   "severity": "info",
+   "title": "I2C net SDA leaves the board with 4.7k already fitted",
+   "detail": "Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one plugged in lowers the total. Budget for the 3 mA limit.",
+   "refs": [],
+   "nets": [
+    "SDA"
+   ],
+   "evidence": {
+    "pullups": {
+     "R17": "4.7k"
+    },
+    "effective": "4.7k",
+    "rail": "+3V3",
+    "r_min_3mA": "989R",
+    "bus_c_est_pF": 97,
+    "t_rise_ns": 385
+   },
+   "basis": "",
+   "confidence": "medium"
+  },
+  {
+   "check": "i2c.bus",
+   "severity": "info",
+   "title": "I2C pull-up on SCL (4.7k) is too weak for 400 kHz once a cable and module are plugged in",
+   "detail": "Estimated rise time 393 ns with about 99 pF (board alone: 194 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.",
+   "refs": [
+    "R18"
+   ],
+   "nets": [
+    "SCL"
+   ],
+   "evidence": {
+    "pullups": {
+     "R18": "4.7k"
+    },
+    "effective": "4.7k",
+    "rail": "+3V3",
+    "r_min_3mA": "989R",
+    "bus_c_est_pF": 99,
+    "t_rise_ns": 393
+   },
+   "basis": "I2C specification (UM10204) table 11: tr; bus capacitance is an estimate",
+   "confidence": "medium"
+  },
+  {
+   "check": "i2c.bus",
+   "severity": "info",
+   "title": "I2C pull-up on SDA (4.7k) is too weak for 400 kHz once a cable and module are plugged in",
+   "detail": "Estimated rise time 385 ns with about 97 pF (board alone: 186 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.",
+   "refs": [
+    "R17"
+   ],
+   "nets": [
+    "SDA"
+   ],
+   "evidence": {
+    "pullups": {
+     "R17": "4.7k"
+    },
+    "effective": "4.7k",
+    "rail": "+3V3",
+    "r_min_3mA": "989R",
+    "bus_c_est_pF": 97,
+    "t_rise_ns": 385
+   },
+   "basis": "I2C specification (UM10204) table 11: tr; bus capacitance is an estimate",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "info",
+   "title": "Net classes used for coupling: 27 aggressor, 28 victim net(s)",
+   "detail": "Aggressors: EYE_DATA, EYE_DIN, SPINE_1, SPINE_10, SPINE_11, SPINE_12, SPINE_13, SPINE_14, SPINE_15, SPINE_16, SPINE_17, SPINE_18, SPINE_19, SPINE_2.... Victims: EN, LDO_EN, PAD_FLIP_F, PAD_FLIP_R, PAD_SNOUT, PAD_SPINE1, PAD_SPINE2, PAD_SPINE3, PAD_SPINE4, PAD_SPINE5, PAD_SPINE6, PAD_SPINE7, PAD_SPINE8, PAD_TAIL, RST_OD, T_FLIP_F, T_FLIP_R, T_SNOUT, T_SPINE1, T_SPINE2....",
+   "refs": [],
+   "nets": [],
+   "evidence": {},
+   "basis": "",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "info",
+   "title": "SPINE_OUT couples into PAD_SPINE8 (capacitive-touch electrode of U7)",
+   "detail": "SPINE_OUT (addressable-LED data (800 kHz, nanosecond edges)) runs 7 mm directly above or below it. A fingertip changes an electrode by around a picofarad or less. 0.19 pF to a line toggling 3.3 V can show up as touch noise or false touches while that line is active. Estimated 0.19 pF; closed-form estimate, not a field solve.",
+   "refs": [],
+   "nets": [
+    "PAD_SPINE8",
+    "SPINE_OUT"
+   ],
+   "evidence": {
+    "coupled_C_est_pF": 0.19,
+    "side_by_side_mm": 0.0,
+    "min_gap_mm": null,
+    "crossing_over_mm": 6.9,
+    "of_which_over_ground_mm": 0.0,
+    "aggressor": "SPINE_OUT: addressable-LED data (800 kHz, nanosecond edges), 3.3 V swing",
+    "victim": "PAD_SPINE8: capacitive-touch electrode of U7"
+   },
+   "basis": "coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:)",
+   "confidence": "low"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "info",
+   "title": "USB_DM couples into PAD_SNOUT (capacitive-touch electrode of U7)",
+   "detail": "USB_DM (USB data) runs 7 mm side by side on one layer, down to 1.27 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.16 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.16 pF; closed-form estimate, not a field solve.",
+   "refs": [],
+   "nets": [
+    "PAD_SNOUT",
+    "USB_DM"
+   ],
+   "evidence": {
+    "coupled_C_est_pF": 0.157,
+    "side_by_side_mm": 7.5,
+    "min_gap_mm": 1.27,
+    "crossing_over_mm": 0.0,
+    "of_which_over_ground_mm": 0.0,
+    "aggressor": "USB_DM: USB data, 3.366 V swing",
+    "victim": "PAD_SNOUT: capacitive-touch electrode of U7"
+   },
+   "basis": "coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:)",
+   "confidence": "low"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "info",
+   "title": "USB_DM couples into PAD_SPINE2 (capacitive-touch electrode of U7)",
+   "detail": "USB_DM (USB data) runs 3 mm side by side on one layer, down to 0.95 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.08 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.08 pF; closed-form estimate, not a field solve.",
+   "refs": [],
+   "nets": [
+    "PAD_SPINE2",
+    "USB_DM"
+   ],
+   "evidence": {
+    "coupled_C_est_pF": 0.077,
+    "side_by_side_mm": 3.0,
+    "min_gap_mm": 0.95,
+    "crossing_over_mm": 0.0,
+    "of_which_over_ground_mm": 0.0,
+    "aggressor": "USB_DM: USB data, 3.366 V swing",
+    "victim": "PAD_SPINE2: capacitive-touch electrode of U7"
+   },
+   "basis": "coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:)",
+   "confidence": "low"
+  },
+  {
+   "check": "layout.coupling",
+   "severity": "info",
+   "title": "USB_DP couples into PAD_SNOUT (capacitive-touch electrode of U7)",
+   "detail": "USB_DP (USB data) runs 5 mm side by side on one layer, down to 0.45 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.13 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.13 pF; closed-form estimate, not a field solve.",
+   "refs": [],
+   "nets": [
+    "PAD_SNOUT",
+    "USB_DP"
+   ],
+   "evidence": {
+    "coupled_C_est_pF": 0.133,
+    "side_by_side_mm": 5.0,
+    "min_gap_mm": 0.45,
+    "crossing_over_mm": 0.0,
+    "of_which_over_ground_mm": 0.0,
+    "aggressor": "USB_DP: USB data, 3.366 V swing",
+    "victim": "PAD_SNOUT: capacitive-touch electrode of U7"
+   },
+   "basis": "coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:)",
+   "confidence": "low"
+  },
+  {
+   "check": "layout.return_path",
+   "severity": "info",
+   "title": "EYE_DATA: 72% of its 26 mm has no ground copper on the other layer",
+   "detail": "EYE_DATA (addressable-LED data (800 kHz, nanosecond edges)). Where the reference copper is missing the return current detours, the loop area grows, and the trace both radiates and picks up more. 10 stretch(es) without cover.",
+   "refs": [],
+   "nets": [
+    "EYE_DATA"
+   ],
+   "evidence": {
+    "length_mm": 25.6,
+    "uncovered_mm": 18.3,
+    "stretches": 10
+   },
+   "basis": "filled ground zones in the board file, sampled every 0.5 mm along the tracks",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.return_path",
+   "severity": "info",
+   "title": "SPINE_DIN: 49% of its 28 mm has no ground copper on the other layer",
+   "detail": "SPINE_DIN (addressable-LED data (800 kHz, nanosecond edges)). Where the reference copper is missing the return current detours, the loop area grows, and the trace both radiates and picks up more. 9 stretch(es) without cover.",
+   "refs": [],
+   "nets": [
+    "SPINE_DIN"
+   ],
+   "evidence": {
+    "length_mm": 27.7,
+    "uncovered_mm": 13.6,
+    "stretches": 9
+   },
+   "basis": "filled ground zones in the board file, sampled every 0.5 mm along the tracks",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.return_path",
+   "severity": "info",
+   "title": "SPINE_OUT: 70% of its 13 mm has no ground copper on the other layer",
+   "detail": "SPINE_OUT (addressable-LED data (800 kHz, nanosecond edges)). Where the reference copper is missing the return current detours, the loop area grows, and the trace both radiates and picks up more. 2 stretch(es) without cover.",
+   "refs": [],
+   "nets": [
+    "SPINE_OUT"
+   ],
+   "evidence": {
+    "length_mm": 13.4,
+    "uncovered_mm": 9.4,
+    "stretches": 2
+   },
+   "basis": "filled ground zones in the board file, sampled every 0.5 mm along the tracks",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.return_path",
+   "severity": "info",
+   "title": "USB_DM: 40% of its 105 mm has no ground copper on the other layer",
+   "detail": "USB_DM (USB data). Where the reference copper is missing the return current detours, the loop area grows, and the trace both radiates and picks up more. 26 stretch(es) without cover.",
+   "refs": [],
+   "nets": [
+    "USB_DM"
+   ],
+   "evidence": {
+    "length_mm": 104.7,
+    "uncovered_mm": 41.9,
+    "stretches": 26
+   },
+   "basis": "filled ground zones in the board file, sampled every 0.5 mm along the tracks",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.return_path",
+   "severity": "info",
+   "title": "USB_DP: 36% of its 96 mm has no ground copper on the other layer",
+   "detail": "USB_DP (USB data). Where the reference copper is missing the return current detours, the loop area grows, and the trace both radiates and picks up more. 23 stretch(es) without cover.",
+   "refs": [],
+   "nets": [
+    "USB_DP"
+   ],
+   "evidence": {
+    "length_mm": 96.2,
+    "uncovered_mm": 34.7,
+    "stretches": 23
+   },
+   "basis": "filled ground zones in the board file, sampled every 0.5 mm along the tracks",
+   "confidence": "medium"
+  },
+  {
+   "check": "layout.track_current",
+   "severity": "info",
+   "title": "VLED: about 148 mV lost in 132 mm of 0.4 mm track at 914 mA",
+   "detail": "If that length is in series with the load, it is 162 mohm.",
+   "refs": [],
+   "nets": [
+    "VLED"
+   ],
+   "evidence": {
+    "narrowest_mm": 0.4,
+    "length_at_that_width_mm": 131.6,
+    "capacity_A": 1.23,
+    "load_max_mA": 914,
+    "loads": "D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, D4 43.5 mA, +16 more",
+    "drop_mV_at_max": 147.7
+   },
+   "basis": "copper resistivity; assumes the narrow segments are in series",
+   "confidence": "low"
+  },
+  {
+   "check": "led.chain",
+   "severity": "info",
+   "title": "LED chain on EYE_DATA",
+   "detail": "1 LED(s): D21; driven by U4.30(IO48) through R15 (330R).",
+   "refs": [
+    "D21",
+    "U4"
+   ],
+   "nets": [
+    "EYE_DATA",
+    "EYE_DIN"
+   ],
+   "evidence": {},
+   "basis": "",
+   "confidence": "high"
+  },
+  {
+   "check": "led.chain",
+   "severity": "info",
+   "title": "LED chain on SPINE_DATA",
+   "detail": "20 LED(s): D1, D2, ... D20; driven by U4.27(IO47) through R14 (330R).",
+   "refs": [
+    "D1",
+    "U4"
+   ],
+   "nets": [
+    "SPINE_DATA",
+    "SPINE_DIN"
+   ],
+   "evidence": {},
+   "basis": "",
+   "confidence": "high"
+  },
+  {
+   "check": "led.chain",
+   "severity": "info",
+   "title": "U4.27(IO47) to D1 DIN: logic high is met in practice, not by the datasheet numbers",
+   "detail": "The LED input threshold rises to 2.73 V when VLED is at 4.2 V. The driver's guaranteed output high is 2.59 V, but that figure is at its rated load current; into a CMOS input it sits near 3.13 V.",
+   "refs": [
+    "U4",
+    "D1"
+   ],
+   "nets": [
+    "SPINE_DATA",
+    "SPINE_DIN"
+   ],
+   "evidence": {
+    "driver_rail": "+3V3 3.234-3.366 V",
+    "driver_voh_min": 2.59,
+    "led_rail": "VLED 3-4.2 V",
+    "led_vih": "1.95-2.73 V (0.65 x VDD)"
+   },
+   "basis": "part model parts/sk6812-side-a.yaml (verified against datasheet): VIH",
+   "confidence": "high"
+  },
+  {
+   "check": "led.chain",
+   "severity": "info",
+   "title": "U4.30(IO48) to D21 DIN: logic high is met in practice, not by the datasheet numbers",
+   "detail": "The LED input threshold rises to 2.73 V when VLED is at 4.2 V. The driver's guaranteed output high is 2.59 V, but that figure is at its rated load current; into a CMOS input it sits near 3.13 V.",
+   "refs": [
+    "U4",
+    "D21"
+   ],
+   "nets": [
+    "EYE_DATA",
+    "EYE_DIN"
+   ],
+   "evidence": {
+    "driver_rail": "+3V3 3.234-3.366 V",
+    "driver_voh_min": 2.59,
+    "led_rail": "VLED 3-4.2 V",
+    "led_vih": "1.95-2.73 V (0.65 x VDD)"
+   },
+   "basis": "part model parts/sk6812mini-e.yaml (verified against datasheet): VIH",
+   "confidence": "high"
+  },
+  {
+   "check": "mcu.strapping",
+   "severity": "info",
+   "title": "Strapping pin U4.4(IO0) is used (BOOT)",
+   "detail": "U4 (ESP32-S3-MINI-1-N8) samples this pin at reset (default: high; boot_high: SPI boot: normal boot from flash (IO46 any value); boot_low: joint download boot (UART0 / USB), needs IO46 low). Connected here: SW3.1. Whatever is attached must not hold the wrong level while the module comes out of reset.",
+   "refs": [
+    "U4",
+    "SW3"
+   ],
+   "nets": [
+    "BOOT"
+   ],
+   "evidence": {},
+   "basis": "part model parts/esp32-s3-mini-1.yaml (verified against datasheet)",
+   "confidence": "medium"
+  },
+  {
+   "check": "pin.requirements",
+   "severity": "info",
+   "title": "U4.7(IO3) must not float",
+   "detail": "U4 (ESP32-S3-MINI-1-N8): only TP8.1 on the net. GPIO3 has no internal pull; its strapping value must be controlled by an external circuit that cannot be high impedance (section 4.4). Applies when: only if EFUSE_STRAP_JTAG_SEL has been burnt to 1; with the default eFuses GPIO3 is ignored (Table 4-5).",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "IO3"
+   ],
+   "evidence": {},
+   "basis": "part model parts/esp32-s3-mini-1.yaml (verified against datasheet)",
+   "confidence": "high"
+  },
+  {
+   "check": "power.budget",
+   "severity": "info",
+   "title": "U2 charge current is 213 mA",
+   "detail": "R3 (4.7k) on U2.5(PROG). Check it against the cell (0.5 C is typical) and against what the USB source may supply.",
+   "refs": [
+    "U2",
+    "R3"
+   ],
+   "nets": [],
+   "evidence": {},
+   "basis": "part model parts/mcp73831.yaml (verified against datasheet): charge-current formula",
+   "confidence": "high"
+  },
+  {
+   "check": "power.pin_voltage",
+   "severity": "info",
+   "title": "U4.21(IO17) can see 3.667 V; its limit is 3.53 V",
+   "detail": "Net CHG_STAT (divider R10/R19 from CHG_STAT_5V (U2.1(STAT) high = VBUS)). Limit: supply (+3V3 at its minimum 3.234 V) + 0.3 V. The excess is within a few hundred millivolts: it arises when the two supplies are at opposite ends of their ranges. The source impedance (100k) limits the current into the pin's protection diode to about 20 uA: outside the datasheet limit, harmless in practice. Also note the pin is driven while the part is unpowered if this source comes up first.",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "CHG_STAT"
+   ],
+   "evidence": {
+    "net_vmax": 3.667,
+    "pin_limit": 3.534
+   },
+   "basis": "part model parts/esp32-s3-mini-1.yaml (verified against datasheet)",
+   "confidence": "high"
+  },
+  {
+   "check": "power.pin_voltage",
+   "severity": "info",
+   "title": "U4.22(IO18) can see 3.667 V; its limit is 3.53 V",
+   "detail": "Net VBUS_DET (divider R8/R9 from VBUS (USB VBUS range (name))). Limit: supply (+3V3 at its minimum 3.234 V) + 0.3 V. The excess is within a few hundred millivolts: it arises when the two supplies are at opposite ends of their ranges. The source impedance (100k) limits the current into the pin's protection diode to about 20 uA: outside the datasheet limit, harmless in practice. Also note the pin is driven while the part is unpowered if this source comes up first.",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "VBUS_DET"
+   ],
+   "evidence": {
+    "net_vmax": 3.667,
+    "pin_limit": 3.534
+   },
+   "basis": "part model parts/esp32-s3-mini-1.yaml (verified against datasheet)",
+   "confidence": "high"
+  },
+  {
+   "check": "power.rails",
+   "severity": "info",
+   "title": "8 supply rail(s) with a known voltage",
+   "detail": "+3V3 3.234-3.366 V (U3 RT9080-33GJ5 output); +BATT 3-4.2 V (U2 charger float voltage; 3.0 V empty cell assumed); BAT_P1 3-4.2 V (BAT_P1F through F1); BAT_P1F 3-4.2 V (BAT_RAW through SJ1); BAT_RAW 3-4.2 V (+BATT through Q1); EN_USB 3.7-5.3 V (VBUS through D23); VBUS 4.4-5.5 V (USB VBUS range (name)); VLED 3-4.2 V (+BATT through Q2)",
+   "refs": [],
+   "nets": [
+    "+3V3",
+    "+BATT",
+    "BAT_P1",
+    "BAT_P1F",
+    "BAT_RAW",
+    "EN_USB",
+    "VBUS",
+    "VLED"
+   ],
+   "evidence": {},
+   "basis": "regulator models, net names, boardlint.yaml; override with rails: in boardlint.yaml",
+   "confidence": "medium"
+  },
+  {
+   "check": "ratings.fets",
+   "severity": "info",
+   "title": "Q3 is driven with 3.23 V; Rds(on) is only specified down to 5 V",
+   "detail": "Q3 (2N7002): gate driven by U4.25(IO21) from +3V3 (3.234-3.366 V). Below the lowest specified gate voltage the on-resistance is not guaranteed (it only switches a pull-up here, so it hardly matters).",
+   "refs": [
+    "Q3"
+   ],
+   "nets": [],
+   "evidence": {
+    "vgs_on_min": 3.23,
+    "rds_on_specified_at_V": [
+     5.0,
+     10.0
+    ],
+    "vgs_th_max": 2.5
+   },
+   "basis": "part model parts/2n7002.yaml (verified against datasheet)",
+   "confidence": "medium"
+  },
+  {
+   "check": "ratings.passives",
+   "severity": "info",
+   "title": "34 capacitor(s) on known rails carry no voltage rating in the schematic",
+   "detail": "Add a Voltage property (or put it in the value, e.g. '10uF 16V') and they will be checked.",
+   "refs": [],
+   "nets": [],
+   "evidence": {},
+   "basis": "",
+   "confidence": "high"
+  },
+  {
+   "check": "sim.i2c",
+   "severity": "info",
+   "title": "I2C bus SDA / SCL: 2 of 2 modelled target(s) answer in simulation",
+   "detail": "U5 at 0x19 (register 0x0F = 0x33); U7 at 0x5A (register 0x5C = 0x10). Full address scan found 2 responder(s).",
+   "refs": [
+    "U5",
+    "U7"
+   ],
+   "nets": [
+    "SCL",
+    "SDA"
+   ],
+   "evidence": {},
+   "basis": "behavioural Verilog models (boardlint/sim/verilog/i2c_target.v) wired from the netlist; ID registers from the part models",
+   "confidence": "high"
+  },
+  {
+   "check": "sim.led_chain",
+   "severity": "info",
+   "title": "21 of 21 addressable LED(s) latch data in simulation",
+   "detail": "Position along each data line, as simulated: from D1: D1, D2, ... D20; from D21: D21.",
+   "refs": [
+    "D1",
+    "D21"
+   ],
+   "nets": [],
+   "evidence": {},
+   "basis": "behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from the netlist",
+   "confidence": "high"
+  }
+ ]
+}

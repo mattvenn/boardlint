@@ -45,7 +45,8 @@ def to_text(d, findings, log, verbose=False):
 def to_markdown(d, findings, log):
     c = Counter(f.severity for f in findings)
     o = [f"# boardlint review: {d.name}", '',
-         f"**{c['error']} errors, {c['warning']} warnings, {c['info']} notes.** "
+         f"**{c['error']} error{'s' * (c['error'] != 1)}, {c['warning']} warning{'s' * (c['warning'] != 1)}, "
+         f"{c['info']} note{'s' * (c['info'] != 1)}.** "
          f"{len(d.components)} components, {len(d.nets)} nets; netlist from the "
          f"{'board' if getattr(d, 'netlist_source', '') == 'pcb' else 'schematic'}.", '']
     for n in d.notes:

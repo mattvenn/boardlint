@@ -147,9 +147,12 @@ def i2c_bus(d):
                         f"{', '.join(c.desc for c, _ in downs)} pulls the open-drain line low.",
                         refs=[c.ref for c, _ in downs], nets=nets, confidence='high')
             if not ups:
-                yield F('i2c.bus', 'error', f"No pull-up on I2C {line.upper()} net {net}",
+                off_board_host = has_conn and not any(is_controller_pin(p) and p.comp.kind != 'CONN' for p in pins)
+                yield F('i2c.bus', 'warning' if off_board_host else 'error', f"No pull-up on I2C {line.upper()} net {net}",
                         f"Devices {', '.join(devs)} are open-drain; nothing on the board pulls the line high"
-                        + (" (a module plugged into the connector may bring its own; do not rely on it)" if has_conn else "")
+                        + (" The bus controller is off this board, through the connector: pull-ups normally sit "
+                           "with the controller, so confirm the host provides them." if off_board_host else
+                           " (a module plugged into the connector may bring its own; do not rely on it)" if has_conn else "")
                         + ". An MCU's internal pull-up (tens of kilohms) is too weak for 400 kHz.",
                         refs=devs, nets=nets, basis='I2C specification (UM10204) section 3.1.1', confidence='high')
                 continue
@@ -303,8 +306,9 @@ def spi_bus(d):
         for role, what in (('spi_sck', 'clock'), ('spi_cs', 'chip select')):
             others = [p for p in pins if p.comp.kind not in PASSIVE_KINDS and
                       (p.role != role or p.comp is not by[role][0].comp and not p.comp.model)]
-            if by[role] and not others:
-                yield F('spi.bus', 'error', f"SPI {what} {names(by[role])} is not driven",
+            multi = all(len(pin_aliases(p.name)) > 2 for p in by[role])     # multi-function pin, SPI not in use
+            if by[role] and not others and not (multi and not by[role][0].comp.model):
+                yield F('spi.bus', 'error' if by[role][0].comp.model else 'warning', f"SPI {what} {names(by[role])} is not driven",
                         f"Net {net} has nothing else on it.", refs=refs, nets=nets, basis='pin functions',
                         confidence='medium')
         for p in by['spi_sdo']:
@@ -471,11 +475,16 @@ def _compress(refs):
 @check('usb.wiring', 'protocol', doc='USB: D+/D- not swapped, Type-C CC resistors, both D+ / D- pad pairs joined')
 def usb_wiring(d):
     for nets, pins, _ in role_groups(d, ('usb_dp', 'usb_dm')):
+        _ = _ or []
         dp = [p for p in pins if p.role == 'usb_dp']
         dm = [p for p in pins if p.role == 'usb_dm']
         if dp and dm:
-            yield F('usb.wiring', 'error', f"USB D+ and D- are swapped on {sorted(nets)[0]}",
-                    f"{names(dp)} share a net with {names(dm)}.", refs=sorted({p.comp.ref for p in dp + dm}),
+            via = [c for c in _ if (c.model or {}).get('internal_links')]
+            yield F('usb.wiring', 'error', f"USB D+ and D- are swapped or shorted on {sorted(nets)[0]}",
+                    f"{names(dp)} share a net with {names(dm)}"
+                    + (f", joined through {', '.join(c.desc for c in via)} (its paired pins are one node inside "
+                       f"the part: each pair belongs to one line)" if via and len(nets) > 1 else '') + ".",
+                    refs=sorted({p.comp.ref for p in dp + dm} | {c.ref for c in via}),
                     nets=nets, basis='pin functions', confidence='high')
     for c in d.components.values():
         part = c.lib_id.split(':')[-1].upper()
@@ -527,3 +536,46 @@ def usb_wiring(d):
                         "USB limits the capacitance a device presents at plug-in to 10 uF (inrush). Put bulk "
                         "capacitance behind a soft-start switch or the regulator.", refs=[c.ref], nets=[vb[0].net],
                         basis='USB 2.0 specification section 7.2.4.1', confidence='high')
+
+
+# ----------------------------------------------------------------------------- MCU fixed functions
+_NET_ROLE = [('i2c_sda', re.compile(r'(^|[_/\-.])SDA\d*($|[_/\-.])', re.I)), ('i2c_scl', re.compile(r'(^|[_/\-.])SCL\d*($|[_/\-.])', re.I))]
+_FAMILY = {'i2c_sda': 'i2c', 'i2c_scl': 'i2c', 'uart_tx': 'uart', 'uart_rx': 'uart', 'spi_mosi': 'spi',
+           'spi_miso': 'spi', 'spi_ctrl_sck': 'spi', 'spi_ctrl_cs': 'spi'}
+_WANT = {'i2c_sda': 'i2c_sda', 'i2c_scl': 'i2c_scl', 'uart_rx': 'uart_tx', 'uart_tx': 'uart_rx',
+         'spi_sdi': 'spi_mosi', 'spi_sdo': 'spi_miso', 'spi_mosi': 'spi_mosi', 'spi_miso': 'spi_miso',
+         'spi_sck': 'spi_ctrl_sck'}
+_NICE = {'i2c_sda': 'I2C SDA', 'i2c_scl': 'I2C SCL', 'uart_tx': 'UART TX', 'uart_rx': 'UART RX',
+         'spi_mosi': 'SPI TX (MOSI)', 'spi_miso': 'SPI RX (MISO)', 'spi_ctrl_sck': 'SPI SCK', 'spi_ctrl_cs': 'SPI CSn'}
+
+
+@check('mcu.alt_function', 'protocol', doc='MCU pins with fixed peripheral functions are used for a function they have')
+def alt_function(d):
+    for c in d.components.values():
+        if c.dnp or not c.model:
+            continue
+        for p in c.pins.values():
+            alt = p.spec.get('alt')
+            if not alt or not p.net:
+                continue
+            nets, _ = signal_group(d, p.net)
+            wants = {}
+            for q in group_pins(d, nets):
+                if q.comp is not c and q.role in _WANT:
+                    wants[_WANT[q.role]] = f"{q.label} is on the net"
+            if not wants:
+                for role, rx in _NET_ROLE:
+                    if any(rx.search(n) for n in nets):
+                        wants[role] = f"the net is called {sorted(nets)[0]}"
+            for want, why in wants.items():
+                if want in alt:
+                    continue
+                fam = _FAMILY.get(want)
+                same = [a for a in alt if _FAMILY.get(a) == fam]
+                if same:
+                    yield F('mcu.alt_function', 'error',
+                            f"{p.label} is wired as {_NICE.get(want, want)} but can only be {_NICE.get(same[0], same[0])}",
+                            f"{c.desc}: {why}. On this MCU the pin's {fam.upper()} function is "
+                            f"{_NICE.get(same[0], same[0])}; the two lines are swapped at the MCU, or the wrong pin "
+                            f"was chosen. Only a software (bit-banged) bus would work here.",
+                            refs=[c.ref], nets=nets, basis=model_basis(c, 'pin function table'), confidence='medium')

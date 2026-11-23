@@ -194,6 +194,17 @@ def signal_group(d: Design, net_name: str, max_ohm: float = 1000.0):
             continue
         for p in n.pins:
             c = p.comp
+            links = (c.model or {}).get('internal_links') if c.model else None
+            if links and not c.dnp:
+                for grp in links:
+                    members = [q for q in c.pins.values() if ('#' + q.number) in grp or q.name in grp]
+                    if p in members:
+                        for q in members:
+                            if q.net and q.net not in seen and not (d.nets[q.net].is_ground or d.nets[q.net].is_power):
+                                seen.add(q.net)
+                                todo.append(q.net)
+                                if c not in through:
+                                    through.append(c)
             if is_series_part(c, max_ohm):
                 o = c.other_pin(p)
                 if o and o.net and o.net not in seen:

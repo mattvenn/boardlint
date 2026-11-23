@@ -8,8 +8,8 @@ the first addressable LED sees a logic high, that each part gets the decoupling 
 voltage its datasheet asks for, that the 3.3 V rail survives the radio's transmit burst, and that
 the LED data line does not run alongside a touch electrode.
 
-Status: v0.1, a working framework. 24 checks, 16 part models, tested on one real board with 22
-injected faults. Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
+Status: v0.1, a working framework. 28 checks, 17 part models. Tested on one real board with 25 injected faults (all flagged) and on
+eight public projects with a known fix commit (six flagged before the fix; the other two cannot be seen in the design files). Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
 
 ## Quick start
 
@@ -41,6 +41,8 @@ Without them those checks are skipped and the report says so. KiCad itself is no
 | Family | What |
 |---|---|
 | Protocol | UART TX/RX direction; I2C SDA/SCL crossing, pull-up presence and value (3 mA limit, rise time), pull-up rail against each device's pin limit, address clashes from the strap wiring; SPI MOSI/MISO swaps, undriven clocks, shared chip selects; addressable-LED chain direction, undriven or doubly-driven inputs, logic level at the first LED; USB D+/D- swaps and Type-C CC resistors |
+| MCU pin functions | on MCUs with fixed peripheral pins (RP2040 so far): a pin wired as SDA that can only be SCL, and the like |
+| Footprints | every symbol pin has a pad of the same number and the reverse; polarised capacitors the right way round |
 | Pins | every connection a part model says the datasheet requires (reference resistors, bypass pins, mode straps); floating enable / reset pins; open-drain outputs with no pull-up; boot-strap pins pulled the wrong way |
 | Power | rail voltages and where they come from; each part's supply inside its range; no pin above its absolute maximum (dividers, pull-ups, 5 V into 3.3 V); divided-down signals that never reach a logic high; regulator load, dropout and temperature; fuse / FET / switch current; decoupling count, value and distance; regulator capacitors after DC-bias derating |
 | Ratings | capacitor voltage, resistor power, FET Vds / Vgs and whether the gate drive turns it on |
@@ -99,10 +101,16 @@ BOARDLINT_DINO=/path/to/dino-board python3 -m pytest -q
 
 Unit tests need nothing else. The end-to-end tests use the
 [DinoLight board](https://github.com/mo-seph/dino-board) as a reference design (not vendored here)
-and inject 22 classic mistakes into it in memory, requiring each to be flagged:
+and inject 25 classic mistakes into it in memory, requiring each to be flagged:
 
 ```bash
 python3 tools/fault_report.py /path/to/dino-board
+```
+
+Historical bugs in public repositories (clones them into the directory you give):
+
+```bash
+python3 tools/regress.py /tmp/boardlint-regress
 ```
 
 ## Limits to know about

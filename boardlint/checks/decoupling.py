@@ -93,7 +93,7 @@ def per_part(d):
                     near.sort(key=lambda x: x[0])
                     within = [x for x in near if x[0] <= mm]
                     if near and len(within) < cnt:
-                        yield F('decoupling.per_part', 'warning',
+                        yield F('decoupling.per_part', 'warning' if modelled or near[0][0] > 2.5 * mm else 'info',
                                 f"{c.ref} supply {rail}: nearest {fmt_c(cmin)}+ capacitor is {near[0][0]:.1f} mm away",
                                 f"{c.desc} wants {cnt} within {mm:g} mm of its supply pin; closest are "
                                 f"{', '.join(f'{k.ref} at {dm:.1f} mm' for dm, k in near[:3])} (pad to pad, straight line). "

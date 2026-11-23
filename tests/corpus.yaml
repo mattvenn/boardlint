@@ -1,0 +1,70 @@
+# Public KiCad projects where one commit fixes a real hardware mistake.
+# tools/regress.py checks out the parent (buggy) and the fix, runs boardlint on both, and reports
+# which findings exist only before the fix.  Nothing from these repositories is vendored here.
+- id: crystal-uart
+  repo: https://github.com/SeraphimlabsLLC/Crystal
+  licence: AGPL-3.0
+  bug: UART TX/RX swapped on the COM port
+  parent: d6c00a32267d501c220160374b53eb729bc3095f
+  fix: e8c4f8813faa2105cd55cbfa64c780fddfe345c2
+  project: Hardware/Crystal/Crystal.kicad_sch
+  expect: [uart.direction]
+  detectable: false   # TX/RX order on an unlabelled 4-pin header: only the mating cable's pinout says which is right
+- id: reflow-oven-cc
+  repo: https://github.com/corybuecker/reflow-oven
+  licence: MIT
+  bug: USB-C receptacle without 5.1k CC pull-downs
+  parent: 2777bea391fe78c3cd9169c7b8671d5ef6849bfd
+  fix: f98bfb766e4d06893086ad0974fd7cc568acadb5
+  project: hardware/MAX31855K_Breakout/MAX31855K_Breakout.kicad_sch
+  expect: [usb.wiring]
+- id: usb2can-cc
+  repo: https://github.com/corygrant/USB2CAN_HW
+  licence: MIT
+  bug: USB-C receptacle without CC resistors (C-to-C cables do not power it)
+  parent: b687a59f45ae33d20cf56d362371a416d3fed0a0
+  fix: 7dda5254f487583738e2f0f63ffeca000550e3ca
+  project: USB2CAN/USB2CAN.kicad_sch
+  expect: [usb.wiring]
+- id: valrob-i2c-pullups
+  repo: https://github.com/Galacs/valrob-carte-ihm-cdf-1
+  licence: none found
+  bug: I2C bus without external pull-ups
+  parent: 971a2a421d052f4c908a398dd0888837af2406a7
+  fix: a2ce01fbd48130d919f82660ab86580607fe2af6
+  project: valrob-carte-ihm-cdf-1.kicad_sch
+  expect: [i2c.bus, sim.i2c]
+- id: launch-i2c-swap
+  repo: https://github.com/system76/launch
+  licence: GPL-3.0
+  bug: I2C SDA/SCL swapped at the RP2040
+  parent: 73b64f9ebe3e64d3677a9f57f85f5a8200d5fef4
+  fix: 9261cb4aae7933645a44442ef4c13c6c8c271e23
+  project: pcb/launch.kicad_sch
+  expect: [mcu.alt_function, i2c.bus]
+- id: hicart-usb-swap
+  repo: https://github.com/nelgau/hicart
+  licence: none at repo root
+  bug: USB D+/D- net labels crossed
+  parent: 6e3008cd3e0840be4aa79b74fd7deebaefad2c4e
+  fix: de2819e208845af59aa256c99977452e06e749ff
+  project: hardware/cart-ecp5/cart-ecp5.kicad_sch
+  expect: [usb.wiring]
+- id: rocket-usb-esd-swap
+  repo: https://github.com/chipsalliance/rocket-pcb
+  licence: Apache-2.0
+  bug: D+/D- swapped at the USB ESD protection part
+  parent: 5f3d34fceaea13834ab8551074b13d007084aec3
+  fix: e67bb53fb82c8b94ebf6a2dea63f5e5bda0cdb82
+  project: fmc_usb_gpio_spi_jtag.kicad_sch
+  args: [--netlist-from, sch]      # the fix changed the schematic only; the board file was not updated
+  expect: [usb.wiring]
+  detectable: false   # the commit moves D+ and D- to the other channel pair of a 4-channel TVS array: both versions are electrically valid
+- id: rc1-review
+  repo: https://github.com/OpenRTX/RC-1
+  licence: GPL-3.0
+  bug: "schematic review: VDDIO decouplers missing, VDDCORE tied to 3V3, 3.3 V reset into a 1.8 V pin"
+  parent: 7b5165de88fab2fa5a71e4deb50c8796eb566be7
+  fix: d9c0fbd7e3f48e00b519f06805610a856bd24361
+  project: RC-1.kicad_sch
+  expect: [pin.name_voltage, decoupling.per_part, power.pin_voltage, power.supply_range]

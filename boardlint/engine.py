@@ -56,9 +56,40 @@ def run(d, only=(), skip=(), no_sim=False):
         except Exception as e:                      # one broken check must not hide the others
             log.append((cid, 'crashed', f"{type(e).__name__}: {e}"))
             d.notes.append(f"check {cid} crashed: {type(e).__name__}: {e}\n{traceback.format_exc(limit=4)}")
-    findings = _waive(d, findings)
+    findings = _collapse(_waive(d, findings))
     findings.sort(key=Finding.key)
     return findings, log
+
+
+def _collapse(findings, at_least=4):
+    """One finding instead of forty when the same thing is said about forty parts."""
+    import re
+    groups = {}
+    for f in findings:
+        t = f.title
+        for r in sorted(f.refs, key=len, reverse=True):
+            t = re.sub(rf'(?<![A-Za-z0-9_]){re.escape(r)}(?![A-Za-z0-9_])', '{ref}', t)
+        t = re.sub(r'\d+(\.\d+)?', '#', t)
+        groups.setdefault((f.check, f.severity, t), []).append(f)
+    out = []
+    for (check, sev, t), fs in groups.items():
+        if len(fs) < at_least or '{ref}' not in t:
+            out += fs
+            continue
+        first = fs[0]
+        refs = []
+        for f in fs:
+            for r in f.refs[:1]:
+                if r not in refs:
+                    refs.append(r)
+        first.title = f"{first.title}  (and {len(fs) - 1} more like it)"
+        first.detail = (first.detail + f" The same finding applies to {len(fs)} parts: {', '.join(refs[:40])}"
+                        + ('...' if len(refs) > 40 else '') + '.').strip()
+        first.refs = refs
+        first.nets = sorted({n for f in fs for n in f.nets})
+        first.evidence = dict(first.evidence, occurrences=len(fs))
+        out.append(first)
+    return out
 
 
 def _waive(d, findings):
