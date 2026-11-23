@@ -600,8 +600,8 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 0 finding(s), 0.00 s |
 | `i2c.bus` | ran | 5 finding(s), 0.00 s |
-| `layout.coupling` | ran | 8 finding(s), 0.53 s |
-| `layout.return_path` | ran | 6 finding(s), 0.27 s |
+| `layout.coupling` | ran | 8 finding(s), 0.60 s |
+| `layout.return_path` | ran | 6 finding(s), 0.48 s |
 | `layout.track_current` | ran | 2 finding(s), 0.00 s |
 | `led.chain` | ran | 4 finding(s), 0.00 s |
 | `mcu.alt_function` | ran | 0 finding(s), 0.00 s |
@@ -611,7 +611,7 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `pin.requirements` | ran | 1 finding(s), 0.00 s |
 | `polarity.polarised_parts` | ran | 0 finding(s), 0.00 s |
 | `power.budget` | ran | 2 finding(s), 0.00 s |
-| `power.droop` | ran | 1 finding(s), 0.85 s |
+| `power.droop` | ran | 1 finding(s), 0.82 s |
 | `power.logic_level` | ran | 0 finding(s), 0.00 s |
 | `power.pin_voltage` | ran | 2 finding(s), 0.01 s |
 | `power.rails` | ran | 1 finding(s), 0.00 s |
@@ -619,7 +619,7 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `power.supply_range` | ran | 2 finding(s), 0.00 s |
 | `ratings.fets` | ran | 1 finding(s), 0.00 s |
 | `ratings.passives` | ran | 1 finding(s), 0.00 s |
-| `sim.i2c` | ran | 1 finding(s), 0.04 s |
+| `sim.i2c` | ran | 1 finding(s), 0.03 s |
 | `sim.led_chain` | ran | 1 finding(s), 0.05 s |
 | `spi.bus` | ran | 0 finding(s), 0.00 s |
 | `uart.direction` | ran | 0 finding(s), 0.00 s |

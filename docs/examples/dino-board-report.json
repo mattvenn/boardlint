@@ -39,12 +39,12 @@
   {
    "id": "layout.coupling",
    "status": "ran",
-   "detail": "8 finding(s), 0.52 s"
+   "detail": "8 finding(s), 0.64 s"
   },
   {
    "id": "layout.return_path",
    "status": "ran",
-   "detail": "6 finding(s), 0.35 s"
+   "detail": "6 finding(s), 0.36 s"
   },
   {
    "id": "layout.track_current",
@@ -134,7 +134,7 @@
   {
    "id": "sim.i2c",
    "status": "ran",
-   "detail": "1 finding(s), 0.02 s"
+   "detail": "1 finding(s), 0.03 s"
   },
   {
    "id": "sim.led_chain",

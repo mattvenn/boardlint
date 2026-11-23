@@ -40,6 +40,13 @@ small sample.
   those pairs as connectivity (`internal_links` in the model) let the existing D+/D- rule see the short.
 - **Pin names carry voltages.** `RESET#_(O)_(0/1.8V)` and `VDDCORE` say enough to flag a 3.3 V
   net without any model. Low confidence, and cheap.
+- **The schematic reader had two bugs that one board could not show.** A mirrored symbol rotated
+  by 90 or 270 degrees had its pins exchanged (rotation is applied before the mirror, not after),
+  and coordinates ending in 5 um were rounded apart. Both hid on the reference board and showed up
+  as schematic-versus-board differences here. After the fixes the built-in netlister agrees with
+  the board exactly on six of the seven projects that have both files. The seventh (launch) differs
+  in 3 of 351 net groups, where two ground nets are one on the board; I did not find out why.
+  rocket-pcb uses schematic buses, which are not expanded.
 - **Unannotated schematics are real input.** RC-1's parts were all `U?`, `C?`. The loader merged
   them; it now keeps them apart.
 - **The board file can be stale.** rocket-pcb's fix touched only the schematic. boardlint used the

@@ -29,7 +29,8 @@ def test_values():
 
 
 def test_names():
-    assert is_ground_name('GND') and is_ground_name('AGND') and not is_ground_name('GND_SENSE_X1') is False or True
+    assert is_ground_name('GND') and is_ground_name('AGND') and is_ground_name('/power/GND')
+    assert not is_ground_name('SDA') and not is_ground_name('+3V3')
     assert norm_pin_name('~{CS}') == 'CS' and norm_pin_name('V_{DD}') == 'VDD'
     assert voltage_from_name('+3V3')[0:2] == (3.135, 3.465)
     assert voltage_from_name('SDA') is None

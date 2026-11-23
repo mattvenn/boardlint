@@ -12,8 +12,8 @@ from .sexpr import load, children, child, value, fnum
 from .model import Component, Pin
 
 
-def _q(x: float) -> int:          # quantise to 0.01 mm
-    return int(round(x * 100))
+def _q(x: float) -> int:          # quantise to 0.1 um (KiCad's own grid is 0.1 um; 0.01 mm splits x.xx5 values)
+    return int(round(x * 10000))
 
 
 class _Lib:
@@ -197,20 +197,10 @@ def load_schematic(root_path: str):
                 ref = f"{ref}{str(value(s, 'uuid', ''))[:6]}"      # not annotated yet: keep parts apart
                 unannotated[0] += 1
             upins = [p for p in lsym['pins'] if p['unit'] in (0, unit) and p['style'] in (0, style)]
-            placed = None
-            if mirror and len(upins) > 1:
-                # the file does not say whether mirror is applied before or after rotation in
-                # a way that is stable across versions: pick the order whose pins hit wiring
-                best = -1
-                for order in (0, 1):
-                    cand = [(_q(sx + dx), _q(sy + dy)) for dx, dy in
-                            (_xf(p['x'], p['y'], rot, mirror, order) for p in upins)]
-                    hits = sum(1 for c in cand if c in pts or _on_wire(c, wires))
-                    if hits > best:
-                        best, placed = hits, cand
-            else:
-                placed = [(_q(sx + dx), _q(sy + dy)) for dx, dy in
-                          (_xf(p['x'], p['y'], rot, mirror, 0) for p in upins)]
+            # KiCad applies the rotation first and the mirror second (in sheet space).  Measured on
+            # nine projects: wherever the two orders give different wiring, this one fits.
+            placed = [(_q(sx + dx), _q(sy + dy)) for dx, dy in
+                      (_xf(p['x'], p['y'], rot, mirror, 1) for p in upins)]
             is_power = lsym['power'] or ref.startswith('#')
             dnp = str(value(s, 'dnp', 'no')) == 'yes' or str(value(s, 'on_board', 'yes')) == 'no'
             if not is_power:
@@ -232,9 +222,8 @@ def load_schematic(root_path: str):
         # anything that lands on the interior of a wire joins it
         for (qx, qy), n in list(pts.items()):
             for w in wires:
-                if _on_seg(qx, qy, w):
+                if _on_seg(qx, qy, w):          # no break: a wire end can also lie on another wire
                     uf.union(n, pts[(w[0], w[1])])
-                    break
         # sub-sheets
         for sh in children(doc, 'sheet'):
             props = {str(p[1]): str(p[2]) for p in children(sh, 'property') if len(p) > 2}
@@ -251,7 +240,6 @@ def load_schematic(root_path: str):
                 for w in wires:
                     if _on_seg(n[1][0], n[1][1], w):
                         uf.union(n, pts[(w[0], w[1])])
-                        break
                 if str(sp[1]) in sub_h:
                     uf.union(n, sub_h[str(sp[1])])
         return hier
