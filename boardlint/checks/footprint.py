@@ -59,3 +59,29 @@ def polarised(d):
                     f"{c.desc}: the + terminal sits at {vp:g} V and the - terminal at up to {vm:g} V. Polarised "
                     f"capacitors fail, sometimes violently, when reversed.", refs=[c.ref], nets=[np_.name, nm.name],
                     basis='pin names of the polarised symbol against rail voltages', confidence='high')
+
+
+@check('sync.schematic_board', 'pins', needs_board=True, doc='Schematic and board describe the same design: nets, parts and footprints')
+def schematic_board(d):
+    s = getattr(d, 'sync', None)
+    if not s:
+        return
+    src = 'board' if getattr(d, 'netlist_source', '') == 'pcb' else 'schematic'
+    if s['net_groups'] or s['fp'] or s['only_sch'] or s['only_pcb']:
+        bits = []
+        if s['net_groups']:
+            bits.append(f"{s['net_groups']} net(s) are connected differently")
+        if s['fp']:
+            bits.append("footprint differs for " + ', '.join(f"{r} (schematic {a.split(':')[-1]}, board {b.split(':')[-1]})" for r, a, b in s['fp'][:6])
+                        + ('...' if len(s['fp']) > 6 else ''))
+        if s['only_sch']:
+            bits.append(f"in the schematic only: {', '.join(s['only_sch'][:12])}{'...' if len(s['only_sch']) > 12 else ''}")
+        if s['only_pcb']:
+            bits.append(f"on the board only: {', '.join(s['only_pcb'][:12])}{'...' if len(s['only_pcb']) > 12 else ''}")
+        yield F('sync.schematic_board', 'warning', "The board is out of step with the schematic",
+                '; '.join(bits) + f". This run uses the {src}'s netlist"
+                + (" (pass --netlist-from sch to check the schematic instead)" if src == 'board' else
+                   "; layout findings below describe the old board") + ". Update the board from the schematic "
+                "before trusting either set of results for the other.",
+                refs=[r for r, _, _ in s['fp']][:6] + s['only_sch'][:6] + s['only_pcb'][:6],
+                basis='comparison of the schematic netlist, footprint fields and the board file', confidence='high')

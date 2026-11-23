@@ -1,0 +1,80 @@
+id: sk6812mini-012
+match:
+  lcsc: [C2886570]
+  value: ["SK6812MINI-012*"]
+kind: LED
+class: addressable_led
+description: "SK6812 addressable RGB LED, 3.7 x 3.5 x 1.1 mm, 12 mA per colour, single-wire 800 kbit/s"
+datasheet: "OPSCO SK6812MINI-012, Rev. B/0, 2024-04-23 (datasheets/C2886570_SK6812mini-012.pdf)"
+provenance:
+  source: "datasheets/C2886570_SK6812mini-012.pdf"
+  verified: true
+  notes: >
+    Overview p.3 (5 V @ 12 mA per output; 256 grey levels; 800 kbit/s; MSL 5a; ESD 2 kV;
+    package 3.7 x 3.5 x 1.1 mm). Unlike the SK6812MINI-E and SK6812SIDE-A datasheets, this one
+    has no "use 70 % grayscale when all three colours are lit" sentence, so there is no
+    all_colors_max_duty here. Pins p.4 (drawing and table, also read from the rendered page):
+    1 DIN, 2 VDD, 3 DOUT, 4 GND. NOTE: this is NOT the pin order of the SK6812MINI-E (1 GND,
+    2 DIN, 3 VDD, 4 DOUT) and the body and land pattern differ too (p.5, top view: 3 DOUT top
+    left, 2 VDD top right, 4 GND bottom left, 1 DIN bottom right; lands span about 4.3 x 2.6 mm).
+    "IC limit parameter" table p.5: VDD +3.7 to +5.5 V, the only maximum the datasheet gives,
+    so abs_max is that same 5.5 V (no separate absolute-maximum rating, and none at all for
+    DIN); operating and storage temperature -40 to +85 C. IC electrical parameters p.6: VDD
+    3.7 / 5.0 / 5.5 V; VIH 0.7 VDD min, VIL 0.3 VDD max (at VDD = 5.0 V); output drive current
+    per colour 10 / 12 / 14.5 mA (VDS = 1 V); PWM 1.0 kHz; static consumption 0.6 mA typ (no
+    test condition printed); data rate 800 kbit/s. Suggested data timing p.7: symbol period
+    1.20 us min, T0H 0.20 / 0.32 / 0.40 us, T0L 0.80 us min, T1H 0.60 / 0.67 / 1.00 us, T1L
+    0.20 us min, low time within a bit under 20 us, reset low over 200 us. Data order GRB, MSB
+    first p.8. Application circuit p.9 (text and rendered page): a decoupling capacitor C1 at
+    each LED "is essential" but no value is printed, so the decoupling entry has no c_min;
+    series protection resistors R1 (first DIN) and R2 (last DOUT) "about 500 ohms".
+    Computed, not printed: i_max_ma = 3 x 14.5 mA and i_typ_all_on_ma = 3 x 12 mA; the
+    voltages in the erratum are 0.7 x VDD. Operation below 3.7 V is not specified.
+    No errata search was done (offline extraction); the one erratum below follows from the
+    datasheet's own VIH figure.
+
+supplies:
+  - pins: [VDD]
+    vmin: 3.7
+    vmax: 5.5
+    abs_max: 5.5
+    i_typ_ma: 0.6             # static, outputs off
+    i_max_ma: 43.5            # 3 x 14.5 mA, all three colours at 100 %
+    decoupling:
+      - {count: 1, note: "one decoupling capacitor per LED between VDD and GND is 'essential' (section 14); the datasheet prints no value"}
+
+io:
+  vih_frac: 0.7
+  vil_frac: 0.3
+
+pins:
+  DIN: {role: led_din, drive: input}        # pin 1
+  DOUT: {role: led_dout, drive: push_pull}  # pin 3
+  VDD: {role: power_in}                     # pin 2
+  "GND/VSS": {role: gnd}                    # pin 4
+
+serial_led:
+  protocol: sk6812
+  vih_frac: 0.7               # of the LED's own VDD
+  vil_frac: 0.3
+  i_color_ma: 12              # typ per colour (10 min, 14.5 max)
+  i_color_max_ma: 14.5
+  i_typ_all_on_ma: 36         # 3 x 12 mA
+  i_max_ma: 43.5              # 3 x 14.5 mA
+  i_idle_ma: 0.6
+  khz: 800
+  bit_period_min_us: 1.2
+  t0h_us: [0.20, 0.32, 0.40]
+  t0l_min_us: 0.80
+  t1h_us: [0.60, 0.67, 1.00]
+  t1l_min_us: 0.20
+  reset_us: 200               # low for more than 200 us
+  color_order: GRB
+  pwm_khz: 1.0
+  series_r_ohm: 500           # "about 500 ohms" in series at the first DIN and the last DOUT
+
+errata:
+  - id: 3v3-data-with-5v-supply
+    summary: "VIH is 0.7 x VDD, 3.5 V at a 5 V supply (2.59 V at the 3.7 V minimum, 2.94 V at 4.2 V): a 3.3 V logic output does not reach it at 5 V, so the first LED's DIN needs a level shifter or a lower LED supply."
+    source: "datasheets/C2886570_SK6812mini-012.pdf, IC electrical parameters p.6"
+    severity: warning

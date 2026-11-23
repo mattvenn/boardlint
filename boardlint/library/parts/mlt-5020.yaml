@@ -1,0 +1,53 @@
+id: mlt-5020
+match:
+  lcsc: [C94598]
+  value: ["MLT-5020*"]
+kind: OTHER
+class: buzzer
+description: "SMD magnetic buzzer (transducer, no built-in oscillator), 5 x 5 x 2 mm, 3 Vo-p, 12 Ohm coil, 4 kHz"
+datasheet: "Jiangsu Huawha (Huaneng) MLT-5020 product specification, dated 2021-5-27 (datasheets/C94598_MLT-5020.pdf)"
+provenance:
+  source: "datasheets/C94598_MLT-5020.pdf"
+  verified: true
+  notes: >
+    General specification table p.2 (text and rendered page): rated voltage 3.0 Vo-p; operation
+    voltage 2 to 4 Vo-p; sound pressure level min 75 dB at rated voltage, standard drive
+    circuit, 0.1 m; current max 100 mA; coil resistance 12 +/- 3 Ohm; oscillation frequency
+    4000 +/- 200 Hz; operating temperature -20 to +70 C; 5.2 x 5.2 x 2 mm, LCP housing.
+    Section 2 p.2, recommended driving circuit: "Resonant frequency, 1/2 duty cycle. Square
+    wave. Signal amplitude should be large enough to saturate the transistor"; the figure
+    shows a driver IC (VDD, EN from the MCU I/O, OUT, GND) with the buzzer between VCC and OUT
+    and a 1 uF supply filter capacitor recommended at the driver's supply input (Chinese note
+    under the figure). Frequency response p.4 measured at "3.0 Vo-p 50% duty square wave,
+    10 cm".
+    The words "passive", "electromagnetic" and "magnetic" do not appear in the datasheet. Type
+    and inductive_load are concluded from what it does print: a coil resistance, and a drive
+    circuit that needs an external square wave at the resonant frequency (so there is no
+    built-in oscillator). No inductance is given. The datasheet shows no flyback diode and
+    does not ask for one. The only maximum voltage given is the top of the operating range
+    (4 Vo-p), stored as v_max; there is no absolute-maximum table.
+    Dimension drawing p.4 (rendered): "+POLARITY" and "-POLARITY" terminals on opposite sides
+    and three solder pads (3 x 1.5 mm by 0.8 mm) on the underside; the pads carry no numbers
+    and the drawing does not say what the third pad is, so the pin keys below are the names
+    of the KiCad symbol ("+", "-"), not datasheet pin numbers.
+    No errata search was done (offline extraction).
+
+inductive_load: true          # it has a coil (12 Ohm); the switch that drives it sees an inductive kick
+
+pins:
+  "+": {drive: analog, note: "'+POLARITY' terminal in the dimension drawing; to the supply side in the recommended circuit"}
+  "-": {drive: analog, note: "'-POLARITY' terminal; to the switching output of the driver"}
+
+buzzer:
+  type: passive               # externally driven transducer: needs a square wave, makes no sound on DC
+  drive: square               # 50 % duty at the resonant frequency
+  duty: 0.5
+  v_rated: 3.0                # Vo-p
+  v_min: 2.0                  # operation voltage 2 to 4 Vo-p
+  v_max: 4.0
+  i_max_ma: 100               # "current: max 100 mA" at rated voltage, standard drive circuit
+  r_coil_ohm: 12              # +/- 3 Ohm
+  r_coil_tol_ohm: 3
+  f_res_hz: 4000              # +/- 200 Hz
+  f_res_tol_hz: 200
+  spl_min_db: 75              # at rated voltage, 0.1 m

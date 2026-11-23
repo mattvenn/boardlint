@@ -1,0 +1,84 @@
+id: ltr-303als
+match:
+  lcsc: [C364577]
+  value: ["LTR-303*"]
+kind: IC
+class: ambient_light_sensor
+description: "Digital ambient light sensor, I2C (fixed address 0x29), open-drain interrupt output, 6-pin ChipLED 2.0 x 2.0 x 0.7 mm"
+datasheet: "Lite-On LTR-303ALS-01, Spec No. DS86-2013-0004, Revision A, effective 07/09/2014 (datasheets/C364577_LTR-303ALS-01.pdf)"
+provenance:
+  source: "datasheets/C364577_LTR-303ALS-01.pdf"
+  verified: true
+  notes: >
+    Page numbers are PDF pages (the printed footer is one lower). Features p.2 (I2C fast mode
+    400 kbit/s; supply 2.4 to 3.6 V "capable of 1.7V logic voltage"). Application circuit p.4
+    (rendered page): C1 from VDD to GND; pull-ups Rp1 / Rp2 / Rp3 from SDA / SCL / INT to Vbus;
+    NC left open. I/O pin table p.5: 1 VDD, 2 NC "No connection to this pin", 3 GND, 4 SCL
+    "open drain input", 5 INT "Level Interrupt Pin. This pin is an open drain output", 6 SDA
+    "open drain input / output"; note: "For noisy environment, add 10pF capacitor from signal
+    to GND for additional noise filtering"; recommended components: Rp1, Rp2, Rp3 1 k to 10 k
+    (value depends on bus capacitance), C1 1 uF +/-20 % X7R / X5R ceramic. Absolute maximum
+    p.6 (rendered): VDD 3.8 V; SCL, SDA, INT -0.5 to 3.8 V; digital output current -1 to 20 mA.
+    Recommended operating conditions p.6: VDD 2.4 to 3.6 V; interface bus supply VIO 1.7 to
+    3.6 V; VIH 1.2 V min, VIL 0.6 V max on SCL / SDA; -30 to 70 C. Electrical p.6 (at
+    VDD = 3.0 V unless noted): active supply current 220 uA MAX (active mode, VDD = 3.6 V,
+    100 ms integration, 200 ms rate); standby current 5 uA MAX; initial startup time 100 ms
+    min; wake-up from standby 10 ms max. Both currents are in the Max column and no typical
+    value is printed, so i_typ_ma is left out. Start-up sequence p.7: wait at least 100 ms
+    after VDD before the first I2C command, then 10 ms after setting active mode. I2C timing
+    p.11 (at Vbus = 1.8 V): SCL 1 to 400 kHz. Slave address p.13: 7-bit 0x29. Register set
+    p.14: ALS_CONTR 0x80 reset 0x00 (stand-by after power-up), PART_ID 0x86 reset 0xA0,
+    MANUFAC_ID 0x87 reset 0x05, INTERRUPT 0x8F reset 0x08; PART_ID / MANUFAC_ID fields p.17
+    (part number ID 1010b, revision 0000b; manufacturer 0x05). INTERRUPT register p.21: mode
+    bit default 0 = "Interrupt pin is INACTIVE / high impedance state"; polarity default 0 =
+    active when logic 0; set it before entering active mode.
+    The datasheet has no VIO pin: "VIO" / "Vbus" is the rail the external pull-ups go to.
+    Register addresses already include the 0x80 offset as printed.
+    No errata search was done (offline extraction).
+
+supplies:
+  - pins: [VDD]
+    vmin: 2.4
+    vmax: 3.6
+    abs_max: 3.8
+    i_max_ma: 0.22            # active mode, maximum, VDD = 3.6 V (no typical value in the datasheet)
+    i_idle_ma: 0.005          # standby, maximum; the state after power-up
+    decoupling:
+      - {c_min: 1u, count: 1, note: "C1: 1 uF +/-20 %, X7R / X5R ceramic, from VDD to GND"}
+
+io:
+  vih: 1.2                    # SCL, SDA: absolute thresholds, so a 1.7 V bus works
+  vil: 0.6
+  abs_max: 3.8                # SCL, SDA, INT: -0.5 to 3.8 V
+  pullup_v_min: 1.7           # interface bus supply (pull-up rail) 1.7 to 3.6 V
+  pullup_v_max: 3.6
+  tolerant_5v: false
+
+pins:
+  VDD: {role: power_in}       # pin 1
+  NC: {role: nc}              # pin 2: no connection to this pin
+  GND: {role: gnd}            # pin 3
+  SCL:                        # pin 4
+    role: i2c_scl
+    drive: input
+    require:
+      - {pullup: {min: 1k, max: 10k}, note: "Rp2: pull-up from SCL to the bus supply, 1 k to 10 k depending on bus capacitance"}
+  INT:                        # pin 5
+    role: irq
+    drive: open_drain
+    active: low               # default polarity; high impedance (inactive) until Interrupt Mode is set to 1
+    require:
+      - {pullup: {min: 1k, max: 10k}, note: "INT is an open-drain output: Rp3, 1 k to 10 k, to the bus supply", when: "the interrupt is used (it is disabled and high impedance by default)"}
+  SDA:                        # pin 6
+    role: i2c_sda
+    drive: open_drain
+    require:
+      - {pullup: {min: 1k, max: 10k}, note: "Rp1: pull-up from SDA to the bus supply, 1 k to 10 k depending on bus capacitance"}
+
+i2c:
+  addresses: [0x29]           # fixed
+  max_khz: 400
+
+sim:
+  model: i2c_target
+  params: {ID_REG: 0x86, ID_VAL: 0xA0}   # PART_ID; MANUFAC_ID 0x87 reads 0x05

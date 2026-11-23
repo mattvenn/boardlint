@@ -171,7 +171,8 @@ def logic_level(d):
                 continue
             mcu = (c.model or {}).get('mcu') or {}
             adc = p.name in (mcu.get('adc1_pins') or []) + (mcu.get('adc2_pins') or [])
-            analog_name = bool(re.search(r'SENS|ADC|MON|MEAS|AIN|_FB$|VREF|NTC|TEMP|DIV', n.name, re.I))
+            from ..classify import is_analog_name
+            analog_name = is_analog_name(n.name)
             from_output = 'high =' in div[3][2]
             if analog_name or (n.vmax < vih and adc and not from_output):
                 continue          # a measurement divider, not a logic level

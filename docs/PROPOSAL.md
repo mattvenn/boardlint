@@ -85,11 +85,12 @@ unmodelled part means "not checked".
 
 ## What exists today (v0.1)
 
-28 checks. `python3 -m boardlint checks` lists them.
+34 checks. `python3 -m boardlint checks` lists them.
 
 | Family | Checks | State |
 |---|---|---|
 | Protocol | `uart.direction`, `i2c.bus`, `spi.bus`, `led.chain`, `usb.wiring`, `mcu.alt_function` | Working. SPI is tested only on synthetic designs. `mcu.alt_function` has one MCU (RP2040) so far. |
+| Signals at pins | `mcu.pin_use`, `clock.source`, `reset.circuit`, `pin.strap_strength`, `sync.schematic_board`, `load.inductive` | Working on the two test boards. The crystal half of `clock.source` has not met a real crystal yet. |
 | Pins | `pin.requirements`, `pin.floating_control`, `mcu.strapping`, `pin.name_voltage`, `footprint.pin_map` | Working; the first three depend on models. |
 | Power | `power.rails`, `power.supply_range`, `power.pin_voltage`, `power.logic_level`, `power.regulator`, `power.budget`, `decoupling.per_part`, `decoupling.regulator_caps` | Working. Currents are worst-case sums of model maxima. |
 | Ratings | `ratings.passives`, `ratings.fets`, `polarity.polarised_parts` | Working. Capacitor voltage ratings need a property on the part; most schematics have none. |
@@ -103,13 +104,17 @@ Two methods, because a clean report on a good board proves nothing.
 1. **Fault injection** (`tools/fault_report.py`, `tests/test_dino.py`). Start from a board believed
    good, apply one classic mistake in memory (swap SDA/SCL, leave off a pull-up, reverse an LED,
    tie both CC pins to one resistor, ...), and require a new finding from the expected check.
-   Currently 25 faults, 25 flagged. The first run flagged 20 of 22; the two misses and two
+   Currently 26 faults, 26 flagged. The first run flagged 20 of 22; the two misses and two
    caught-for-the-wrong-reason cases became fixes.
 2. **Historical bugs.** Public KiCad repositories where a commit fixes a real hardware mistake:
    check out the parent, expect a finding; check out the fix, expect it gone. Eight so far
    (`tools/regress.py`): three were flagged on the first, blind run; six after three checks
    were added because of the misses; two cannot be detected from the design files.
    See [regression-corpus.md](regression-corpus.md).
+
+3. **A built board with an errata list.** [basic-ecp5-pcb](ecp5-board-review.md): both wiring
+   errata in its README are reported (weak configuration straps, SPI clock arriving at a pin the
+   design cannot read).
 
 False-positive rate is tracked the same way: every warning on the reference board is triaged by
 hand in [dino-board-review.md](dino-board-review.md).

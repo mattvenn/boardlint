@@ -4,7 +4,7 @@ import fnmatch
 import time
 import traceback
 from .loader import load_project
-from .classify import classify_components
+from .classify import classify_components, split_resistor_packs
 from .library import load_models, apply_models
 from .power import analyse_power
 from . import checks as _checks
@@ -18,7 +18,12 @@ def prepare(path, parts_dirs=(), **kw):
             if p.net and p.net.startswith('unconnected-('):
                 p.net = None
     d.nets = {k: v for k, v in d.nets.items() if not k.startswith('unconnected-(')}
+    for k, n in list(d.nets.items()):
+        if len(n.pins) == 1 and k.startswith('Net-('):
+            n.pins[0].net = None
+            del d.nets[k]
     classify_components(d)
+    split_resistor_packs(d)
     models = load_models(parts_dirs)
     d.unmodelled = apply_models(d, models)
     import re

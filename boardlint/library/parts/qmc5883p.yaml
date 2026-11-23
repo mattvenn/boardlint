@@ -1,0 +1,85 @@
+id: qmc5883p
+match:
+  lcsc: [C2847467]
+  value: ["QMC5883P*"]
+kind: IC
+class: magnetometer
+description: "3-axis AMR magnetic sensor (e-compass), I2C (fixed address 0x2C), single supply, LGA-16 3.0 x 3.0 x 0.9 mm"
+datasheet: "QST QMC5883P datasheet, document 13-52-19, Rev A (datasheets/C2847467_QMC5883P.pdf)"
+provenance:
+  source: "datasheets/C2847467_QMC5883P.pdf"
+  verified: true
+  notes: >
+    Page numbers are PDF pages (the printed footer "n / 18" is one higher). Features p.1
+    (I2C standard and fast modes; 2.5 to 3.6 V). Specifications Table 2 p.4 (text and rendered
+    page; typical column): supply 2.5 to 3.6 V; suspend mode 22 uA; normal mode, low power
+    (OSR1 = 1) / high power (OSR1 = 8): 35 / 78 uA at 10 Hz, 85 / 310 uA at 50 Hz, 150 / 600 uA
+    at 100 Hz, 280 / 1180 uA at 200 Hz; continuous mode at 1500 Hz 2200 uA; -40 to 85 C. The
+    table gives typical currents only, so i_max_ma is the highest typical figure. Absolute
+    maximum Table 3 p.5: VDD -0.3 to 5.4 V (nothing for the I/O pins). I/O characteristics
+    Table 4 p.5 ("VDDIO = 3.3 V"): VIH 0.7 VDDIO, VIL 0.3 VDDIO, hysteresis 0.1 V, VOH 0.8
+    VDDIO, VOL 0.2 VDDIO. Pin configuration Table 5 p.6: 1 SCK "I2C clock", 2 VDD, 3-8 NC,
+    9 GND, 10 C1 "Reservoir capacitor connection", 11 GND, 12-15 NC, 16 SDA. External
+    connection Figure 6 p.7 (rendered page): C2 0.1 uF from VDD to GND, C1 4.7 uF from pin C1
+    to GND, pull-ups R1 / R2 4.7 k from SDA / SCL to the host supply; note: "2.7Kohm for a
+    short I2C bus length (less than 10 cm), and 4.7Kohm for a bus length less than 5 cm"
+    (printed like that). Layout 4.3 p.8: no ferrous parts near the sensor and "no conducting
+    copper line under/near the sensor in any of the PCB layers". External capacitors 4.3.3 p.8:
+    C1 "should be ceramic type with low ESR characteristics ... values less than 200
+    milli-ohms are recommended. Reservoir capacitor C1 is nominally 4.7 uF"; small 0402 parts
+    may not be low-ESR, "be prepared to up-size". Power management 5.2 p.9: "There are only
+    one power supply pins to the device. VDD provides power for all the internal analog and
+    digital functional blocks and I/O"; suspend mode after power-on reset; POR completion
+    250 us max. I2C 5.4 p.10: 100 kHz and 400 kHz; "External pull-up resistors are required";
+    "The default I2C address for QMC5883P is 2CH" (other addresses from the factory only).
+    I2C timing Table 8 p.12 (fast mode 400 kHz max, bus load 200 pF max). Write / read
+    examples p.13 use address byte 01011000b / 01011001b (0x2C). Register map Table 14 p.14:
+    00H CHIPID, "The default value is 80H".
+    There is no VDDIO pin: the "VDDIO" of Table 4 is VDD (section 5.2), so one supply entry.
+    The part has no interrupt, address or mode pin. The copper / ferrous-material keep-out
+    under the sensor cannot be expressed in this schema. No errata search was done (offline
+    extraction).
+
+supplies:
+  - pins: [VDD]
+    vmin: 2.5
+    vmax: 3.6
+    abs_max: 5.4
+    i_typ_ma: 0.035           # normal mode, ODR 10 Hz, low power (OSR1 = 1), typ; 0.28 mA at 200 Hz, up to 1.18 mA with OSR1 = 8
+    i_max_ma: 2.2             # continuous mode at 1500 Hz (typ; no max given)
+    i_idle_ma: 0.022          # suspend mode (typ), the state after power-on reset
+    decoupling:
+      - {c_min: 100n, count: 1, note: "C2 0.1 uF from VDD to GND (Figure 6)"}
+
+io:
+  vih_frac: 0.7               # of VDD (the datasheet calls it VDDIO)
+  vil_frac: 0.3
+  voh_frac: 0.8
+  vol_frac: 0.2
+  tolerant_5v: false
+
+pins:
+  SCK:                        # pin 1: I2C clock
+    role: i2c_scl
+    drive: input
+    require:
+      - {pullup: {}, note: "External pull-up resistors are required on the I2C lines (4.7 k in Figure 6; 2.7 k suggested for a bus up to 10 cm)"}
+  VDD: {role: power_in}       # pin 2
+  GND: {role: gnd}            # pins 9 and 11
+  C1:                         # pin 10: "Reservoir capacitor connection"
+    drive: analog
+    require:
+      - {cap_to_gnd: {min: 4.7u}, note: "Reservoir capacitor C1, nominally 4.7 uF, ceramic, low ESR (under 200 mOhm recommended; a small 0402 part may not be low-ESR)"}
+  SDA:                        # pin 16
+    role: i2c_sda
+    require:
+      - {pullup: {}, note: "External pull-up resistors are required on the I2C lines (4.7 k in Figure 6; 2.7 k suggested for a bus up to 10 cm)"}
+  NC: {role: nc}              # pins 3-8 and 12-15: not connected
+
+i2c:
+  addresses: [0x2C]           # fixed ("default"); other addresses only by factory order
+  max_khz: 400
+
+sim:
+  model: i2c_target
+  params: {ID_REG: 0x00, ID_VAL: 0x80}   # chip ID register 00H, default 80H

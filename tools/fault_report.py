@@ -3,8 +3,8 @@
 
     python3 tools/fault_report.py /path/to/dino-board
 
-The fault list is written for the DinoLight board (https://github.com/mo-seph/dino-board): it names
-that board's reference designators.  Each fault is one edit a tired designer could make.
+The fault list is written for the DinoLight board (https://github.com/mo-seph/dino-board) at commit
+4da182c: it names that revision's reference designators.  Check that commit out to reproduce it.  Each fault is one edit a tired designer could make.
 """
 import sys
 import os
@@ -70,6 +70,8 @@ FAULTS = [
     ('hist-cap-bias', 'as first drawn: regulator capacitors C3, C4 were 1 uF 0402 (too little left under DC bias)',
      lambda d: [(fz.set_value(d, r, '1uF'), setattr(d.components[r], 'footprint', 'Capacitor_SMD:C_0402_1005Metric'))
                 for r in ('C3', 'C4')], ['decoupling.regulator_caps']),
+    ('adc-wrong-pin', 'battery-sense divider moved to IO21, which has no ADC channel',
+     lambda d: fz.swap_nets(d, fz.pin(d, 'U4', 'IO10'), fz.pin(d, 'U4', 'IO21')), ['mcu.pin_use']),
     ('ldo-en-low', 'regulator enable tied to ground',
      lambda d: fz.move_pin(d, fz.pin(d, 'U3', 'CE'), 'GND'), ['pin.floating_control']),
     ('fet-gate', 'Q2 gate pull-down path removed (R13): P-FET never turns on',

@@ -8,8 +8,9 @@ the first addressable LED sees a logic high, that each part gets the decoupling 
 voltage its datasheet asks for, that the 3.3 V rail survives the radio's transmit burst, and that
 the LED data line does not run alongside a touch electrode.
 
-Status: v0.1, a working framework. 28 checks, 17 part models. Tested on one real board with 25 injected faults (all flagged) and on
-eight public projects with a known fix commit (six flagged before the fix; the other two cannot be seen in the design files). Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
+Status: v0.1, a working framework. 34 checks, 26 part models. Tested on two real boards (one with 26 injected faults, all flagged; one
+with a published errata list, both wiring errata found) and on eight public projects with a known fix
+commit (six flagged before the fix; the other two cannot be seen in the design files). Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
 
 ## Quick start
 
@@ -41,7 +42,10 @@ Without them those checks are skipped and the report says so. KiCad itself is no
 | Family | What |
 |---|---|
 | Protocol | UART TX/RX direction; I2C SDA/SCL crossing, pull-up presence and value (3 mA limit, rise time), pull-up rail against each device's pin limit, address clashes from the strap wiring; SPI MOSI/MISO swaps, undriven clocks, shared chip selects; addressable-LED chain direction, undriven or doubly-driven inputs, logic level at the first LED; USB D+/D- swaps and Type-C CC resistors |
-| MCU pin functions | on MCUs with fixed peripheral pins (RP2040 so far): a pin wired as SDA that can only be SCL, and the like |
+| Signals at MCU / FPGA pins | an audit of every used pin: what arrives there and whether the pin can do it. Analog signals on pins with no ADC (or only the radio-shared ADC2 on ESP32), interrupts on pins that cannot wake the part, signals arriving at pins the design cannot read (ECP5 `CCLK`), fixed peripheral pins used for the wrong line (RP2040) |
+| Clock and reset | oscillator outputs reach clock-capable pins; crystals have both load capacitors and sit on oscillator pins; each reset: pull-up, capacitor, time constant, who can drive it, push-pull against a button; strap resistors strong enough against the internal pull |
+| Schematic against board | nets, parts and footprints that differ between the two files |
+| Switched loads | buzzers, relays, motors: flyback diode present and the right way round; voltage across a buzzer coil |
 | Footprints | every symbol pin has a pad of the same number and the reverse; polarised capacitors the right way round |
 | Pins | every connection a part model says the datasheet requires (reference resistors, bypass pins, mode straps); floating enable / reset pins; open-drain outputs with no pull-up; boot-strap pins pulled the wrong way |
 | Power | rail voltages and where they come from; each part's supply inside its range; no pin above its absolute maximum (dividers, pull-ups, 5 V into 3.3 V); divided-down signals that never reach a logic high; regulator load, dropout and temperature; fuse / FET / switch current; decoupling count, value and distance; regulator capacitors after DC-bias derating |
@@ -56,7 +60,8 @@ it against Andrew Zonenberg's schematic and layout review checklists.
 
 1. **Read the project.** A built-in reader and netlister for `.kicad_sch` (KiCad 6 to 10,
    hierarchical) and a reader for `.kicad_pcb` (pads, tracks, zones, stack-up). If both are present
-   the two netlists are compared.
+   the two netlists are compared. KiCad 5 projects work when they have a board: pin names come from
+   the `-cache.lib`, nets from the `.kicad_pcb`.
 2. **Recognise the parts.** Each component is matched to a *part model*: a YAML file of datasheet
    facts ([schema](docs/part-model-schema.md)). Parts with no model get pin roles guessed from pin
    names, and the report lists them, because fewer checks apply.
@@ -96,12 +101,12 @@ python3 -m pytest -q
 ```
 
 ```bash
-BOARDLINT_DINO=/path/to/dino-board python3 -m pytest -q
+BOARDLINT_DINO=/path/to/dino-board BOARDLINT_ECP5=/path/to/basic-ecp5-pcb/hardware python3 -m pytest -q
 ```
 
 Unit tests need nothing else. The end-to-end tests use the
 [DinoLight board](https://github.com/mo-seph/dino-board) as a reference design (not vendored here)
-and inject 25 classic mistakes into it in memory, requiring each to be flagged:
+at commit `4da182c` and inject 26 classic mistakes into it in memory, requiring each to be flagged:
 
 ```bash
 python3 tools/fault_report.py /path/to/dino-board
@@ -120,6 +125,7 @@ python3 tools/regress.py /tmp/boardlint-regress
 - Current budgets add every part's maximum. Real duty cycles are lower; record them as waivers.
 - Coupling and droop numbers are closed-form estimates and simple circuit models. They rank
   problems; they do not replace a field solver or a bench measurement.
+- KiCad 5 legacy schematics are not netlisted: a KiCad 5 project needs its board file.
 - Buses in the schematic (bus wires and bus entries) are not expanded by the built-in netlister.
   When a board file exists its netlist is used, so this only affects schematic-only runs.
 - Switching regulators, differential-pair impedance, antenna keep-outs, creepage and thermal design are not checked yet.

@@ -1,0 +1,50 @@
+id: ao3400a
+match:
+  lcsc: [C20917]
+  value: ["AO3400A"]
+kind: Q
+class: mosfet
+description: "30 V N-channel MOSFET, 5.7 A, 32 mOhm at 4.5 V, 48 mOhm at 2.5 V, SOT-23"
+datasheet: "Alpha & Omega AO3400A, Rev 3, December 2011 (datasheets/C20917_AO3400A.pdf)"
+provenance:
+  source: "datasheets/C20917_AO3400A.pdf"
+  verified: true
+  notes: >
+    Absolute maximum ratings p.1 (VDS 30 V, VGS +/-12 V, ID 5.7 A at TA = 25 C / 4.7 A at 70 C,
+    pulsed 30 A, PD 1.4 W at 25 C / 0.9 W at 70 C, TJ -55 to 150 C; R theta JA 70 typ / 90 max
+    C/W for t <= 10 s, 100 typ / 125 max C/W steady state, R theta JL 63 typ / 80 max C/W).
+    Electrical characteristics p.2 (TJ = 25 C): BVDSS 30 V min; VGS(th) 0.65 / 1.05 / 1.45 V at
+    ID = 250 uA; RDS(on) 18 typ / 26.5 max mOhm at VGS = 10 V, ID = 5.7 A (28 / 38 mOhm at
+    TJ = 125 C), 19 typ / 32 max mOhm at VGS = 4.5 V, ID = 5 A, 24 typ / 48 max mOhm at
+    VGS = 2.5 V, ID = 3 A; body diode 0.7 typ / 1 V max at 1 A, 2 A continuous; Ciss 630 pF,
+    Coss 75 pF, Crss 50 pF; Rg 1.5 / 3 / 4.5 Ohm; Qg 6 typ / 7 max nC at VGS = 4.5 V,
+    VDS = 15 V, ID = 5.7 A. No RDS(on) is specified below VGS = 2.5 V. The total gate charge is
+    given at 4.5 V only (the AO3401A file stores its 10 V figure in qg_nc; here it is the 4.5 V
+    one). Pin numbers are only in the package drawing (not in the extracted text) and were not
+    read. No errata search was done (offline extraction).
+
+pins:
+  G: {drive: input}
+  S: {}
+  D: {}
+
+fet:
+  channel: n
+  vds_max: 30
+  vgs_max: 12
+  id_max_a: 5.7               # TA = 25 C; 4.7 A at 70 C
+  id_pulse_a: 30
+  vgs_th_min: 0.65
+  vgs_th_typ: 1.05
+  vgs_th_max: 1.45
+  rds_on:                     # maximum at 25 C
+    - {vgs: 10, mohm: 26.5}
+    - {vgs: 4.5, mohm: 32}
+    - {vgs: 2.5, mohm: 48}
+  body_diode_vf: 1.0          # max at 1 A (0.7 typ)
+  body_diode_if_a: 2
+  ciss_pf: 630
+  qg_nc: 6                    # typ at VGS = 4.5 V (7 max); not given at 10 V
+  pd_w: 1.4
+  theta_ja: 125               # steady state, max, on 1 in2 FR-4 with 2 oz copper
+  tj_max: 150

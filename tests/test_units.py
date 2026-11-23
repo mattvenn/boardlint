@@ -96,3 +96,19 @@ def test_spi_clean_swapped_and_shared_cs():
     assert errs(_spi()) == []
     assert any('swapped' in t for t in errs(_spi(swap=True)))
     assert any('share chip select' in t for t in errs(_spi(share_cs=True)))
+
+
+def test_relay_without_flyback_diode():
+    d = Design(name='relay')
+    fz.add_part(d, 'K1', 'G5LE', {'1': ('A1', 'passive', '+5V'), '2': ('A2', 'passive', 'COIL_N')}, kind='OTHER')
+    d.components['K1'].lib_id = 'Relay:G5LE-1'
+    fz.add_part(d, 'Q1', '2N7002', {'1': ('G', 'input', 'DRV'), '2': ('S', 'passive', 'GND'), '3': ('D', 'passive', 'COIL_N')}, kind='Q')
+    fz.reanalyse(d)
+    errs = [f.title for f in run(d, only=['load.inductive'])[0] if f.severity == 'error']
+    assert any('no flyback diode' in t for t in errs)
+    fz.add_part(d, 'D1', '1N4148W', {'1': ('K', 'passive', '+5V'), '2': ('A', 'passive', 'COIL_N')}, kind='D')
+    fz.reanalyse(d)
+    assert not [f for f in run(d, only=['load.inductive'])[0] if f.severity == 'error']
+    fz.swap_nets(d, fz.pin(d, 'D1', 'K'), fz.pin(d, 'D1', 'A'))
+    fz.reanalyse(d)
+    assert any('wrong way round' in f.title for f in run(d, only=['load.inductive'])[0])

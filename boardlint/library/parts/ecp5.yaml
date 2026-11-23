@@ -1,0 +1,78 @@
+id: ecp5
+match:
+  value: ["LFE5U*", "LFE5UM*", "ECP5U*", "ECP5UM*"]
+  lib: ["ECP5U*", "ECP5UM*", "LFE5U*"]
+kind: IC
+class: fpga
+description: Lattice ECP5 / ECP5-5G FPGA (any package; pins are matched by name)
+datasheet: "Lattice ECP5 and ECP5-5G Family Data Sheet (FPGA-DS-02012); ECP5 sysCONFIG Usage Guide (FPGA-TN-02039)"
+provenance:
+  source: "written from memory of the family data sheet and the sysCONFIG guide; neither document was open"
+  verified: false
+  notes: >
+    Unverified: every number here. In particular the weak pull-up current range (30 to 150 uA,
+    which gives internal_pull_ohm_min at 3.3 V), the supply tolerances, and the statement that
+    CCLK/MCLK can only be driven by user logic (through the USRMCLK primitive) and not read.
+    The last one matches the erratum recorded by the basic-ecp5-pcb project
+    (https://github.com/mattvenn/basic-ecp5-pcb/issues/3). Review against the data sheet.
+
+gpio_pattern: "^P[TBLR]\\d+[A-D]"        # user I/O: PT38A, PL11C, PB6B...
+clock_pattern: "PCLK[TC]\\d|GR_PCLK"      # pins that reach the primary clock network
+
+supplies:
+  - pins: [VCC]
+    vmin: 1.045
+    vmax: 1.155
+    abs_max: 1.32
+    decoupling:
+      - {c_min: 100n, count: 1, note: "core supply: 100 nF per pin group plus bulk"}
+  - pins: [VCCAUX]
+    vmin: 2.375
+    vmax: 2.625
+    abs_max: 2.75
+    decoupling:
+      - {c_min: 100n, count: 1}
+
+  - pins: [VCCIO0, VCCIO1, VCCIO2, VCCIO3, VCCIO4, VCCIO6, VCCIO7, VCCIO8]
+    vmin: 1.14
+    vmax: 3.465
+    abs_max: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1, note: "100 nF per VCCIO pin"}
+
+io:
+  vil: 0.8                 # LVCMOS33 / LVTTL
+  vih: 2.0
+  abs_max_over_supply: 0.3
+  internal_pull_ohm: 22k   # strongest weak pull-up: 3.3 V / 150 uA
+
+pins:
+  "CCLK/MCLK/SCK":
+    role: fpga_cclk
+    user_input: false
+    note: "Configuration clock. In master-SPI mode the FPGA drives it; after configuration user logic can only drive it, through the USRMCLK primitive. It cannot be used as an input to the design."
+  CFG_0: {role: boot_strap, internal_pull: up, internal_pull_ohm: 22k, vil: 0.8}
+  CFG_1: {role: boot_strap, internal_pull: up, internal_pull_ohm: 22k, vil: 0.8}
+  CFG_2: {role: boot_strap, internal_pull: up, internal_pull_ohm: 22k, vil: 0.8}
+  PROGRAMN:
+    role: reset
+    active: low
+    internal_pull: up
+    internal_pull_ohm: 22k
+  INITN: {role: fpga_initn, drive: open_drain, internal_pull: up}
+  DONE: {role: fpga_done, drive: open_drain, internal_pull: up}
+  TCK:
+    require:
+      - {pulldown: {}, note: "TCK has no internal pull: a 4.7k pull-down keeps the TAP quiet", when: "recommended"}
+
+mcu:
+  strapping:
+    CFG_2: {note: "CFG[2:0] = 010 selects master SPI (boot from flash); 001 slave SPI"}
+    CFG_1: {note: "CFG[2:0] = 010 selects master SPI (boot from flash); 001 slave SPI"}
+    CFG_0: {note: "CFG[2:0] = 010 selects master SPI (boot from flash); 001 slave SPI"}
+
+errata:
+  - id: cclk-not-a-user-input
+    summary: "The configuration clock pin (CCLK/MCLK) cannot be read by user logic. A board that shares the flash SPI bus with an external controller cannot receive that controller's clock on this pin: route the clock to an ordinary I/O as well."
+    source: "https://github.com/mattvenn/basic-ecp5-pcb/issues/3"
+    severity: warning

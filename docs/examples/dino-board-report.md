@@ -1,6 +1,6 @@
 # boardlint review: dinolight
 
-**1 error, 12 warnings, 31 notes.** 144 components, 84 nets; netlist from the board.
+**1 error, 12 warnings, 33 notes.** 144 components, 84 nets; netlist from the board.
 
 - schematic and board netlists agree (84 multi-pin nets)
 
@@ -498,6 +498,35 @@ The LED input threshold rises to 2.73 V when VLED is at 4.2 V. The driver's guar
 
 Basis: part model parts/sk6812mini-e.yaml (verified against datasheet): VIH.
 
+### U4 pin use: 18 pins in use
+
+`mcu.pin_use` · parts: U4 · confidence: medium
+
+IO0 = BOOT: button [ok; strapping pin]; IO1 = TOUCH_IRQ: interrupt in (U7) [ok: can wake from deep sleep]; IO3 = IO3: test point only [ok; strapping pin]; IO10 = VBAT_SENSE: analog in (+BATT through R6/R7) [ok: ADC1]; IO15 = ACC_INT1: interrupt in (U5) [ok: can wake from deep sleep]; IO16 = ACC_INT2: interrupt in (U5) [ok: can wake from deep sleep]; IO17 = CHG_STAT: digital in (divided from CHG_STAT_5V) [ok]; IO18 = VBUS_DET: digital in (divided from VBUS) [ok]; USB_D- = USB_DM: USB D- (J1) [ok]; USB_D+ = USB_DP: USB D+ (J1) [ok]; IO21 = LED_EN: digital out (to FET gate) [ok]; IO47 = SPINE_DATA: addressable-LED data out (D1) [ok]; IO48 = EYE_DATA: addressable-LED data out (D21) [ok]; IO41 = SDA: I2C SDA (U7) [ok]; IO42 = SCL: I2C SCL (U7) [ok]; TXD0 = UART_TX: test point only [ok]; RXD0 = UART_RX: test point only [ok]; EN = EN: button [ok]
+
+| | |
+|---|---|
+| IO0 | BOOT: button [ok; strapping pin] |
+| IO1 | TOUCH_IRQ: interrupt in (U7) [ok: can wake from deep sleep] |
+| IO3 | IO3: test point only [ok; strapping pin] |
+| IO10 | VBAT_SENSE: analog in (+BATT through R6/R7) [ok: ADC1] |
+| IO15 | ACC_INT1: interrupt in (U5) [ok: can wake from deep sleep] |
+| IO16 | ACC_INT2: interrupt in (U5) [ok: can wake from deep sleep] |
+| IO17 | CHG_STAT: digital in (divided from CHG_STAT_5V) [ok] |
+| IO18 | VBUS_DET: digital in (divided from VBUS) [ok] |
+| USB_D- | USB_DM: USB D- (J1) [ok] |
+| USB_D+ | USB_DP: USB D+ (J1) [ok] |
+| IO21 | LED_EN: digital out (to FET gate) [ok] |
+| IO47 | SPINE_DATA: addressable-LED data out (D1) [ok] |
+| IO48 | EYE_DATA: addressable-LED data out (D21) [ok] |
+| IO41 | SDA: I2C SDA (U7) [ok] |
+| IO42 | SCL: I2C SCL (U7) [ok] |
+| TXD0 | UART_TX: test point only [ok] |
+| RXD0 | UART_RX: test point only [ok] |
+| EN | EN: button [ok] |
+
+Basis: part model parts/esp32-s3-mini-1.yaml (verified against datasheet): pin capabilities; use inferred from what else is on each net.
+
 ### Strapping pin U4.4(IO0) is used (BOOT)
 
 `mcu.strapping` · parts: U4, SW3 · nets: BOOT · confidence: medium
@@ -576,6 +605,18 @@ Basis: part model parts/2n7002.yaml (verified against datasheet).
 
 Add a Voltage property (or put it in the value, e.g. '10uF 16V') and they will be checked.
 
+### Reset of U4: U4.45(EN) on EN
+
+`reset.circuit` · parts: U4 · nets: EN, RST_OD · confidence: high
+
+pull-up 100k (R16); 100nF to ground, time constant 10 ms; open-drain U6.2(~{RESET}); button SW2.1; through R32 (1k).
+
+| | |
+|---|---|
+| pull_up | 100k |
+| capacitance | 100nF |
+| tau_ms | 10.0 |
+
 ### I2C bus SDA / SCL: 2 of 2 modelled target(s) answer in simulation
 
 `sim.i2c` · parts: U5, U7 · nets: SCL, SDA · confidence: high
@@ -596,22 +637,26 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 
 | Check | Status | |
 |---|---|---|
+| `clock.source` | ran | 0 finding(s), 0.00 s |
 | `decoupling.per_part` | ran | 4 finding(s), 0.00 s |
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 0 finding(s), 0.00 s |
 | `i2c.bus` | ran | 5 finding(s), 0.00 s |
-| `layout.coupling` | ran | 8 finding(s), 0.60 s |
-| `layout.return_path` | ran | 6 finding(s), 0.48 s |
+| `layout.coupling` | ran | 8 finding(s), 0.54 s |
+| `layout.return_path` | ran | 6 finding(s), 0.27 s |
 | `layout.track_current` | ran | 2 finding(s), 0.00 s |
 | `led.chain` | ran | 4 finding(s), 0.00 s |
+| `load.inductive` | ran | 0 finding(s), 0.00 s |
 | `mcu.alt_function` | ran | 0 finding(s), 0.00 s |
+| `mcu.pin_use` | ran | 1 finding(s), 0.00 s |
 | `mcu.strapping` | ran | 1 finding(s), 0.00 s |
 | `pin.floating_control` | ran | 0 finding(s), 0.00 s |
 | `pin.name_voltage` | ran | 0 finding(s), 0.00 s |
 | `pin.requirements` | ran | 1 finding(s), 0.00 s |
+| `pin.strap_strength` | ran | 0 finding(s), 0.00 s |
 | `polarity.polarised_parts` | ran | 0 finding(s), 0.00 s |
 | `power.budget` | ran | 2 finding(s), 0.00 s |
-| `power.droop` | ran | 1 finding(s), 0.82 s |
+| `power.droop` | ran | 1 finding(s), 0.72 s |
 | `power.logic_level` | ran | 0 finding(s), 0.00 s |
 | `power.pin_voltage` | ran | 2 finding(s), 0.01 s |
 | `power.rails` | ran | 1 finding(s), 0.00 s |
@@ -619,9 +664,11 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `power.supply_range` | ran | 2 finding(s), 0.00 s |
 | `ratings.fets` | ran | 1 finding(s), 0.00 s |
 | `ratings.passives` | ran | 1 finding(s), 0.00 s |
-| `sim.i2c` | ran | 1 finding(s), 0.03 s |
-| `sim.led_chain` | ran | 1 finding(s), 0.05 s |
+| `reset.circuit` | ran | 1 finding(s), 0.00 s |
+| `sim.i2c` | ran | 1 finding(s), 0.02 s |
+| `sim.led_chain` | ran | 1 finding(s), 0.04 s |
 | `spi.bus` | ran | 0 finding(s), 0.00 s |
+| `sync.schematic_board` | ran | 0 finding(s), 0.00 s |
 | `uart.direction` | ran | 0 finding(s), 0.00 s |
 | `usb.wiring` | ran | 0 finding(s), 0.00 s |
 

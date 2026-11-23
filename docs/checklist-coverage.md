@@ -14,7 +14,7 @@ This page maps Andrew Zonenberg's PCB review checklists onto what boardlint chec
 
 Three limits apply to every `covered` and `partial` row:
 
-- Most checks read datasheet facts from a part model. The library holds 17 models. A part without a model gets only the generic rules (one bypass capacitor per supply rail, supply + 0.3 V pin limit, roles guessed from pin names).
+- Most checks read datasheet facts from a part model. The library holds 26 models. A part without a model gets only the generic rules (one bypass capacitor per supply rail, supply + 0.3 V pin limit, roles guessed from pin names).
 - Checks that depend on a rail voltage skip rails whose voltage is unknown. `power.rails` lists them.
 - Layout checks need the `.kicad_pcb` file. `power.droop` needs ngspice; `sim.i2c` and `sim.led_chain` need Icarus Verilog.
 
@@ -109,9 +109,9 @@ Three limits apply to every `covered` and `partial` row:
 | Checklist item | Status | Check id(s) or what it would take |
 |---|---|---|
 | Oscillator jitter and tolerance | `needs data` | Oscillator specifications and each consumer's requirement |
-| Crystal load capacitors | `planned` | Crystal load capacitance from the value field or a model; compare with the fitted capacitors |
-| Crystal only on a pin with an oscillator driver | `planned` | Oscillator pin role from models or pin names |
-| FPGA clock-capable input rules | `needs data` | Vendor clocking-resource tables |
+| Crystal load capacitors | `partial` | `clock.source`: both capacitors present; computed load capacitance compared with a value stated in the schematic. Untested on a real board; crystal models would give the specified CL |
+| Crystal only on a pin with an oscillator driver | `partial` | `clock.source`: by pin name (XIN, XTAL, OSC). Untested on a real board |
+| FPGA clock-capable input rules | `partial` | `clock.source`: an oscillator must arrive at a clock-capable pin, by the model's `clock_pattern` (ECP5) or by pin name (PCLK, GCLK, MRCC, SRCC). Not done: which clock regions a pin reaches |
 | Xilinx: single-ended clock on the P pin | `planned` | Xilinx symbol pin names carry P/N and clock capability |
 | Trial place-and-route of clocks | `human` | Needs the vendor toolchain |
 
@@ -156,7 +156,7 @@ Three limits apply to every `covered` and `partial` row:
 
 | Checklist item | Status | Check id(s) or what it would take |
 |---|---|---|
-| Schematic review done, pin swaps included | `partial` | The loader notes when schematic and board netlists differ (no check id). Sign-off is human |
+| Schematic review done, pin swaps included | `partial` | `sync.schematic_board`: nets, parts and footprints that differ between schematic and board. Sign-off is human |
 | DRC clean | `planned` | Run `kicad-cli pcb drc`; report violations that have no waiver |
 
 ### Decoupling
@@ -303,9 +303,9 @@ Three limits apply to every `covered` and `partial` row:
 
 | Checklist | `covered` | `partial` | `planned` | `needs data` | `human` | Total |
 |---|---|---|---|---|---|---|
-| Schematic | 10 | 12 | 26 | 8 | 4 | 60 |
+| Schematic | 10 | 15 | 24 | 7 | 4 | 60 |
 | Layout | 2 | 7 | 37 | 12 | 14 | 72 |
-| Both | 12 | 19 | 63 | 20 | 18 | 132 |
+| Both | 12 | 22 | 61 | 19 | 18 | 132 |
 
 boardlint also runs checks the checklists do not list: I2C address clashes and pull-up sizing, addressable-LED chain order, USB Type-C CC resistors, and rail droop under a load step.
 

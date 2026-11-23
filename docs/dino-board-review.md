@@ -47,11 +47,11 @@ for 400 kHz once a Qwiic cable and module are attached.
 
 ## Does it catch mistakes? Fault injection
 
-Since the board has no known bugs, 25 were injected one at a time
+Since the board has no known bugs, 26 were injected one at a time
 (`python3 tools/fault_report.py <dino-board>`): each is one edit to the loaded design, and the test
 requires a *new* error or warning from the check that should own it.
 
-**25 of 25 are flagged.** On the first run it was 20 of 22: an address clash on a newly added part
+**26 of 26 are flagged.** On the first run it was 20 of 22: an address clash on a newly added part
 and a too-low logic divider were missed, and a crossed I2C device and a P-FET with no gate
 pull-down were caught only by unrelated findings. All four led to fixes in the checks. This is a test of the checks against mistakes I chose, on the
 board they were developed on: it shows the mechanisms work, not what fraction of real mistakes they catch.
@@ -80,6 +80,7 @@ The [regression corpus](regression-corpus.md) is the less flattering measure.
 | Regulator fed from 12 V | `power.supply_range` |
 | P-FET gate pull-down path missing | `ratings.fets` |
 | Regulator enable tied to ground | `pin.floating_control` |
+| Battery-sense divider moved to a pin with no ADC | `mcu.pin_use` |
 | **Historical:** status dividers 100k/100k, as first drawn | `power.logic_level` |
 | **Historical:** regulator capacitors 1 uF 0402, as first drawn | `decoupling.regulator_caps` |
 
@@ -93,3 +94,58 @@ the antenna keep-out, footprint pin-1 and polarity against the assembler's libra
 polarity of the LiPo lead, LED rail inrush, and the deep-discharge recovery problem its review
 found. The last two are the kind of thing a part-model plus simulation approach could reach;
 the others need footprint and mechanical data.
+
+---
+
+# Second run: commit `eb2fd13` (2026-11-23), with the owner's description to check against
+
+Two commits arrived after the first run: five sensors and a buzzer, 18 spine LEDs instead of 20, and
+a top-emitting eye LED. The owner then described what should be on each MCU pin and each I2C
+address. That turns this run into a comparison: does the tool derive the same picture from the files?
+
+Run with `--netlist-from sch`, because this commit's board file is behind its schematic (its own
+commit message says so). Output: [examples/dino-board-eb2fd13-report.md](examples/dino-board-eb2fd13-report.md).
+
+```
+dinolight: 1 error, 18 warnings, 30 notes
+```
+
+## The owner's description against what was derived
+
+| Owner's description | Derived from the files | Agrees |
+|---|---|---|
+| I2C on GPIO41 SDA, GPIO42 SCL, 2.2k pull-ups | `mcu.pin_use`: IO41 = SDA, IO42 = SCL; `i2c.bus`: 2.2k on each | yes |
+| 0x29 light, 0x2C compass, 0x44 temperature, 0x46 pressure, 0x5C touch, 0x6A motion | `i2c.bus` address map: the same six. Three come from straps: MPR121 ADDR is on SDA (0x5C), BMP580 SDO on ground (0x46), LSM6DS3 SA0 on ground (0x6A) | yes |
+| | `sim.i2c`: the five targets with a simulation model answer at those addresses and return their ID registers (SHT40 is command-based and has no model) | |
+| Spine LEDs on GPIO11 through 330R; eye LED on GPIO48 through 330R | `led.chain`: 18 LEDs D1 to D18 from IO11 through R14 330R; D21 from IO48 through R15 330R. `sim.led_chain`: 19 of 19 latch data, spine in order | yes |
+| USB on GPIO19, GPIO20 | USB_D- and USB_D+ (the module's pins 23, 24) to J1 | yes |
+| UART0 on GPIO43, GPIO44, test points only | TXD0, RXD0: test point only | yes |
+| No SPI; motion and pressure sensors strapped to I2C | no SPI bus found; LSM6DS3 CS and BMP580 CSB are on 3V3, and the simulation models only answer on I2C with those pins high | yes |
+| Interrupts: touch GPIO1, motion GPIO15, GPIO16 | IO1, IO15, IO16: interrupt inputs, all wake-capable (RTC) pins | yes |
+| Buzzer on GPIO4 | IO4: digital out to a FET gate (Q4, which switches BZ1) | yes |
+| Battery voltage: analogue on GPIO10 | IO10: analog in, +BATT through R6/R7, on ADC1 (the ADC that works with the radio on) | yes |
+| Charge status GPIO17, USB-present GPIO18: digital | IO17, IO18: digital inputs through dividers. Both pins are ADC2-only, which is fine for digital use | yes |
+| LED rail enable GPIO21 | IO21: digital out to a FET gate | yes |
+| "ESP32-S2-MINI-1" | The schematic's U4 is **ESP32-S3-MINI-1-N8** (and GPIO48 does not exist on the S2 module) | **no**: the description, not the board, looks wrong |
+
+Reset: EN has a 100k pull-up and 100 nF (10 ms), is pulled low by the TLV803S supervisor through
+1k, and has a button. No crystal or oscillator is on the board (the module has its own), so
+`clock.source` has nothing to say.
+
+## New in this revision
+
+- **`sync.schematic_board` (warning):** 7 nets differ; D21's footprint differs (schematic
+  `LED_SK6812MINI-012_3.7x3.5mm`, board still the reverse-mount MINI-E); C29, C30, D19, D20 are on
+  the board only. Expected mid-change, and the reason every layout finding in this run describes
+  the old routing. One thing to carry into the re-route: the MINI-012's pin order is not the
+  MINI-E's (1 DIN, 2 VDD, 3 DOUT, 4 GND against 1 GND, 2 DIN, 3 VDD, 4 DOUT), so the old pad nets
+  must not survive.
+- **`load.inductive` (warning):** the buzzer gets about 0.63 V. R35 and R37 in parallel (50 ohm)
+  in series with a 12 ohm coil from 3.3 V; the part is specified from 2 V. The board's notes
+  already call the loudness "an estimate", and the resistors are there on purpose (they cap the
+  current if the pin sticks high). This puts a number on it. The flyback diode D24 is present and
+  the right way round.
+- Unchanged from the first run: the 3.3 V rail under transmit peaks (finding 1), the fuse and
+  track current worst case, and SK6812 operation below 3.7 V.
+
+Nothing in the owner's description was contradicted by the board except the module's name.

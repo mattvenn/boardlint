@@ -3,8 +3,8 @@
  "version": "0.1.0",
  "design": "dinolight",
  "sources": [
-  "/home/user/testdata/dino-board/dinolight.kicad_sch",
-  "/home/user/testdata/dino-board/dinolight.kicad_pcb"
+  "/home/user/testdata/dino-board-4da182c/dinolight.kicad_sch",
+  "/home/user/testdata/dino-board-4da182c/dinolight.kicad_pcb"
  ],
  "netlist_source": "pcb",
  "notes": [
@@ -13,9 +13,14 @@
  "summary": {
   "error": 1,
   "warning": 12,
-  "info": 31
+  "info": 33
  },
  "checks": [
+  {
+   "id": "clock.source",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
   {
    "id": "decoupling.per_part",
    "status": "ran",
@@ -39,12 +44,12 @@
   {
    "id": "layout.coupling",
    "status": "ran",
-   "detail": "8 finding(s), 0.64 s"
+   "detail": "8 finding(s), 0.56 s"
   },
   {
    "id": "layout.return_path",
    "status": "ran",
-   "detail": "6 finding(s), 0.36 s"
+   "detail": "6 finding(s), 0.28 s"
   },
   {
    "id": "layout.track_current",
@@ -57,9 +62,19 @@
    "detail": "4 finding(s), 0.00 s"
   },
   {
+   "id": "load.inductive",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
    "id": "mcu.alt_function",
    "status": "ran",
    "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "mcu.pin_use",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
   },
   {
    "id": "mcu.strapping",
@@ -82,6 +97,11 @@
    "detail": "1 finding(s), 0.00 s"
   },
   {
+   "id": "pin.strap_strength",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
    "id": "polarity.polarised_parts",
    "status": "ran",
    "detail": "0 finding(s), 0.00 s"
@@ -94,7 +114,7 @@
   {
    "id": "power.droop",
    "status": "ran",
-   "detail": "1 finding(s), 0.84 s"
+   "detail": "1 finding(s), 0.74 s"
   },
   {
    "id": "power.logic_level",
@@ -132,6 +152,11 @@
    "detail": "1 finding(s), 0.00 s"
   },
   {
+   "id": "reset.circuit",
+   "status": "ran",
+   "detail": "1 finding(s), 0.00 s"
+  },
+  {
    "id": "sim.i2c",
    "status": "ran",
    "detail": "1 finding(s), 0.03 s"
@@ -139,10 +164,15 @@
   {
    "id": "sim.led_chain",
    "status": "ran",
-   "detail": "1 finding(s), 0.04 s"
+   "detail": "1 finding(s), 0.07 s"
   },
   {
    "id": "spi.bus",
+   "status": "ran",
+   "detail": "0 finding(s), 0.00 s"
+  },
+  {
+   "id": "sync.schematic_board",
    "status": "ran",
    "detail": "0 finding(s), 0.00 s"
   },
@@ -1061,6 +1091,38 @@
    "confidence": "high"
   },
   {
+   "check": "mcu.pin_use",
+   "severity": "info",
+   "title": "U4 pin use: 18 pins in use",
+   "detail": "IO0 = BOOT: button [ok; strapping pin]; IO1 = TOUCH_IRQ: interrupt in (U7) [ok: can wake from deep sleep]; IO3 = IO3: test point only [ok; strapping pin]; IO10 = VBAT_SENSE: analog in (+BATT through R6/R7) [ok: ADC1]; IO15 = ACC_INT1: interrupt in (U5) [ok: can wake from deep sleep]; IO16 = ACC_INT2: interrupt in (U5) [ok: can wake from deep sleep]; IO17 = CHG_STAT: digital in (divided from CHG_STAT_5V) [ok]; IO18 = VBUS_DET: digital in (divided from VBUS) [ok]; USB_D- = USB_DM: USB D- (J1) [ok]; USB_D+ = USB_DP: USB D+ (J1) [ok]; IO21 = LED_EN: digital out (to FET gate) [ok]; IO47 = SPINE_DATA: addressable-LED data out (D1) [ok]; IO48 = EYE_DATA: addressable-LED data out (D21) [ok]; IO41 = SDA: I2C SDA (U7) [ok]; IO42 = SCL: I2C SCL (U7) [ok]; TXD0 = UART_TX: test point only [ok]; RXD0 = UART_RX: test point only [ok]; EN = EN: button [ok]",
+   "refs": [
+    "U4"
+   ],
+   "nets": [],
+   "evidence": {
+    "IO0": "BOOT: button [ok; strapping pin]",
+    "IO1": "TOUCH_IRQ: interrupt in (U7) [ok: can wake from deep sleep]",
+    "IO3": "IO3: test point only [ok; strapping pin]",
+    "IO10": "VBAT_SENSE: analog in (+BATT through R6/R7) [ok: ADC1]",
+    "IO15": "ACC_INT1: interrupt in (U5) [ok: can wake from deep sleep]",
+    "IO16": "ACC_INT2: interrupt in (U5) [ok: can wake from deep sleep]",
+    "IO17": "CHG_STAT: digital in (divided from CHG_STAT_5V) [ok]",
+    "IO18": "VBUS_DET: digital in (divided from VBUS) [ok]",
+    "USB_D-": "USB_DM: USB D- (J1) [ok]",
+    "USB_D+": "USB_DP: USB D+ (J1) [ok]",
+    "IO21": "LED_EN: digital out (to FET gate) [ok]",
+    "IO47": "SPINE_DATA: addressable-LED data out (D1) [ok]",
+    "IO48": "EYE_DATA: addressable-LED data out (D21) [ok]",
+    "IO41": "SDA: I2C SDA (U7) [ok]",
+    "IO42": "SCL: I2C SCL (U7) [ok]",
+    "TXD0": "UART_TX: test point only [ok]",
+    "RXD0": "UART_RX: test point only [ok]",
+    "EN": "EN: button [ok]"
+   },
+   "basis": "part model parts/esp32-s3-mini-1.yaml (verified against datasheet): pin capabilities; use inferred from what else is on each net",
+   "confidence": "medium"
+  },
+  {
    "check": "mcu.strapping",
    "severity": "info",
    "title": "Strapping pin U4.4(IO0) is used (BOOT)",
@@ -1189,6 +1251,26 @@
    "refs": [],
    "nets": [],
    "evidence": {},
+   "basis": "",
+   "confidence": "high"
+  },
+  {
+   "check": "reset.circuit",
+   "severity": "info",
+   "title": "Reset of U4: U4.45(EN) on EN",
+   "detail": "pull-up 100k (R16); 100nF to ground, time constant 10 ms; open-drain U6.2(~{RESET}); button SW2.1; through R32 (1k).",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "EN",
+    "RST_OD"
+   ],
+   "evidence": {
+    "pull_up": "100k",
+    "capacitance": "100nF",
+    "tau_ms": 10.0
+   },
    "basis": "",
    "confidence": "high"
   },

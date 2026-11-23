@@ -9,6 +9,7 @@ from .library import supply_spec
 _NAME_V = [
     (re.compile(r'(?<![\d.])(\d+)V(\d+)(?!\d)', re.I), lambda m: float(m.group(1) + '.' + m.group(2))),
     (re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*V(?![A-Z0-9])', re.I), lambda m: float(m.group(1))),
+    (re.compile(r'^\+(\d+(?:\.\d+)?)V[A-Z]{1,3}$', re.I), lambda m: float(m.group(1))),      # +3.3VP, +5VA
 ]
 _SPECIAL = [
     (re.compile(r'VBUS|USB_?5V|VUSB', re.I), (4.4, 5.5, 'USB VBUS range (name)')),
@@ -21,7 +22,7 @@ def voltage_from_name(name: str):
     for rx, v in _SPECIAL:
         if rx.search(base):
             return v
-    if not re.match(r'^[+\-]?\d|^V(CC|DD|IN|OUT|SYS|REF)?[_+]?\d|^P\d+V|^PWR', base, re.I) and not re.search(r'\dV\d|\d+V$', base, re.I):
+    if not re.match(r'^[+\-]?\d|^V(CC|DD|IN|OUT|SYS|REF)?[_+]?\d|^P\d+V|^PWR', base, re.I) and not re.search(r'\dV\d|\d+V$|^\+\d+(\.\d+)?V[A-Z]{1,3}$', base, re.I):
         return None
     for rx, f in _NAME_V:
         m = rx.search(base)
@@ -252,8 +253,8 @@ def supply_net_of(d: Design, c: Component, pin=None):
             continue
         s = supply_spec(c, p)
         if s is not None or p.etype == 'power_in':
-            if best is None or (n.vmin is not None and best.vmin is None):
-                best = n
+            if best is None or (n.vmin is not None and (best.vmin is None or n.vmax > best.vmax)):
+                best = n                 # several domains: I/O pins are judged against the highest one
     return best
 
 

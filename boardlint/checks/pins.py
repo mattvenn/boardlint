@@ -135,8 +135,10 @@ def floating_control(d):
                             basis=model_basis(c) if c.model else 'pin name (no part model)',
                             confidence='medium' if c.model else 'low')
             od = p.spec.get('drive') == 'open_drain' or p.etype in ('open_collector',)
-            if od and p.net and p.role not in ('i2c_sda', 'i2c_scl'):
+            if od and p.net and p.role not in ('i2c_sda', 'i2c_scl') and p.spec.get('internal_pull') != 'up':
                 n = d.net_of(p)
+                if n.is_ground:
+                    continue            # an unused open-drain output parked on ground: harmless
                 ups, _ = pulls(d, n.name)
                 if not ups and not n.is_power:
                     nets, _ = signal_group(d, n.name)

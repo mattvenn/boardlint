@@ -91,6 +91,8 @@ def classify_components(d: Design):
             kind = 'MECH'
         elif part.startswith('crystal') or part.startswith('resonator'):
             kind = 'XTAL'
+        elif lib.startswith(('oscillator:', 'clock:')) or re.match(r'^(sit\d|asfl|ase-|asdm|dsc\d|sg-\d|ecs-.*osc|osc)', part):
+            kind = 'OSC'
         if not kind:
             kind = 'IC' if len(c.pins) > 3 else 'OTHER'
         c.kind = kind
@@ -98,6 +100,36 @@ def classify_components(d: Design):
             c.num = parse_value(c.value, 'R' if kind == 'FB' else kind)
         if kind == 'JUMPER':
             c.props['_bridged'] = _jumper_bridges(c)
+
+
+def split_resistor_packs(d: Design):
+    """A resistor network becomes one two-pin resistor per element, so every check sees plain resistors."""
+    for c in list(d.components.values()):
+        if c.kind != 'R' or len(c.pins) <= 2 or len(c.pins) % 2:
+            continue
+        pins = list(c.pins.values())
+        pairs = {}
+        named = [re.match(r'^R(\d+)\.([12])$', p.name or '') for p in pins]
+        if all(named):
+            for p, m in zip(pins, named):
+                pairs.setdefault(m.group(1), []).append(p)
+        elif all(p.number.isdigit() for p in pins):
+            n = len(pins)
+            byn = {int(p.number): p for p in pins}
+            for i in range(1, n // 2 + 1):
+                if i in byn and (n + 1 - i) in byn:
+                    pairs[str(i)] = [byn[i], byn[n + 1 - i]]
+        if len(pairs) * 2 != len(pins) or any(len(v) != 2 for v in pairs.values()):
+            continue
+        del d.components[c.ref]
+        for k, (a, b) in sorted(pairs.items()):
+            sub_ = Component(ref=f"{c.ref}.{k}", value=c.value, footprint=c.footprint, lib_id=c.lib_id, props=dict(c.props),
+                             dnp=c.dnp, pos=c.pos, side=c.side, kind='R', num=c.num, sheet=c.sheet)
+            for i, p in enumerate((a, b), 1):
+                p.comp = sub_
+                sub_.pins[str(i)] = p
+                p.name = ''
+            d.components[sub_.ref] = sub_
 
 
 def _jumper_bridges(c: Component):
@@ -124,6 +156,7 @@ def norm_pin_name(name: str) -> str:
     """'~{CS}' -> 'CS', 'V_{DD}' -> 'VDD'."""
     n = re.sub(r'~\{([^}]*)\}', r'\1', name or '')
     n = re.sub(r'[_^]\{([^}]*)\}', r'\1', n)
+    n = re.sub(r'\[\d+\]$', '', n)              # 'GND[27]' style pin stacks
     return n.replace('~', '').strip().upper()
 
 
@@ -259,3 +292,15 @@ def caps_to_ground(d: Design, net_name: str):
             if on is not None and on.is_ground:
                 out.append((c, p))
     return out
+
+
+_ANALOG_TOKEN = re.compile(r'^(SENSE?|[VI]SENSE?|SNS|ADC\d*|[A-Z]{0,5}MON|MEAS|AIN\d*|VREF|NTC\d*|TEMP|THERM|POT\d*|MIC|AUDIO)$', re.I)
+
+
+def is_analog_name(net_name: str) -> bool:
+    """True when a net is named like a measurement node (VBAT_SENSE, ADC1, NTC).  Whole tokens only:
+    'Net-(U1-PadC3)' and 'MAIN_EN' must not match."""
+    base = (net_name or '').split('/')[-1]
+    if base.startswith('Net-('):
+        return False
+    return any(_ANALOG_TOKEN.match(t) for t in re.split(r'[^A-Za-z0-9]+', base) if t)

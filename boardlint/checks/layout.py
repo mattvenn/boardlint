@@ -6,7 +6,7 @@ from collections import defaultdict
 from . import check, F
 from .common import PASSIVE_KINDS, names
 from .power_checks import total_load, _summ
-from ..classify import signal_group, pulls, caps_to_ground, fmt_r
+from ..classify import signal_group, pulls, caps_to_ground, fmt_r, is_analog_name
 
 EPS0 = 8.854e-15        # F/mm
 
@@ -133,7 +133,7 @@ def classify_nets(d):
             vkind = None
             if p.role == 'touch':
                 vkind = ('touch', f"capacitive-touch electrode of {c.ref}")
-            elif p.role == 'analog_in' or _ANA.search(n.name):
+            elif p.role == 'analog_in' or is_analog_name(n.name):
                 vkind = ('analog', 'analog / measurement node')
             elif c.kind == 'XTAL':
                 vkind = ('analog', 'crystal')
