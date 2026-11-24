@@ -139,6 +139,8 @@ def floating_control(d):
                 n = d.net_of(p)
                 if n.is_ground:
                     continue            # an unused open-drain output parked on ground: harmless
+                if any(q.comp.kind == 'LED' for q in n.pins if q is not p):
+                    continue            # it sinks an indicator LED: the LED branch is the load
                 ups, _ = pulls(d, n.name)
                 if not ups and not n.is_power:
                     nets, _ = signal_group(d, n.name)

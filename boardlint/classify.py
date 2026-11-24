@@ -297,10 +297,16 @@ def caps_to_ground(d: Design, net_name: str):
 _ANALOG_TOKEN = re.compile(r'^(SENSE?|[VI]SENSE?|SNS|ADC\d*|[A-Z]{0,5}MON|MEAS|AIN\d*|VREF|NTC\d*|TEMP|THERM|POT\d*|MIC|AUDIO)$', re.I)
 
 
+_DIGITAL_TOKEN = re.compile(r'^(SCK|SCLK|CLK|MISO|MOSI|SDI|SDO|DIN|DOUT|CS\d*|NCS|SS|SDA|SCL|TX|RX|TXD|RXD|IRQ|INT\d*|DRDY|EN|RST|RESET)$', re.I)
+
+
 def is_analog_name(net_name: str) -> bool:
     """True when a net is named like a measurement node (VBAT_SENSE, ADC1, NTC).  Whole tokens only:
     'Net-(U1-PadC3)' and 'MAIN_EN' must not match."""
     base = (net_name or '').split('/')[-1]
     if base.startswith('Net-('):
         return False
-    return any(_ANALOG_TOKEN.match(t) for t in re.split(r'[^A-Za-z0-9]+', base) if t)
+    tokens = [t for t in re.split(r'[^A-Za-z0-9]+', base) if t]
+    if any(_DIGITAL_TOKEN.match(t) for t in tokens):
+        return False                 # ADC_SCK, ADC_MISO: the SPI lines of an ADC
+    return any(_ANALOG_TOKEN.match(t) for t in tokens)

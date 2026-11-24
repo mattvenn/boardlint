@@ -45,16 +45,34 @@ def uart_direction(d):
 
 
 # ----------------------------------------------------------------------------- I2C
+def i2c_line(p):
+    """'i2c_sda' / 'i2c_scl' for a pin with that role, or for a free MCU pin on a net named SDA / SCL."""
+    if p.role in ('i2c_sda', 'i2c_scl'):
+        return p.role
+    if p.role == 'gpio' and p.net:
+        s = _signal_id(p.net)
+        if s and s[1] in ('SDA', 'SCL'):
+            return 'i2c_' + s[1].lower()
+    return ''
+
+
 def i2c_buses(d):
-    """[{sda: nets, scl: nets, devices: {ref: (sda pin, scl pin)}}] found from pin roles."""
+    """[{sda: nets, scl: nets, devices: {ref: (sda pin, scl pin)}}] found from pin roles and,
+    for freely assignable MCU pins, from net names."""
     grp = {}
-    for nets, pins, _ in role_groups(d, ('i2c_sda', 'i2c_scl')):
-        for n in nets:
-            grp[n] = (nets, pins)
+    for c in d.components.values():
+        if c.dnp:
+            continue
+        for p in c.pins.values():
+            if i2c_line(p) and p.net and p.net not in grp:
+                nets, _ = signal_group(d, p.net)
+                entry = (frozenset(nets), group_pins(d, nets))
+                for n in nets:
+                    grp[n] = entry
     buses = {}
     for c in d.components.values():
-        sda = [p for p in c.pins.values() if p.role == 'i2c_sda' and p.net]
-        scl = [p for p in c.pins.values() if p.role == 'i2c_scl' and p.net]
+        sda = [p for p in c.pins.values() if i2c_line(p) == 'i2c_sda' and p.net]
+        scl = [p for p in c.pins.values() if i2c_line(p) == 'i2c_scl' and p.net]
         for s in sda:
             for k in scl:
                 key = (grp[s.net][0], grp[k.net][0])
@@ -134,7 +152,7 @@ def i2c_bus(d):
             done.add(nets)
             pins = grp[sorted(nets)[0]][1]
             net = sorted(nets)[0]
-            devs = sorted({p.comp.ref for p in pins if p.role in ('i2c_sda', 'i2c_scl')})
+            devs = sorted({p.comp.ref for p in pins if i2c_line(p)})
             ups, downs = pulls(d, net)
             has_ctrl = any(is_controller_pin(p) for p in pins)
             has_conn = any(p.comp.kind == 'CONN' for p in pins)
@@ -148,12 +166,13 @@ def i2c_bus(d):
                         refs=[c.ref for c, _ in downs], nets=nets, confidence='high')
             if not ups:
                 off_board_host = has_conn and not any(is_controller_pin(p) and p.comp.kind != 'CONN' for p in pins)
-                yield F('i2c.bus', 'warning' if off_board_host else 'error', f"No pull-up on I2C {line.upper()} net {net}",
-                        f"Devices {', '.join(devs)} are open-drain; nothing on the board pulls the line high"
+                yield F('i2c.bus', 'warning' if has_conn else 'error', f"No pull-up on I2C {line.upper()} net {net}",
+                        f"Devices {', '.join(devs)} are open-drain; nothing on the board pulls the line high."
                         + (" The bus controller is off this board, through the connector: pull-ups normally sit "
-                           "with the controller, so confirm the host provides them." if off_board_host else
-                           " (a module plugged into the connector may bring its own; do not rely on it)" if has_conn else "")
-                        + ". An MCU's internal pull-up (tens of kilohms) is too weak for 400 kHz.",
+                           "with the controller, so confirm the host provides them" if off_board_host else
+                           " The bus leaves the board through a connector, so whatever plugs in may bring them: this "
+                           "board cannot talk I2C on its own, and two boards without pull-ups cannot talk to each other" if has_conn else "")
+                        + (". " if has_conn else " ") + "An MCU's internal pull-up (tens of kilohms) is too weak for 400 kHz.",
                         refs=devs, nets=nets, basis='I2C specification (UM10204) section 3.1.1', confidence='high')
                 continue
             rails = {r.name: r for _, r in ups}

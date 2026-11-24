@@ -130,3 +130,23 @@ errata:                       # known issues from errata sheets and forums; repo
 | `{res_to_gnd: {value: 75k, tol: 0.01}}` | a resistor of that value goes from the pin to ground |
 
 Each entry may carry `note:` (shown in the finding) and `when:` (a condition in words, shown but not evaluated).
+
+## Fields added since the first version
+
+These came from boards the first schema could not describe. All are optional.
+
+| Field | Where | Meaning |
+|---|---|---|
+| `gpio_pattern: "^IO\\d+$"` | top level | Regular expression: every pin whose name matches and has no entry under `pins:` gets `role: gpio` |
+| `clock_pattern: "PCLK"` | top level | Pins whose name matches can take a clock (FPGAs). Used by `clock.source` |
+| `internal_links: [["#1", "#6"]]` | top level | Pin groups that are one node inside the part (flow-through ESD arrays). Treated as connectivity |
+| `inductive_load: true` | top level | The part is a coil: `load.inductive` asks for a flyback diode |
+| `buzzer: {type, v_min, v_max, i_max_ma, r_coil_ohm, f_res_hz}` | top level | Used by `load.inductive` for the voltage across the coil |
+| `mcu.adc1_pins`, `mcu.adc2_pins`, `mcu.rtc_pins`, `mcu.touch_pins` | `mcu:` | Lists of pin names (or "IO0 to IO21"). Used by `mcu.pin_use` |
+| `alt: [i2c_sda, uart_tx, spi_miso]` | a pin | Fixed peripheral functions of an MCU pin. Used by `mcu.alt_function` |
+| `user_input: false`, `user_output: false` | a pin | The design cannot read, or cannot drive, this pin. Used by `mcu.pin_use` |
+| `vout_v: 3.3`, `tol: 0.05` | a `role: power_out` pin | The pin supplies a rail at this voltage (a module's 3V3 pin, an internal regulator output) |
+| `i_out_max_ma: 10` | a `role: power_out` pin | What that pin can supply to external loads. Used by `power.source_pin` |
+| `internal_pull`, `internal_pull_ohm` | a pin | Internal pull and its strongest value. Used by `pin.strap_strength` and `reset.circuit` |
+| `sim.enable: [{pin: CS, level: 1}]` | `sim:` | Pin levels the simulation model needs before it answers on its bus |
+| `res_to_gnd: {min: 2k, max: 67k}` | a `require` entry | A range in place of `value` and `tol` |

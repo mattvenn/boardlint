@@ -509,3 +509,41 @@ def fets(d):
                     + (" (it only switches a pull-up here, so it hardly matters)." if light else
                        " and rises steeply; expect extra voltage drop and heat at high current."),
                     refs=[c.ref], evidence=ev, basis=model_basis(c), confidence='medium')
+
+
+def _first(spec, *keys):
+    for k in keys:
+        if spec.get(k) is not None:
+            return float(spec[k])
+    return None
+
+
+@check('power.source_pin', 'power', doc="A part's supply-output pin (module 3V3 pin, internal regulator output) is not asked for more than it can give")
+def source_pin(d):
+    for c in d.components.values():
+        if c.dnp or not c.model:
+            continue
+        for p in c.pins.values():
+            if p.spec.get('role') != 'power_out' or not p.net:
+                continue
+            lim = _first(p.spec, 'i_out_max_ma', 'i_max_ma', 'i_load_max_ma', 'i_ext_max_ma', 'source_i_max_ma')
+            n = d.nets[p.net]
+            loads = [(x, im) for x, _, im, _ in rail_loads(d, n) if x is not c and im]
+            leds = [q.comp for q in n.pins if q.comp.kind == 'LED' and not q.comp.model]
+            tot = sum(im for _, im in loads)
+            unknown = sorted({q.comp.ref for q in n.pins if q.comp.kind == 'IC' and q.comp is not c and not q.comp.model})
+            ev = {'pin': p.label, 'limit_mA': lim, 'load_max_mA': round(tot, 1), 'loads': _summ([(x.ref, im) for x, im in loads]),
+                  'not_counted': ', '.join(unknown) or 'none'}
+            if lim is None:
+                continue
+            if tot > lim:
+                yield F('power.source_pin', 'error' if tot > 1.5 * lim else 'warning',
+                        f"{p.label} supplies {n.name}: up to {tot:.0f} mA is drawn, it is good for {lim:g} mA",
+                        f"{c.desc}. Loads on {n.name}: {_summ([(x.ref, im) for x, im in loads])}. This is every load at "
+                        f"its maximum at once." + (f" Not counted (no model): {', '.join(unknown)}." if unknown else ''),
+                        refs=[c.ref] + [x.ref for x, _ in loads][:4], nets=[n.name], evidence=ev, basis=model_basis(c),
+                        confidence='medium')
+            elif tot or leds or unknown:
+                yield F('power.source_pin', 'info', f"{p.label} supplies {n.name}: {tot:.0f} of {lim:g} mA accounted for",
+                        f"{c.desc}." + (f" Not counted (no model): {', '.join(unknown)}." if unknown else ''),
+                        refs=[c.ref], nets=[n.name], evidence=ev, basis=model_basis(c), confidence='medium')

@@ -62,6 +62,18 @@ def analyse_power(d: Design):
                 tol = reg.get('tol', 0.03)
                 _set(n, round(v * (1 - tol), 3), round(v * (1 + tol), 3), f"{c.ref} {c.value} output")
         chg = None
+    # 2b. supply-output pins of parts that are not modelled as regulators: a module's 3V3 pin,
+    #     a driver's internal regulator output
+    for c in d.components.values():
+        if c.dnp or not c.model:
+            continue
+        for p in c.pins.values():
+            v = p.spec.get('vout_v')
+            n = d.net_of(p)
+            if v and n is not None and n.vmin is None and not n.is_ground:
+                tol = float(p.spec.get('tol', 0.05))
+                _set(n, round(float(v) * (1 - tol), 3), round(float(v) * (1 + tol), 3), f"{c.ref} {p.name} output")
+                n.source_pin = p
     for c in d.components.values():
         chg = (c.model or {}).get('charger')
         if chg and not c.dnp:
