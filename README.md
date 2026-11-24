@@ -21,9 +21,11 @@ AI model, running in Claude Code) in one working session directed by Matt. Where
 what was tested, verified, or assumed, that is Claude's statement about its own work. None of the
 findings on the example boards has been checked on hardware at the time of writing.
 
-Status: v0.1, a working framework. 35 checks, 26 part models. Tested on two real boards (one with 26 injected faults, all flagged; one
+Status: v0.1, a working framework. 36 checks, 42 part models. Tested on two real boards (one with 26 injected faults, all flagged; one
 with a published errata list, both wiring errata found) and on eight public projects with a known fix
 commit (six flagged before the fix; the other two cannot be seen in the design files). Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
+
+Reviews of real boards, each with the tool's full report: [DinoLight](docs/dino-board-review.md), [basic-ecp5-pcb](docs/ecp5-board-review.md), [ezbldc](docs/ezbldc-review.md), and [Density](docs/density-review.md).
 
 A wider, blind test on 33 fix commits from projects listed by Kitspace flagged only one of them; [docs/kitspace-survey.md](docs/kitspace-survey.md) says why and what that means for the roadmap.
 
