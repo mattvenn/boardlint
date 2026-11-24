@@ -1,0 +1,71 @@
+id: sk6812mini-rv
+match:
+  lcsc: [C7279958]
+  value: ["SK6812MINI-RV*", "SK6812MINI_RV*"]
+kind: LED
+class: addressable_led
+description: "SK6812 addressable RGB LED, 3.7 x 3.5 x 1.1 mm top-emitting package with four pads underneath, 12 mA per colour, single-wire 800 kbit/s"
+datasheet: "OPSCO SK6812MINI-RV-000 (sample OP00108L-000), Rev. B/0, 2024-03-18 (LCSC C7279958)"
+provenance:
+  source: "https://www.lcsc.com/datasheet/C7279958.pdf -> datasheet.lcsc.com (13 pages, opened 2026-11-24)"
+  verified: true
+  notes: >
+    Overview p.3 (5 V @ 12 mA, 120 degree view angle, built-in reset: dark at power-up, 256
+    grey levels, 800 kbit/s, MSL 5a, ESD 2 kV; naming: "MINI: the package size is
+    3.7*3.5*1.1mm", "RV-000: internal code"). Mechanical drawing and pin table p.4: 1 DIN,
+    2 VDD, 3 DOUT, 4 GND; the drawing shows the lens on top and four flat pads in the bottom
+    view. Nothing in the datasheet calls the part reverse-mount: it is an ordinary top-emitting
+    package, unlike the gull-wing SK6812MINI-E. Recommended pads p.5. "IC limit parameter" p.5:
+    VDD +3.7 to +5.5 V, -40 to +85 C (the only maximum given, so abs_max is that same 5.5 V;
+    nothing for DIN). IC electrical parameters p.6 (25 C): VDD 3.7 / 5.0 / 5.5 V; signal input
+    threshold VIH 2.6 V min, VIL 1.7 V max, both absolute and stated at VDD = 5.0 V; output
+    drive current per colour 10.5 / 12 / 13.5 mA at VDS = 1 V; PWM 4.0 kHz typ; static 0.25 mA
+    typ; 800 kbit/s. Timing p.7: period 1.20 us min, T0H 0.20 / 0.30 / 0.40 us, T0L 0.80 us
+    min, T1H 0.65 / 0.75 / 1.00 us, T1L 0.20 us min, reset over 200 us, low time of a bit under
+    20 us. Data order GRB, most significant bit first, p.8. Application circuit p.9: one
+    decoupling capacitor per LED "essential", no value printed; series protection resistors
+    R1 at the first DIN and R2 at the last DOUT "about 500 ohms". Revision record p.13: B/0
+    "upgrade IC electrical parameters" (the thresholds differ from the 0.65 / 0.3 x VDD of the
+    SK6812MINI-E sheet). The datasheet does not say how the thresholds move with VDD.
+    Computed, not printed: i_max_ma = 3 x 13.5 mA and i_typ_all_on_ma = 3 x 12 mA.
+
+supplies:
+  - pins: [VDD]
+    vmin: 3.7
+    vmax: 5.5
+    abs_max: 5.5
+    i_typ_ma: 0.25            # static, outputs off
+    i_max_ma: 40.5            # 3 x 13.5 mA, all three colours fully on
+    decoupling:
+      - {count: 1, note: "one decoupling capacitor per LED between VDD and GND is 'essential' (section 14); the datasheet prints no value"}
+
+io:
+  vih: 2.6                    # at VDD = 5.0 V
+  vil: 1.7
+
+pins:
+  DIN: {role: led_din, drive: input}
+  DOUT: {role: led_dout, drive: push_pull}
+  VDD: {role: power_in}
+  "GND/VSS": {role: gnd}
+
+serial_led:
+  protocol: sk6812
+  vih: 2.6                    # absolute, stated at VDD = 5.0 V
+  vil: 1.7
+  i_color_ma: 12              # typ per colour (10.5 min, 13.5 max)
+  i_color_max_ma: 13.5
+  i_typ_all_on_ma: 36         # 3 x 12 mA
+  i_max_ma: 40.5              # 3 x 13.5 mA
+  i_idle_ma: 0.25
+  khz: 800
+  bit_period_min_us: 1.2
+  t0h_us: [0.20, 0.30, 0.40]
+  t0l_min_us: 0.80
+  t1h_us: [0.65, 0.75, 1.00]
+  t1l_min_us: 0.20
+  bit_low_max_us: 20
+  reset_us: 200               # low for more than 200 us
+  color_order: GRB
+  pwm_khz: 4.0
+  series_r_ohm: 500           # "about 500 ohms" in series at the first DIN and the last DOUT

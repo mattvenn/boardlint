@@ -1,0 +1,112 @@
+id: mcp3208
+match:
+  lcsc: [C626764]
+  value: ["MCP3208*"]
+kind: IC
+class: adc
+description: "8-channel 12-bit SAR ADC, SPI, 2.7 V to 5.5 V, 100 ksps at 5 V / 50 ksps at 2.7 V, external reference"
+datasheet: "Microchip MCP3204/3208, DS21298E, 2008 (ww1.microchip.com/downloads/en/DeviceDoc/21298e.pdf)"
+provenance:
+  source: "https://ww1.microchip.com/downloads/en/DeviceDoc/21298e.pdf (40 pages, opened 2026-11-24)"
+  verified: true
+  notes: >
+    Features and pinout p.1 (SPI modes 0,0 and 1,1; MCP3208 PDIP / SOIC: 1-8 CH0-CH7, 9 DGND,
+    10 CS/SHDN, 11 DIN, 12 DOUT, 13 CLK, 14 AGND, 15 VREF, 16 VDD; -B grade 1 LSB INL, -C grade
+    2 LSB INL). Absolute maximum p.2: VDD 7.0 V; all inputs and outputs w.r.t. VSS -0.6 V to
+    VDD + 0.6 V. Electrical specifications p.2-3 (at VDD = VREF = 5 V unless noted): sample time
+    1.5 clock cycles, conversion 12 clock cycles; throughput 100 ksps at 5 V, 50 ksps at 2.7 V;
+    reference input 0.25 V to VDD, 100 uA typ / 150 uA max (0.001 / 3 uA with CS = VDD); analog
+    input VSS to VREF, leakage 0.001 typ / 1 uA max, switch resistance 1000 ohm, sample capacitor
+    20 pF; VIH 0.7 VDD, VIL 0.3 VDD, VOH 4.1 V min at -1 mA and VOL 0.4 V max at 1 mA with
+    VDD = 4.5 V; fCLK 2.0 MHz max at VDD = 5 V, 1.0 MHz max at VDD = 2.7 V (nothing is given
+    for 3.3 V); tHI / tLO 250 ns, tSUCS 100 ns, tCSH 500 ns; VDD 2.7 to 5.5 V; IDD 320 uA typ /
+    400 uA max at 5 V, 225 uA typ at 2.7 V; standby 0.5 uA typ / 2 uA max. Note 3 and section
+    6.2 p.22: all 12 bits must be clocked out within 1.2 ms of the end of the sample period
+    (effective clock 10 kHz minimum). Pin descriptions p.15 ("The CS/SHDN pin must be pulled high
+    between conversions"). Section 4.1 and Figures 4-1 / 4-2 p.17-18 (source impedance adds to
+    the 1 k switch; "larger source impedances increase the offset, gain and integral linearity
+    errors"; Figure 4-2 is a curve of maximum clock frequency against input resistance, values
+    not read off). Section 5.0 p.19 ("If the device was powered up with the CS pin low, it must
+    be brought high and back low to initiate communication"). Section 6.3 p.22 ("If the signal
+    source for the A/D converter is not a low impedance source, it will have to be buffered or
+    inaccurate conversion results may occur"). Section 6.4 p.23 ("A bypass capacitor should
+    always be used with this device, placed as close as possible to the device pin. A bypass
+    capacitor value of 1 uF is recommended"; no traces under the device or the bypass capacitor;
+    clock lines away from analog traces). Section 6.5 p.24 (AGND and DGND are joined inside
+    through 5-10 ohm of substrate; without a ground plane "both grounds must be connected to
+    VSS on the board"; with one, both go to the analog ground plane).
+    Computed, not printed: voh_frac = 4.1 / 4.5. The VREF maximum is VDD and the pin limit is
+    VDD + 0.6 V; both are relative to the supply, which the schema cannot say, so VREF carries
+    the 5.5 V of the highest VDD and no abs_max.
+
+supplies:
+  - pins: [VDD]
+    vmin: 2.7
+    vmax: 5.5
+    abs_max: 7.0
+    i_typ_ma: 0.32            # VDD = VREF = 5 V, DOUT unloaded; 0.225 at 2.7 V
+    i_max_ma: 0.4
+    i_standby_ma: 0.0005      # CS = VDD = 5 V; 0.002 max
+    decoupling:
+      - {c_min: 1u, count: 1, note: "a bypass capacitor should always be used, as close as possible to the device pin; 1 uF recommended (section 6.4)"}
+  - pins: [VREF]
+    vmin: 0.25
+    vmax: 5.5                 # VDD: the reference may not exceed the supply
+    i_typ_ma: 0.1
+    i_max_ma: 0.15
+    note: "Reference input, 0.25 V to VDD. It sets the full-scale input voltage; the analog inputs convert VSS to VREF. Any instability of the reference shows directly in the result."
+
+io:
+  vih_frac: 0.7
+  vil_frac: 0.3
+  voh_frac: 0.91              # 4.1 V min at -1 mA with VDD = 4.5 V
+  abs_max_over_supply: 0.6
+  tolerant_5v: false
+
+pins:
+  "CS/SHDN":
+    role: spi_cs
+    active: low
+    drive: input
+    note: "Must be taken high between conversions (high = standby). If it is low at power-up it must go high and low again before the first conversion; it must stay low for the whole frame."
+  DIN: {role: spi_sdi, drive: input}
+  DOUT: {role: spi_sdo, drive: tri_state}     # high impedance while CS is high
+  CLK: {role: spi_sck, drive: input}
+  CH0: {role: analog_in, drive: analog}
+  CH1: {role: analog_in, drive: analog}
+  CH2: {role: analog_in, drive: analog}
+  CH3: {role: analog_in, drive: analog}
+  CH4: {role: analog_in, drive: analog}
+  CH5: {role: analog_in, drive: analog}
+  CH6: {role: analog_in, drive: analog}
+  CH7: {role: analog_in, drive: analog}
+  AGND:
+    role: gnd
+    require:
+      - {tie: gnd, note: "analog ground: connect to the (analog) ground plane, or to VSS when there is no plane (section 6.5)"}
+  DGND:
+    role: gnd
+    require:
+      - {tie: gnd, note: "digital ground: connect to the same (analog) ground plane as AGND, or to VSS when there is no plane (section 6.5)"}
+  VDD: {role: power_in}
+  VREF: {role: power_in}
+
+spi:
+  modes: [0, 3]
+  max_mhz: 1.0                # VDD = 2.7 V
+  max_mhz_5v: 2.0             # VDD = 5 V; no figure for supplies in between
+  min_khz: 10                 # the 12 result bits must be out within 1.2 ms of the end of sampling
+  cs_setup_ns: 100
+  cs_high_min_ns: 500
+  frame: "start bit, SGL/DIFF, D2, D1, D0, then a null bit and 12 data bits MSB first; CS low throughout"
+
+adc:
+  bits: 12
+  channels: 8
+  input_range: "VSS to VREF (single-ended)"
+  sample_cap_pf: 20
+  switch_ohm: 1000
+  sample_clocks: 1.5
+  source_impedance: "The source must be low impedance or be buffered (section 6.3): source resistance adds to the 1 k switch feeding the 20 pF sample capacitor during the 1.5-clock sample time, and the usable clock frequency falls as it rises (Figure 4-2)."
+  ksps_max_5v: 100
+  ksps_max_2v7: 50

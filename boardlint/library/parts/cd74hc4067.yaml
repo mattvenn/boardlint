@@ -1,0 +1,92 @@
+id: cd74hc4067
+match:
+  lcsc: [C98457]
+  value: ["CD74HC4067*"]
+kind: IC
+class: analog_mux
+description: "16-channel analog multiplexer / demultiplexer, HC logic, 2 V to 6 V, 70 ohm typical on resistance at 4.5 V"
+datasheet: "Texas Instruments CD74HC4067, CD74HCT4067, SCHS209D, revised December 2024 (ti.com/lit/ds/symlink/cd74hc4067.pdf)"
+provenance:
+  source: "https://www.ti.com/lit/ds/symlink/cd74hc4067.pdf (SCHS209D, opened 2026-11-24)"
+  verified: true
+  notes: >
+    Features p.1 (HC types 2 V to 6 V; on resistance 70 ohm typ at 4.5 V, 60 ohm typ at 6 V;
+    break-before-make 6 ns typ at 4.5 V; CD74HC4067SM96 is the 24-pin SSOP). Pin functions p.4:
+    1 COMMON INPUT/OUTPUT, 2-9 I7-I0, 10 S0, 11 S1, 12 GND, 13 S3, 14 S2, 15 E, 16-23 I15-I8,
+    24 VCC. Truth table p.5 (E high: no channel selected; S0 is the least significant address
+    bit). Absolute maximum p.5: VCC -0.5 to 7 V; input and output diode current +/-20 mA beyond
+    -0.5 V or VCC + 0.5 V; source or sink current per output pin +/-25 mA; VCC or ground current +/-50 mA.
+    Recommended operating conditions p.6: VCC 2 to 6 V (HC), analog switch voltage 0 to VCC,
+    -55 to 125 C. Electrical characteristics, HC devices p.7-8: VIH 1.5 / 3.15 / 4.2 V and VIL
+    0.5 / 1.35 / 1.8 V at VCC = 2 / 4.5 / 6 V; on resistance at IO = 1 mA with the signal at VCC
+    or GND: 70 typ / 160 max at 25 C, 200 max to 85 C, 240 max to 125 C at 4.5 V, and 60 typ /
+    140 / 175 / 210 at 6 V; with the signal anywhere from VCC to GND: 90 typ / 180 / 225 / 270 at
+    4.5 V and 80 typ / 160 / 200 / 240 at 6 V; difference between any two switches 10 ohm at 4.5 V,
+    8.5 ohm at 6 V (25 C); off-switch leakage +/-0.8 uA at 25 C, +/-8 uA over temperature
+    (VCC = 6 V); control input leakage +/-0.1 / +/-1 uA; quiescent current 8 uA max at 25 C,
+    80 uA to 85 C, 160 uA to 125 C (VCC = 6 V). Switching, HC p.9: address to output turn-on
+    300 ns max at 2 V, 60 ns at 4.5 V (25 C, 50 pF). Analog channel p.11: -3 dB bandwidth 89 MHz,
+    switch input capacitance 5 pF, common capacitance 50 pF.
+    The datasheet gives no on resistance, leakage or timing between 2 V and 4.5 V, so at a 3.3 V
+    supply the on resistance is not specified (it is higher than the 4.5 V figure). The
+    thresholds are stored as the fractions of the 2 V row (0.75 / 0.25), the tightest of the
+    three rows; the 4.5 V and 6 V rows are 0.7 / 0.3. The datasheet has no decoupling
+    recommendation.
+
+supplies:
+  - pins: [VCC]
+    vmin: 2.0
+    vmax: 6.0
+    abs_max: 7.0
+    i_max_ma: 0.08            # quiescent, -55 to 85 C at VCC = 6 V (0.008 at 25 C)
+
+io:
+  vih_frac: 0.75              # 1.5 V at VCC = 2 V; 0.7 x VCC at 4.5 V and 6 V
+  vil_frac: 0.25              # 0.5 V at VCC = 2 V; 0.3 x VCC at 4.5 V and 6 V
+  abs_max_over_supply: 0.5
+  tolerant_5v: false
+
+pins:
+  S0: {drive: input}
+  S1: {drive: input}
+  S2: {drive: input}
+  S3: {drive: input}
+  E:
+    role: enable
+    active: low               # high turns every switch off
+    drive: input
+  "COM/COMMON": {role: analog_in, drive: analog}
+  I0: {role: analog_in, drive: analog}
+  I1: {role: analog_in, drive: analog}
+  I2: {role: analog_in, drive: analog}
+  I3: {role: analog_in, drive: analog}
+  I4: {role: analog_in, drive: analog}
+  I5: {role: analog_in, drive: analog}
+  I6: {role: analog_in, drive: analog}
+  I7: {role: analog_in, drive: analog}
+  I8: {role: analog_in, drive: analog}
+  I9: {role: analog_in, drive: analog}
+  I10: {role: analog_in, drive: analog}
+  I11: {role: analog_in, drive: analog}
+  I12: {role: analog_in, drive: analog}
+  I13: {role: analog_in, drive: analog}
+  I14: {role: analog_in, drive: analog}
+  I15: {role: analog_in, drive: analog}
+  VCC: {role: power_in}
+  GND: {role: gnd}
+
+analog_switch:
+  channels: 16
+  signal_range: "0 V to VCC"
+  ron_at_vcc: 4.5             # lowest supply the datasheet specifies it at
+  ron_typ_ohm: 70             # signal at VCC or GND, IO = 1 mA, 25 C
+  ron_max_ohm: 160            # 25 C; 200 to 85 C, 240 to 125 C
+  ron_max_midrail_ohm: 180    # signal anywhere between the rails, 25 C; 225 to 85 C
+  ron_match_ohm: 10
+  ron_6v: {typ: 60, max: 140}
+  i_pin_max_ma: 25            # absolute maximum source or sink current per pin
+  off_leakage_ua: 0.8         # 25 C; 8 over temperature
+  c_common_pf: 50
+  c_input_pf: 5
+  bandwidth_mhz: 89
+  address_to_out_ns: {2.0: 300, 4.5: 60, 6.0: 51}   # max at 25 C, 50 pF

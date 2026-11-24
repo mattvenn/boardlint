@@ -284,8 +284,8 @@ def coupling(d):
        doc='Fast nets should run over unbroken ground copper on the neighbouring layer')
 def return_path(d):
     b = d.board
-    gz = [z for z in b.zones if z.net in d.nets and d.nets[z.net].is_ground]
-    if not gz:
+    gz = [z for z in b.zones if z.net in d.nets and (d.nets[z.net].is_ground or d.nets[z.net].is_power)]
+    if not any(d.nets[z.net].is_ground for z in gz):
         yield F('layout.return_path', 'info', 'No filled ground zones on the board: return-path check skipped',
                 'Fill the zones in KiCad and save, or the board has no ground pour.', confidence='high')
         return
@@ -310,11 +310,11 @@ def return_path(d):
                 prev = cov
         if tot >= 10 and unc / tot >= 0.25:
             yield F('layout.return_path', 'warning' if unc / tot >= 0.5 and tot >= 30 else 'info',
-                    f"{net}: {unc / tot:.0%} of its {tot:.0f} mm has no ground copper on the other layer",
+                    f"{net}: {unc / tot:.0%} of its {tot:.0f} mm has no ground or supply plane on the next layer",
                     f"{net} ({reason}). Where the reference copper is missing the return current detours, the loop "
                     f"area grows, and the trace both radiates and picks up more. {gaps} stretch(es) without cover.",
                     nets=[net], evidence={'length_mm': round(tot, 1), 'uncovered_mm': round(unc, 1), 'stretches': gaps},
-                    basis='filled ground zones in the board file, sampled every 0.5 mm along the tracks',
+                    basis='filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks',
                     confidence='medium')
 
 

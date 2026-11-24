@@ -86,6 +86,22 @@ def pin_requirements(d):
                         if not good:
                             yield out(f"{p.label} needs {fmt_r(want) if want else fmt_r(lo) + ' to ' + fmt_r(hi)} to ground",
                                       f"{c.desc}: found {', '.join(f'{k.ref} {fmt_r(k.num)}' for k, _ in downs) or 'no resistor to ground'} on {n.name}.")
+                if 'cap_to_pin' in req:
+                    r = req['cap_to_pin'] or {}
+                    from ..power import _pins_named
+                    others = [q for q in _pins_named(c, r.get('pin')) if q.net]
+                    mn = _num(r.get('min', r.get('value', 0)), 'C') or 0
+                    have = []
+                    if n is not None and others:
+                        for k in d.components.values():
+                            if k.kind == 'C' and not k.dnp and len(k.pins) == 2 and k.num and \
+                                    {q.net for q in k.pins.values()} == {n.name, others[0].net}:
+                                have.append(k)
+                    tot = sum(k.num for k in have)
+                    if not have or (mn and tot < mn * 0.8):
+                        yield out(f"{p.label} needs {fmt_c(mn) if mn else 'a capacitor'} to pin {r.get('pin')}",
+                                  f"{c.desc}: found {', '.join(f'{k.ref} {fmt_c(k.num)}' for k in have) or 'none'} between "
+                                  f"{n.name if n else 'the unconnected pin'} and {others[0].net if others else 'that pin'}.")
                 for key in ('pullup', 'pulldown'):
                     if key not in req:
                         continue
@@ -181,7 +197,7 @@ def strapping(d):
                             refs=[c.ref], nets=[n.name], basis=model_basis(c), confidence='medium')
                 elif others:
                     active = [q for q in others if q.comp.kind not in PASSIVE_KINDS and q.comp.kind != 'SW']
-                    yield F('mcu.strapping', 'warning' if active else 'info',
+                    yield F('mcu.strapping', 'warning' if active and not spec.get('when') else 'info',
                             f"Strapping pin {p.label} is used ({n.name})",
                             f"{c.desc} samples this pin at reset ({what}). Connected here: {names(others[:6])}. "
                             f"Whatever is attached must not hold the wrong level while the module comes out of reset.",

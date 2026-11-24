@@ -1,0 +1,63 @@
+id: 74ahct1g125
+match:
+  lcsc: [C52140417]
+  value: ["74AHCT1G125*"]
+kind: IC
+class: logic_buffer
+description: "Single bus buffer / line driver, 3-state, TTL-level input, 5.5 V tolerant input, SOT-23-5 / SOT-353"
+datasheet: "MDD (Microdiode Semiconductor) 74AHC1G125; 74AHCT1G125, product datasheet Rev. 1.0, 8 Aug 2024 (LCSC C52140417, 74AHCT1G125GV)"
+provenance:
+  source: "https://www.lcsc.com/datasheet/C52140417.pdf -> datasheet.lcsc.com (MDD EM74AHC_AHCT1G125, 14 pages, opened 2026-11-24)"
+  verified: true
+  notes: >
+    The part on LCSC number C52140417 is MDD's 74AHCT1G125GV, not Nexperia's, so MDD's datasheet
+    is the one read. Nexperia's own 74AHC_AHCT1G125 sheet could not be opened
+    (assets.nexperia.com answered HTTP 403 to this session): a board fitted with the Nexperia
+    part should have its limits checked against that document, the supply range in particular.
+    MDD datasheet: features p.1 (overvoltage tolerant inputs to 5.5 V; AHCT = TTL input
+    levels); ordering p.2 (74AHCT1G125GV = SOT23-5L); pin description Table 2 p.3: 1 OE, 2 A,
+    3 GND, 4 Y, 5 VCC; function table p.3 (OE low: Y = A; OE high: Y high impedance). Absolute
+    maximum Table 4 p.4: VCC -0.5 to 7.0 V; input voltage -0.5 to 7.0 V; output clamp current
+    +/-20 mA beyond -0.5 V or VCC + 0.5 V; output current +/-25 mA; supply / ground current
+    75 mA. Recommended operating conditions Table 5 p.4: VCC 2.0 / 5.0 / 5.5 V for both
+    versions; input voltage 0 to 5.5 V; output 0 to VCC. Static characteristics, 74AHCT1G125,
+    Table 6 p.6: VIH 2.0 V min and VIL 0.8 V max at VCC = 4.5 V to 5.5 V (1.5 / 0.55 V at 3.3 V,
+    1.0 / 0.3 V at 2.0 V); VOH at VCC = 4.5 V: 4.4 V min at -50 uA, 3.80 V min at -8.0 mA to
+    85 C (3.70 V to 125 C); VOL at 8.0 mA 0.44 V max (0.55 V to 125 C); supply current 10 uA
+    max to 85 C, 40 uA to 125 C; additional supply current per input held at 3.4 V 0.23 typ /
+    1.35 mA max (VCC = 5.5 V). Dynamic Table 7 p.7: A to Y 5.0 typ / 7.5 ns max at 4.5-5.5 V,
+    15 pF. Computed, not printed: voh_frac = 3.80 / 4.5 (at -8 mA; into a CMOS input the -50 uA
+    row, 4.4 V at 4.5 V, applies); i_max_ma = 0.04 + 1.35 mA. The datasheet has no decoupling
+    recommendation.
+    Pins are keyed by number because the KiCad symbol leaves OE, A and Y unnamed.
+
+supplies:
+  - pins: ["#5", VCC]
+    vmin: 2.0                 # MDD table; TTL input levels (2.0 / 0.8 V) are specified at 4.5 V to 5.5 V
+    vmax: 5.5
+    abs_max: 7.0
+    i_typ_ma: 0.23            # with the input held at 3.4 V (a 3.3 V logic high), VCC = 5.5 V
+    i_max_ma: 1.39            # 0.04 static (to 125 C) + 1.35 per input at 3.4 V
+
+io:
+  vih: 2.0                    # VCC = 4.5 V to 5.5 V
+  vil: 0.8
+  voh_frac: 0.84              # 3.80 V at -8.0 mA with VCC = 4.5 V; 4.4 V (0.98) at -50 uA
+  abs_max: 7.0                # inputs; outputs are limited to VCC + 0.5 V
+  tolerant_5v: true           # inputs, 0 to 5.5 V recommended whatever VCC is
+
+pins:
+  "#1":
+    name: OE
+    role: enable
+    active: low               # high puts Y in high impedance
+    drive: input
+  "#2": {name: A, drive: input}
+  "#3": {name: GND, role: gnd}
+  "#4": {name: Y, drive: tri_state, abs_max_over_supply: 0.5, i_out_ma: 8, i_out_abs_max_ma: 25}
+  "#5": {name: VCC, role: power_in}
+
+logic:
+  function: "Y = A when OE is low"
+  tpd_ns: 7.5                 # A to Y max, VCC 4.5-5.5 V, 15 pF, to 85 C (5.0 typ)
+  thresholds_at_3v3: {vih: 1.5, vil: 0.55}

@@ -1,0 +1,50 @@
+id: smaj15a
+match:
+  lcsc: [C86819]
+  value: ["SMAJ15A*"]
+kind: D
+class: tvs
+description: "Unidirectional transient voltage suppressor, 15 V stand-off, 400 W peak pulse power (10/1000 us), SMA (DO-214AC)"
+datasheet: "Brightking SMAJ SERIES Transient Voltage Suppressors data sheet, revision 12-Apr-16 (the PDF LCSC serves for C86819, SMAJ15A/TR13)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/15eb0c6d83d24d4e6adb978c2433d609.pdf (Brightking SMAJ SERIES, 6 pages; linked from https://www.lcsc.com/product-detail/C86819.html), downloaded 2026-11-24"
+  verified: true
+  notes: >
+    Maximum ratings p.1: peak pulse power "Minimum 400" W at 10/1000 us; steady-state power
+    3.3 W at TA = 50 C; peak forward surge 40 A (8.3 ms half sine, unidirectional only);
+    junction and storage -65 to +150 C; thermal resistance junction to lead 30 C/W, junction
+    to ambient 120 C/W (typ, 5 x 5 mm pads). "Polarity: Color band denotes cathode except
+    bi-directional models". Electrical characteristics table p.2, row SMAJ15A (unidirectional,
+    marking BM; the bidirectional part is SMAJ15CA, marking XM), TA = 25 C: reverse stand-off
+    VRWM 15.0 V; breakdown VBR 16.70 to 18.50 V at IT = 1 mA; maximum clamping voltage VC
+    24.4 V at peak pulse current IPP 16.4 A (10/1000 us); reverse leakage IR 1 uA at VRWM.
+    The glob "SMAJ15A*" is the UNIDIRECTIONAL part of any maker (it does not match SMAJ15CA);
+    SMAJ ratings are a JEDEC-style family, but only Brightking's table was read.
+    supplies.vmax is the stand-off voltage, as in the other TVS models: the supply-range check
+    then reports a rail that sits above it. A rail can exceed 15 V only by conducting through
+    this part: at 24.4 V it carries 16.4 A for a 10/1000 us pulse, not continuously (3.3 W
+    steady state). Whatever sits behind the TVS has to survive the 24.4 V clamp level, not
+    15 V. No forward voltage is given in the datasheet.
+
+supplies:
+  - pins: [K, C, CATHODE]
+    vmax: 15.0                # reverse stand-off voltage VRWM; breakdown 16.7 V min
+
+pins:
+  K: {drive: analog}
+  A: {drive: analog}
+
+tvs:
+  direction: unidirectional
+  vrwm: 15.0
+  vbr_min: 16.7
+  vbr_max: 18.5
+  vbr_it_ma: 1
+  v_clamp: [{ipp_a: 16.4, v: 24.4}]     # 10/1000 us
+  ppp_w: 400                  # minimum, 10/1000 us
+  p_steady_w: 3.3             # at TA = 50 C
+  i_leak_max_ua: 1            # at VRWM
+  ifsm_a: 40
+  theta_ja: 120
+  theta_jl: 30
+  tj_max: 150

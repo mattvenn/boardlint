@@ -4,7 +4,7 @@ import re
 from collections import defaultdict
 from . import check, F
 from .common import can_drive, io, model_basis, supply_v, names, PASSIVE_KINDS
-from ..classify import pulls, fmt_r, fmt_c, package_of, parse_voltage_rating, signal_group, group_pins
+from ..classify import pulls, fmt_r, fmt_c, package_of, parse_voltage_rating, signal_group, group_pins, pin_aliases
 from ..library import supply_spec
 from ..power import supply_net_of, rail_loads, downstream, power_links, _pins_named
 
@@ -303,14 +303,26 @@ def regulator(d):
                             confidence='medium')
             th = reg.get('theta_ja')
             if th and mx:
-                pd = (vin.vmax - float(reg['vout_v'])) * mx / 1000
+                # heat follows the average, not the peak: judge on the typical load when it is known
+                i_th = typ if typ and typ < mx else mx
+                pd = (vin.vmax - float(reg['vout_v'])) * i_th / 1000
                 tj = ta + pd * float(th)
-                if tj > float(reg.get('tj_max', 125)):
+                pk = (vin.vmax - float(reg['vout_v'])) * mx / 1000
+                tj_pk = ta + pk * float(th)
+                tjm = float(reg.get('tj_max', 125))
+                if tj <= tjm and tj_pk > tjm:
+                    yield F('power.regulator', 'info', f"{c.ref} runs at about {tj:.0f} C at typical load, and would exceed {tjm:g} C if the peak load were sustained",
+                            f"Typical: ({vin.vmax:g} - {reg['vout_v']:g}) V x {i_th:.0f} mA = {pd * 1000:.0f} mW. Peak: {mx:.0f} mA, "
+                            f"{pk * 1000:.0f} mW, {tj_pk:.0f} C if it lasted. {th:g} C/W from {ta:g} C ambient, no heatsink.",
+                            refs=[c.ref], evidence=dict(ev, p_typ_mw=round(pd * 1000), tj_typ=round(tj), tj_peak=round(tj_pk)),
+                            basis=model_basis(c, 'theta_ja'), confidence='low')
+                if tj > tjm:
                     yield F('power.regulator', 'warning',
                             f"{c.ref} would reach {tj:.0f} C at full load" if tj < 250 else
                             f"{c.ref} dissipates {pd * 1000:.0f} mW at full load, far beyond its package",
-                            f"({vin.vmax:g} - {reg['vout_v']:g}) V x {mx:.0f} mA = {pd * 1000:.0f} mW; "
-                            f"{th:g} C/W from {ta:g} C ambient. Worst case: every load at its maximum at once.",
+                            f"({vin.vmax:g} - {reg['vout_v']:g}) V x {i_th:.0f} mA = {pd * 1000:.0f} mW; "
+                            f"{th:g} C/W from {ta:g} C ambient, no heatsink. "
+                            + ("This is the typical load." if i_th < mx else "Worst case: every load at its maximum at once."),
                             refs=[c.ref], evidence=dict(ev, p_mw=round(pd * 1000), tj=round(tj)),
                             basis=model_basis(c, 'theta_ja'), confidence='low')
 
@@ -528,6 +540,9 @@ def source_pin(d):
                 continue
             lim = _first(p.spec, 'i_out_max_ma', 'i_max_ma', 'i_load_max_ma', 'i_ext_max_ma', 'source_i_max_ma')
             n = d.nets[p.net]
+            usb = False
+            if lim is None and pin_aliases(str((c.model.get('module') or {}).get('usb_vbus_pin', '\x00'))) & pin_aliases(p.name):
+                lim, usb = 500.0, True      # the pad is the USB port's VBUS: a USB 2.0 port owes a device 500 mA
             loads = [(x, im) for x, _, im, _ in rail_loads(d, n) if x is not c and im]
             leds = [q.comp for q in n.pins if q.comp.kind == 'LED' and not q.comp.model]
             tot = sum(im for _, im in loads)
@@ -537,10 +552,14 @@ def source_pin(d):
             if lim is None:
                 continue
             if tot > lim:
-                yield F('power.source_pin', 'error' if tot > 1.5 * lim else 'warning',
-                        f"{p.label} supplies {n.name}: up to {tot:.0f} mA is drawn, it is good for {lim:g} mA",
+                yield F('power.source_pin', 'warning' if usb or tot <= 1.5 * lim else 'error',
+                        f"{p.label} supplies {n.name}: up to {tot:.0f} mA is drawn, " +
+                        (f"and it is the USB port's VBUS (500 mA from a USB 2.0 port)" if usb else f"it is good for {lim:g} mA"),
                         f"{c.desc}. Loads on {n.name}: {_summ([(x.ref, im) for x, im in loads])}. This is every load at "
-                        f"its maximum at once." + (f" Not counted (no model): {', '.join(unknown)}." if unknown else ''),
+                        f"its maximum at once." + (" The module's own current comes on top. A USB-C charger or a port "
+                        "that advertises 1.5 A or 3 A gives more; a plain USB 2.0 port may shut down or droop. Limit "
+                        "the current in firmware or add a hardware limit." if usb else '')
+                        + (f" Not counted (no model): {', '.join(unknown)}." if unknown else ''),
                         refs=[c.ref] + [x.ref for x, _ in loads][:4], nets=[n.name], evidence=ev, basis=model_basis(c),
                         confidence='medium')
             elif tot or leds or unknown:

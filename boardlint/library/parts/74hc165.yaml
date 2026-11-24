@@ -1,0 +1,80 @@
+id: 74hc165
+match:
+  lcsc: [C5613]
+  value: ["74HC165*"]
+kind: IC
+class: shift_register
+description: "8-bit parallel-in / serial-out shift register, HC logic, 2.0 V to 6.0 V, asynchronous parallel load"
+datasheet: "Nexperia 74HC165; 74HCT165, product data sheet Rev. 8, 30 May 2024 (LCSC copy for C5613, 74HC165D,653)"
+provenance:
+  source: "https://www.lcsc.com/datasheet/C5613.pdf -> datasheet.lcsc.com, Nexperia 74HC_HCT165 Rev. 8, 18 pages, opened 2026-11-24 (assets.nexperia.com answered HTTP 403 to this session, so LCSC's copy of the same Nexperia document was read)"
+  verified: true
+  notes: >
+    General description p.1 (PL low loads D0-D7 asynchronously; with PL high data enters at DS;
+    with CE low data shifts on the low-to-high edge of CP; CE high disables CP; "Inputs are
+    overvoltage tolerant to 15 V"). Pin description Table 2 p.3 for the SO16 (74HC165D): 1 PL
+    (active low), 2 CP, 3-6 D4-D7, 7 Q7 complement, 8 GND, 9 Q7, 10 DS, 11-14 D0-D3, 15 CE
+    (active low), 16 VCC. Limiting values Table 4 p.5: VCC -0.5 to +7 V; input and output clamp
+    current +/-20 mA beyond -0.5 V or VCC + 0.5 V; output current +/-25 mA; supply / ground
+    current 50 mA. Recommended operating conditions Table 5 p.5: VCC 2.0 / 5.0 / 6.0 V, input
+    and output voltage 0 to VCC. Static characteristics Table 6 p.5-6: VIH 1.5 / 3.15 / 4.2 V
+    and VIL 0.5 / 1.35 / 1.8 V at VCC = 2.0 / 4.5 / 6.0 V; VOH at -20 uA VCC - 0.1 V; VOH at
+    -4.0 mA and VCC = 4.5 V 3.98 V at 25 C, 3.84 V to 85 C, 3.7 V to 125 C; VOL at 4.0 mA 0.26 /
+    0.33 / 0.4 V; supply current 8 / 80 / 160 uA max at VCC = 6.0 V. Dynamic characteristics
+    Table 7 p.7-8 (CL = 50 pF): fmax of CP 6 MHz min (17 typ) at 2.0 V, 30 MHz min (51 typ) at
+    4.5 V, 35 MHz min at 6.0 V at 25 C; 5 / 24 / 28 MHz to 85 C; 4 / 20 / 24 MHz to 125 C; CP to
+    Q7 165 / 33 / 28 ns max at 25 C; PL pulse width 80 / 16 / 14 ns min; recovery PL to CP
+    100 / 20 / 17 ns min; DS set-up 80 / 16 / 14 ns min.
+    Nothing is specified at 3.3 V: the guaranteed clock rate at a 3.3 V supply is therefore the
+    2.0 V figure (5 MHz to 85 C), and the real limit lies between that and the 4.5 V row.
+    Thresholds are stored as the fractions of the 2.0 V row (0.75 / 0.25), the tightest; the
+    4.5 V and 6.0 V rows are 0.7 / 0.3. Computed, not printed: voh_frac = 3.84 / 4.5.
+    The 15 V input statement is in the general description only; the limiting-values table still
+    puts the input clamp at VCC + 0.5 V and the recommended input range at 0 to VCC, so the
+    model keeps the VCC + 0.5 V limit. The datasheet has no decoupling recommendation.
+    Q7 (pin 9) and its complement (pin 7) are keyed by pin number: KiCad names the complement
+    ~{Q7}, which normalises to the same name as Q7. All three packages share the numbering.
+
+supplies:
+  - pins: [VCC]
+    vmin: 2.0
+    vmax: 6.0
+    abs_max: 7.0
+    i_max_ma: 0.08            # static, to 85 C at VCC = 6.0 V (0.008 at 25 C)
+
+io:
+  vih_frac: 0.75              # 1.5 V at VCC = 2.0 V; 0.7 x VCC at 4.5 V and 6.0 V
+  vil_frac: 0.25              # 0.5 V at VCC = 2.0 V; 0.3 x VCC at 4.5 V and 6.0 V
+  voh_frac: 0.85              # 3.84 V at -4.0 mA, VCC = 4.5 V, to 85 C; VCC - 0.1 V at -20 uA
+  abs_max_over_supply: 0.5
+  tolerant_5v: false
+
+pins:
+  PL: {active: low, drive: input, note: "asynchronous parallel load: low copies D0-D7 into the register, high lets it shift"}
+  CP: {drive: input, note: "clock: shifts on the low-to-high edge while CE is low"}
+  CE:
+    role: enable
+    active: low               # high disables the clock
+    drive: input
+  DS: {drive: input, note: "serial data in, for cascading: the previous stage's Q7"}
+  "#9": {name: Q7, drive: push_pull, note: "serial output from the last stage"}
+  "#7": {name: Q7N, drive: push_pull, note: "complement of Q7; may be left open"}
+  D0: {drive: input}
+  D1: {drive: input}
+  D2: {drive: input}
+  D3: {drive: input}
+  D4: {drive: input}
+  D5: {drive: input}
+  D6: {drive: input}
+  D7: {drive: input}
+  VCC: {role: power_in}
+  GND: {role: gnd}
+
+shift_register:
+  bits: 8
+  fmax_mhz: {2.0: 5, 4.5: 24, 6.0: 28}       # minimum guaranteed, -40 to 85 C, 50 pF
+  fmax_mhz_25c: {2.0: 6, 4.5: 30, 6.0: 35}
+  fmax_3v3_note: "no 3.3 V row: use the 2.0 V figure as the guaranteed rate at 3.3 V"
+  pl_pulse_min_ns: {2.0: 100, 4.5: 20, 6.0: 17}   # -40 to 85 C
+  pl_to_cp_recovery_ns: {2.0: 125, 4.5: 25, 6.0: 21}
+  cp_to_q7_max_ns: {2.0: 205, 4.5: 41, 6.0: 35}

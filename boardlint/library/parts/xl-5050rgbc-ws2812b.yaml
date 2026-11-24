@@ -1,0 +1,94 @@
+id: xl-5050rgbc-ws2812b
+match:
+  lcsc: [C2843785]
+  value: ["XL-5050RGBC-WS2812B*", "XL-5050RGBC-2812B*"]
+kind: LED
+class: addressable_led
+description: "XINGLIGHT XL-5050RGBC-WS2812B, a WS2812B-compatible addressable RGB LED, 5050 package, 12 mA per colour, single-wire 800 kbit/s (LCSC C2843785, listed there as XL-5050RGBC-2812B)"
+datasheet: "XINGLIGHT XL-5050RGBC-WS2812B Technical Data Sheet, undated, PDF created 2025-09-08 (the PDF LCSC serves for C2843785)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/40b65f6fea0587c0483bbbd4496835fd.pdf (XINGLIGHT, 18 pages, Chinese / English; linked from https://www.lcsc.com/product-detail/C2843785.html), downloaded 2026-11-24"
+  verified: true
+  notes: >
+    LCSC C2843785 is this XINGLIGHT part, not a Worldsemi WS2812B, although schematics and
+    BOMs usually call it "WS2812B" (LCSC brand XINGLIGHT, part XL-5050RGBC-2812B, package
+    SMD5050-4P). A component matched only by the value "WS2812B" gets ws2812b.yaml instead.
+    Functional characteristics p.2 (12 mA per channel; 800 kbit/s; PWM 256 levels; item 7:
+    "VDD is 100 % functional above 4.5-5.5 V"). Absolute maximum rating table p.4: supply
+    voltage 3.5 to 5.5 V; logic input voltage "-0.5 ~ VDD+5.5" V; RGB output current 12 mA;
+    operating temperature -40 to +85 C; ESD 2000 V HBM; moisture sensitivity level 5 (p.1).
+    Electrical parameters p.5 (25 C): VDD 3.5 / 5.0 / 5.5 V; RGB output current 12 mA typ;
+    VIH min 0.7 VDD, VIL max 0.3 VDD (DIN); PWM frequency 4 kHz typ; static consumption
+    0.3 mA typ. Dynamic parameters p.5: data rate 800 kHz typ; DIN to DOUT delay 500 ns max.
+    Signal timing p.7: 0-code high 0.20 / 0.295 / 0.35 us; 1-code high 0.55 / 0.595 / 1.2 us;
+    0-code low 0.55 / 0.595 / 1.2 us; 1-code low 0.2 / 0.295 / 0.35 us; bit period 0.89 us
+    min; reset low 80 us min in the table (note b under it says 100 us minimum and warns not
+    to pause more than 35 us inside a frame). Data order GRB, high bit first, p.6. Pin table
+    p.11 (rendered page): 1 VDD, 2 DO, 3 GND, 4 DI. Application circuits p.8 (rendered page):
+    one without and two with capacitors and resistors; "the capacitor is conventionally a 104
+    chip capacitor" (100 nF). Design consideration p.17: the decoupling capacitor at each LED
+    "is essential" / "generally not recommended to omit"; "the signal input and output
+    terminals of the product must be connected in series with protective resistors R1/R2",
+    20 Ohm to 2 kOhm, "usually around 500" Ohm, as protection against hot plugging.
+    JUDGEMENT CALLS, for the reviewer:
+    (1) SUPPLY. The table minimum is 3.5 V, and p.2 separately promises full function only
+    from 4.5 V. vmin is the 3.5 V of the tables. A 3.3 V supply is below both.
+    (2) The logic-input maximum "VDD+5.5" V is recorded as printed in the notes only: it is
+    almost certainly a misprint for VDD + 0.5 V, so NO input limit is put in the model.
+    (3) Computed, not printed: i_max_ma = 3 x 12 mA (+ 0.3 mA static in the supply entry).
+    No tolerance on the 12 mA is given.
+    (4) The series resistor on DIN / DOUT is a "must" on p.17 yet absent from the first
+    application circuit on p.8; the schema cannot express a series resistor, so it is carried
+    as serial_led.series_r_ohm and a note only.
+    No errata search was done.
+
+supplies:
+  - pins: [VDD]
+    vmin: 3.5
+    vmax: 5.5
+    abs_max: 5.5              # the "absolute maximum" table gives the same 3.5 to 5.5 V
+    i_typ_ma: 0.3             # static consumption, typ
+    i_max_ma: 36.3            # 3 x 12 mA + static: computed; no maximum is printed
+    decoupling:
+      - {c_min: 100n, count: 1, note: "decoupling capacitor at each LED between VDD and GND, 'generally not recommended to omit'; conventionally 100 nF ('104') (p.8, p.17)"}
+
+io:
+  vih_frac: 0.7               # of the LED's own VDD
+  vil_frac: 0.3
+
+pins:
+  "DIN/DI": {role: led_din, drive: input, note: "Datasheet p.17 asks for a protective series resistor (20 Ohm to 2 kOhm, usually about 500 Ohm) at the signal input and output."}
+  "DOUT/DO": {role: led_dout, drive: push_pull}
+  VDD: {role: power_in}
+  "VSS/GND": {role: gnd}
+
+serial_led:
+  protocol: ws2812b
+  vih_frac: 0.7               # of the LED's own VDD
+  vil_frac: 0.3
+  i_color_ma: 12
+  i_typ_all_on_ma: 36         # 3 x 12 mA
+  i_max_ma: 36                # 3 x 12 mA; no tolerance given
+  i_idle_ma: 0.3
+  khz: 800
+  bit_period_min_us: 0.89
+  t0h_us: [0.20, 0.295, 0.35]
+  t0l_us: [0.55, 0.595, 1.2]
+  t1h_us: [0.55, 0.595, 1.2]
+  t1l_us: [0.20, 0.295, 0.35]
+  reset_us: 100               # table: 80 us min; note b: 100 us min; keep gaps inside a frame under 35 us
+  color_order: GRB
+  pwm_khz: 4
+  prop_delay_ns: 500          # DIN to DOUT, max
+  series_r_ohm: 500           # "usually around 500" Ohm in series at the signal input and output (20 Ohm to 2 kOhm)
+  vdd_full_function_min: 4.5  # p.2 item 7
+
+errata:
+  - id: below-minimum-supply-at-3v3
+    summary: "The minimum supply is 3.5 V (full function is promised only from 4.5 V). On a 3.3 V rail the part is outside its datasheet: it often still lights, but blue, which needs the highest forward voltage, dims or drops out first, and nothing is guaranteed."
+    source: "https://datasheet.lcsc.com/datasheet/pdf/40b65f6fea0587c0483bbbd4496835fd.pdf, tables p.4 and p.5, item 7 p.2"
+    severity: warning
+  - id: 3v3-data-with-5v-supply
+    summary: "VIH is 0.7 x VDD, 3.5 V at a 5 V supply: a 3.3 V MCU output cannot reach it, so with a 5 V LED supply the first DIN needs a level shifter."
+    source: "https://datasheet.lcsc.com/datasheet/pdf/40b65f6fea0587c0483bbbd4496835fd.pdf, electrical parameters p.5"
+    severity: warning

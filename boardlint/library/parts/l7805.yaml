@@ -1,0 +1,95 @@
+id: l7805
+match:
+  lcsc: [C111887]
+  value: ["L7805*", "LM7805*"]
+kind: IC
+class: linear_regulator
+description: "5 V positive linear regulator, three terminal, output current up to 1.5 A, 2 V typical dropout (L7805CV: TO-220, 4 % tolerance at 25 C)"
+datasheet: "STMicroelectronics L78, DocID2143 Rev 34, November 2016 (the PDF LCSC serves for C111887, L7805CV)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/8a0b9fe01667d69c9232cfb11aaec867.pdf (ST DocID2143 Rev 34, 54 pages; linked from https://www.lcsc.com/product-detail/C111887.html), downloaded 2026-11-24. www.st.com refused the direct download."
+  verified: true
+  notes: >
+    Features p.1 ("Output current up to 1.5 A"; "If adequate heat sinking is provided, they
+    can deliver over 1 A"). Pin connections Figure 2 p.4 names the leads OUTPUT, GROUND, INPUT
+    and the tab GND, without pin numbers (drawing only), so no numbers are recorded; the
+    schematic diagram p.4 calls them IN and OUT. Absolute maximum ratings Table 1 p.5 (DC input
+    35 V for VO = 5 to 18 V; output current and power "Internally limited"; operating junction
+    0 to 125 C for L78xxC / L78xxAC, -40 to 125 C for L78xxAB). Thermal data Table 2 p.5
+    (TO-220: RthJC 5, RthJA 50 C/W; TO-220FP 5 / 60; D2PAK 3 / 62.5; DPAK 8 / 100).
+    Application circuit Figure 4 p.5 (rendered page): CI = 0.33 uF, CO = 0.1 uF.
+    Electrical characteristics of L7805C, Table 10 p.14 (TJ = 0 to 125 C, VI = 10 V,
+    IO = 500 mA, CI = 0.33 uF, CO = 0.1 uF): VO 4.8 / 5 / 5.2 V at 25 C; 4.75 / 5 / 5.25 V for
+    IO = 5 mA to 1 A and VI = 7 to 18 V (and for IO = 1 A, VI = 18 to 20 V at 25 C); line
+    regulation 3 typ / 100 mV max for VI = 7 to 25 V; load regulation 100 mV max for 5 mA to
+    1.5 A; quiescent current 8 mA max (no typical value given for the C grade); dropout 2 V
+    typ at IO = 1 A, 25 C (no maximum given); short-circuit current 0.75 A typ at VI = 35 V;
+    short-circuit peak current 2.2 A typ; footnote a: "Minimum load current for regulation is
+    5 mA". The A grades (L7805AB / AC, Table 3 p.7) are tighter: 4.9 / 5 / 5.1 V at 25 C,
+    quiescent 4.3 typ / 6 mA max; this model carries the C-grade numbers, the ones that apply
+    to L7805CV. Design considerations 6.1 p.23: "it is recommended that the regulator input be
+    bypassed with capacitor if the regulator is connected to the power supply filter with long
+    lengths, or if the output load capacitance is large ... A 0.33 uF or larger tantalum, mylar
+    or other capacitor having low internal impedance at high frequencies should be chosen ...
+    mounted with the shortest possible leads directly across the regulators input terminals";
+    Figure 8 notes: "Although no output capacitor is need for stability, it does improve
+    transient response" and the input capacitor is "Required if regulator is located an
+    appreciable distance from power supply filter".
+    JUDGEMENT CALLS, for the reviewer:
+    (1) There is no recommended-operating-conditions table. vmin 7 V and vmax 20 V are the
+    input range over which Table 10 guarantees the output voltage (7 to 18 V at up to 1 A over
+    temperature, 18 to 20 V at 25 C); line regulation is tested to 25 V and the absolute
+    maximum is 35 V.
+    (2) i_max_ma 1000 is the load range over which the output voltage is guaranteed; 1.5 A is
+    the headline figure and needs a heat sink.
+    (3) dropout_mv is the TYPICAL value: the datasheet gives no maximum. The 7 V minimum input
+    of Table 10 is the safer limit and equals 5 V + 2 V.
+    (4) cin_min / cout_min are the application-circuit and test-condition values. By the
+    datasheet's own notes the output capacitor is not needed for stability and the input
+    capacitor only when the supply filter is far away, so a board without them is not out of
+    specification.
+    (5) tj_max 125 C is the top of the operating junction range; thermal shutdown is not given
+    as a number. theta_ja 50 C/W is the TO-220 in free air (no heat sink).
+    (6) The "LM7805*" glob also matches other makers' 7805 (TI / onsemi LM7805, clones such as
+    the TDSEMIC LM7805-TD LCSC lists beside this part): close relatives, but their tables were
+    not read.
+    No errata search was done.
+
+supplies:
+  - pins: [IN, INPUT, VI]
+    vmin: 7                   # output voltage guaranteed from VI = 7 V (Table 10)
+    vmax: 20                  # ... to 18 V over temperature, 20 V at 25 C; line regulation tested to 25 V
+    abs_max: 35
+    i_max_ma: 8               # quiescent current, maximum, L7805C at 25 C (no typical value given)
+    decoupling:
+      - {c_min: 0.33u, count: 1, note: "0.33 uF or larger with low impedance at high frequency, directly across the input terminals; required if the regulator is an appreciable distance from the supply filter (6.1 p.23, Figure 4)"}
+
+pins:
+  "IN/INPUT/VI": {role: power_in, abs_max: 35}
+  "GND/GROUND": {role: gnd}
+  "OUT/OUTPUT/VO": {role: power_out}
+
+regulator:
+  type: ldo                   # a linear regulator (NPN pass stage, 2 V dropout): "ldo" is the schema's linear type
+  vin: "IN/INPUT/VI"
+  vout: "OUT/OUTPUT/VO"
+  vout_v: 5.0
+  tol: 0.05                   # 4.75 to 5.25 V over IO = 5 mA to 1 A, VI = 7 to 18 V, TJ = 0 to 125 C
+  tol_25c: 0.04               # 4.8 to 5.2 V at TJ = 25 C
+  i_max_ma: 1000              # output voltage guaranteed up to 1 A; "up to 1.5 A" with adequate heat sinking
+  i_headline_ma: 1500
+  i_min_ma: 5                 # minimum load current for regulation
+  i_limit_ma: 2200            # short-circuit peak current, typ
+  i_short_circuit_ma: 750     # typ at VI = 35 V (safe-area fold-back)
+  dropout_mv: 2000            # TYPICAL at 1 A, TJ = 25 C; no maximum in the datasheet
+  dropout_typ_mv: 2000
+  dropout_at_ma: 1000
+  vin_min_for_spec: 7
+  cin_min: 0.33u
+  cout_min: 0.1u              # improves transient response; not needed for stability
+  line_reg_max_mv: 100        # VI = 7 to 25 V, 25 C
+  load_reg_max_mv: 100        # IO = 5 mA to 1.5 A, 25 C
+  iq_max_ma: 8
+  theta_ja: 50                # TO-220, no heat sink (TO-220FP 60, D2PAK 62.5, DPAK 100)
+  theta_jc: 5
+  tj_max: 125

@@ -1,0 +1,77 @@
+id: ws2812b
+match:
+  value: ["WS2812B*"]
+kind: LED
+class: addressable_led
+description: "Worldsemi WS2812B addressable RGB LED, 5050 package, 12 mA per colour, single-wire 800 kbit/s (numbers of the current WS2812B-V5/W)"
+datasheet: "Worldsemi WS2812B-V5/W datasheet V6.1, 2022-09-08 (https://www.world-semi.com/web/userfiles/productfile/WS2812B_V5WDatasheet_V6.1_EN.pdf)"
+provenance:
+  source: "https://www.world-semi.com/web/userfiles/productfile/WS2812B_V5WDatasheet_V6.1_EN.pdf (8 pages; linked from https://www.world-semi.com/ws2812-family/), downloaded 2026-11-24"
+  verified: true
+  notes: >
+    WHICH WS2812B. Worldsemi sells several generations under this name; this is the English
+    datasheet of the WS2812B-V5/W, the 5050 part its site lists today (a WS2812B-V6 datasheet
+    exists in Chinese only and was not read). Older WS2812B (V1 to V4) and the many
+    "WS2812B-compatible" parts of other makers have different supply ranges, thresholds and
+    reset times. A part ordered by LCSC number is matched by its own model where one exists
+    (C2843785 is NOT a Worldsemi part: see xl-5050rgbc-ws2812b.yaml).
+    Features p.1 ("Reverse power supply will not damage"; "The periphery does not need any
+    electronic components including capacitors"; 800 kbit/s; scan frequency 2 kHz; reset time
+    over 280 us). Pin function p.2: 1 VDD, 2 DOUT, 3 VSS, 4 DIN. "Absolute Maximum Ratings"
+    p.2: power supply voltage +3.7 to +5.3 V, logical input voltage -0.3 V to VDD + 0.7 V,
+    operation temperature -40 to +65 C. That table is the only statement of the supply range,
+    so it is used for vmin / vmax and abs_max alike. Electrical characteristics p.3 (rendered
+    page checked; TA = 25 C, VDD = 5 V): input current +/-1 uA; VIH min 0.63 VDD, max
+    VDD + 0.7 V; VIL max 0.7 V (an absolute value, not a fraction). Switching p.3: DIN to
+    DOUT delay 300 ns max; input capacitance 15 pF max. LED characteristics p.3: "Quiescent
+    Current (center value): 0.6mA"; brightness and wavelength are given at a working current
+    of 12 mA per colour. Data transfer time p.3: T0H 220 to 380 ns, T1H 580 ns to 1 us, T0L
+    580 ns to 1 us, T1L 580 ns to 1 us, RES over 280 us. Data order GRB, most significant bit
+    first, p.4. Typical application circuit p.4: VDD-5V, no capacitors or resistors drawn.
+    Computed, not printed: i_typ_all_on_ma and i_max_ma = 3 x 12 mA (+ 0.6 mA quiescent in
+    the supply entry). The datasheet gives no tolerance on the 12 mA and no behaviour below
+    3.7 V: operation from 3.3 V is outside this datasheet.
+    No errata search was done.
+
+supplies:
+  - pins: [VDD]
+    vmin: 3.7
+    vmax: 5.3
+    abs_max: 5.3
+    i_typ_ma: 0.6             # quiescent, "center value", outputs off
+    i_max_ma: 36.6            # 3 x 12 mA + quiescent: computed; no maximum is printed
+
+io:
+  vih_frac: 0.63              # of the LED's own VDD
+  vil: 0.7                    # absolute, at VDD = 5 V
+  abs_max_over_supply: 0.7    # logic input: -0.3 V to VDD + 0.7 V
+
+pins:
+  DIN: {role: led_din, drive: input}
+  DOUT: {role: led_dout, drive: push_pull}
+  VDD: {role: power_in}
+  "VSS/GND": {role: gnd}
+
+serial_led:
+  protocol: ws2812b
+  vih_frac: 0.63              # of the LED's own VDD (3.15 V at 5.0 V, 3.34 V at 5.3 V)
+  vil: 0.7
+  i_color_ma: 12
+  i_typ_all_on_ma: 36         # 3 x 12 mA
+  i_max_ma: 36                # 3 x 12 mA; no tolerance given
+  i_idle_ma: 0.6
+  khz: 800
+  t0h_us: [0.22, 0.38]
+  t0l_us: [0.58, 1.0]
+  t1h_us: [0.58, 1.0]
+  t1l_us: [0.58, 1.0]
+  reset_us: 280               # low for more than 280 us
+  color_order: GRB
+  pwm_khz: 2
+  prop_delay_ns: 300          # DIN to DOUT, max
+
+errata:
+  - id: 3v3-data-with-5v-supply
+    summary: "VIH is 0.63 x VDD: 3.15 V at a 5.0 V supply, 3.34 V at 5.3 V. A 3.3 V MCU output (guaranteed high level typically 0.8 x 3.3 V = 2.64 V) does not meet it, so the first LED's DIN needs a level shifter or a lower LED supply (4.19 V or less for 2.64 V)."
+    source: "https://www.world-semi.com/web/userfiles/productfile/WS2812B_V5WDatasheet_V6.1_EN.pdf, electrical characteristics p.3"
+    severity: warning

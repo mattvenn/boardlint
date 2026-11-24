@@ -1,0 +1,230 @@
+id: drv8313
+match:
+  lcsc: [C92482]
+  value: ["DRV8313*"]
+kind: IC
+class: motor_driver
+description: "Triple half-H-bridge driver for three-phase brushless DC motors, 8 V to 60 V supply, 2.5 A peak per channel, 3.3 V / 10 mA regulator, uncommitted comparator, HTSSOP-28 PowerPAD (PWP) or VQFN-36 (RHH)"
+datasheet: "Texas Instruments DRV8313, SLVSBA5D, October 2012, revised April 2016 (https://www.ti.com/lit/ds/symlink/drv8313.pdf)"
+provenance:
+  source: "https://www.ti.com/lit/ds/symlink/drv8313.pdf (SLVSBA5D, 40 pages), downloaded 2026-11-24; RMS rating only from TI ZHCSAD6A (Rev. A, November 2012), the PDF LCSC serves for C92482"
+  verified: true
+  notes: >
+    All numbers are from SLVSBA5D unless stated. Pin Functions table p.3-4 (PWP numbers: 1 CPL,
+    2 CPH, 3 VCP, 4 and 11 VM, 5 OUT1, 6 PGND1, 7 PGND2, 8 OUT2, 9 OUT3, 10 PGND3, 12 COMPP,
+    13 COMPN, 14 / 20 / 28 GND, 15 V3P3, 16 nRESET, 17 nSLEEP, 18 nFAULT, 19 nCOMPO, 21 NC,
+    22 EN3, 23 IN3, 24 EN2, 25 IN2, 26 EN1, 27 IN1, thermal pad "Must be connected to ground").
+    External parts, same table: CPL / CPH "Connect a VM-rated, 0.01-uF ceramic capacitor
+    between CPH and CPL"; VCP "Connect a 16-V, 0.1-uF ceramic capacitor to VM"; V3P3 "bypass
+    to GND with a 6.3-V, 0.47-uF ceramic capacitor; up to 10-mA external load"; VM "bypass to
+    GND with two 0.1-uF capacitors (for each pin) plus one bulk capacitor rated for VM";
+    nFAULT / nCOMPO "open-drain output requires an external pullup"; PGNDx "Connect to GND or
+    to low-side current-sense resistors". Absolute maximum ratings 6.1 p.4 (VM 65 V, VM ramp
+    2 V/us, VCP / CPH VM + 12 V, V3P3 3.8 V and 10 mA, control pins and comparator inputs
+    -0.5 to 7 V, open-drain sink 10 mA, OUTx -0.7 V to VM + 0.7 V, PGNDx +/-600 mV, Tj 150 C).
+    Recommended operating conditions 6.3 p.5 (VM 8 to 60 V, "Both VM pins must be connected to
+    the same supply voltage"; digital pin voltage 0 to 5.5 V; PWM on ENx / INx up to 250 kHz;
+    PGNDx +/-500 mV; V3P3 load 0 to 10 mA; TA -40 to 125 C). Thermal 6.4 p.5 (PWP: RthetaJA
+    31.6, JC(top) 15.9, JB 5.6, JC(bot) 1.4 C/W; RHH: 31.1 C/W). Electrical characteristics
+    6.5 p.6: IVM 1 mA typ / 5 mA max (VM = 24 V, fPWM < 50 kHz), sleep 500 uA typ / 800 uA max;
+    V3P3 3.1 / 3.3 / 3.52 V at 0 to 10 mA; logic inputs VIL 0.6 V typ / 0.7 V max, VIH 2.2 V min
+    / 5.25 V max, hysteresis 50 to 600 mV, IIH 100 uA max at 3.3 V, pulldown 100 kOhm (typ
+    column); open drain VOL 0.5 V max at 5 mA; comparator common mode 0 to 5 V, offset +/-7 mV;
+    FET on-resistance, each of high side and low side, 0.24 Ohm typ at 25 C and 0.29 typ /
+    0.39 max at 85 C (VM = 24 V, 1 A); UVLO 6.3 V typ / 8 V max (VM rising); overcurrent trip
+    3 A min / 5 A typ, 5 us deglitch; thermal shutdown 150 / 160 / 180 C, 35 C hysteresis.
+    Switching 6.6 p.7 (dead time 90 ns, rise / fall 30 to 150 ns). Block diagram 7.2 p.10 draws
+    10 uF + 0.1 uF on VM, 0.01 uF on the charge pump, 0.47 uF on V3P3. Section 7.3.1 p.11
+    (PGNDx may be joined to one sense resistor or tied straight to ground; keep within
+    +/-500 mV). Section 7.4.1 p.14 (nRESET low resets faults and disables the outputs, an
+    internal power-up reset means driving it at power-up is not required; about 1 ms from
+    nSLEEP high to fully operational). Application schematics Figures 13, 15, 16, 17
+    (p.15-21) use 0.1 uF + 100 uF on VM. Section 10.1 p.23: "the uncommitted comparator is not
+    used. Because this is the case, the COMPP, COMPN, and COMPO pins are tied to GND".
+    JUDGEMENT CALLS, for the reviewer:
+    (1) The logic-input rows of table 6.5 are headed "nSLEEP, ENx, INx"; nRESET is not named
+    there. It is described as the same kind of input (internal pulldown) in the pin table and
+    grouped with them in 6.1, so the same thresholds and the 100 kOhm pulldown are applied to
+    it through io:.
+    (2) Bulk capacitance: the datasheet demands "one bulk capacitor rated for VM" without a
+    value and says the amount is system dependent (9.1 p.22). c_min 10u is the smallest value
+    it draws (block diagram); its application schematics use 100 uF.
+    (3) Peak current: 2.5 A is the "High Current-Drive Capability: 2.5-A Peak" of p.1. Rev. D
+    prints NO RMS rating. The 1.75 A rms figure is from Rev. A only (ZHCSAD6A p.1: up to 2.5 A
+    peak or 1.75 A rms per half bridge "at 24 V and 25 C with adequate PCB heat sinking").
+    (4) The datasheet contradicts itself on V3P3 in sleep: 7.4 and Table 3 p.14 say the
+    regulator is disabled in sleep mode, 7.4.1 on the same page says "The V3P3 regulator
+    remains operational in sleep mode". Not recorded as a number; do not rely on V3P3 with
+    nSLEEP low.
+    (5) No pull-up `require` is placed on nFAULT / nCOMPO although the pin table asks for one:
+    the pin.floating_control check already covers open-drain outputs (and accepts an
+    indicator LED or a pin parked on ground), and a `pullup` entry would report boards that
+    follow the datasheet's own advice to tie an unused nCOMPO to GND.
+    Not expressible in the schema: the CPH-CPL and VCP-VM capacitors (pin to pin and pin to
+    rail, not to ground) are carried as notes on the pins only; see `driver:` for the bridge
+    ratings, a free-form section no check reads yet.
+    Errata: none recorded. TI publishes no errata sheet for this part and no forum search was
+    done (e2e.ti.com was not reachable from the extraction session).
+
+supplies:
+  - pins: [VM]
+    vmin: 8
+    vmax: 60
+    abs_max: 65
+    i_typ_ma: 1               # IVM, the driver's own supply current, VM = 24 V, fPWM < 50 kHz (motor current not included)
+    i_max_ma: 5
+    i_sleep_typ_ma: 0.5       # IVMQ, nSLEEP low, VM = 24 V
+    i_sleep_max_ma: 0.8
+    uvlo_typ: 6.3             # VM rising; 8 V max
+    uvlo_max: 8
+    ramp_max_v_per_us: 2
+    decoupling:
+      - {c_min: 100n, count: 2, note: "0.1 uF ceramic to GND at each of the two VM pins (pins 4 and 11 on PWP), close to the pin (pin table p.4, 10.1 p.23)"}
+      - {c_min: 10u, count: 1, note: "one bulk capacitor rated for VM (pin table p.4); no value is demanded: 10 uF in the block diagram p.10, 100 uF in the application schematics p.15-21, more for higher motor current (9.1 p.22)"}
+    note: "Both VM pins must be connected to the same supply voltage (6.3 note 1)."
+
+io:
+  vih: 2.2                    # nSLEEP, ENx, INx (nRESET by inference, see provenance)
+  vil: 0.7                    # max (0.6 typ)
+  vih_max: 5.25
+  vhys_min: 0.05
+  vin_max_recommended: 5.5    # "Digital pin voltage" 0 to 5.5 V
+  abs_max: 7                  # nRESET, nSLEEP, nFAULT, nCOMPO, ENx, INx, COMPP, COMPN: -0.5 to 7 V
+  tolerant_5v: true
+  internal_pull_ohm: 100k     # pulldown on every logic input
+  vol: 0.5                    # open-drain outputs, at 5 mA
+  i_sink_max_ma: 10           # open-drain outputs, absolute maximum
+
+pins:
+  VM: {role: power_in}
+  GND:
+    role: gnd
+    require:
+      - {tie: gnd, note: "Device ground. Connect to system ground (pin table)"}
+  EP:                         # thermal pad (pin 29 on the PWP symbol)
+    role: gnd
+    require:
+      - {tie: gnd, note: "Thermal pad: must be connected to ground, soldered to a ground plane with several vias (pin table, 10.1 and 10.3.1)"}
+  PGND1:
+    abs_max: 0.6              # +/-600 mV absolute maximum, +/-500 mV recommended
+    require:
+      - {not_floating: true, note: "Low-side FET source: connect to GND, or to a low-side current-sense resistor to GND keeping the pin within +/-500 mV (pin table, 7.3.1)"}
+    note: "The three PGND pins may each have a sense resistor, share one, or go straight to ground when current sensing is not needed."
+  PGND2:
+    abs_max: 0.6
+    require:
+      - {not_floating: true, note: "Low-side FET source: connect to GND, or to a low-side current-sense resistor to GND keeping the pin within +/-500 mV (pin table, 7.3.1)"}
+  PGND3:
+    abs_max: 0.6
+    require:
+      - {not_floating: true, note: "Low-side FET source: connect to GND, or to a low-side current-sense resistor to GND keeping the pin within +/-500 mV (pin table, 7.3.1)"}
+  V3P3:
+    role: power_out
+    vout_v: 3.3
+    tol: 0.067                # covers the 3.1 to 3.52 V of the table
+    vout_min: 3.1             # IOUT = 0 to 10 mA
+    vout_max: 3.52
+    i_out_max_ma: 10          # maximum external load (recommended and absolute maximum)
+    abs_max: 3.8
+    require:
+      - {cap_to_gnd: {min: 0.47u}, note: "Internal regulator: bypass to GND with a 6.3 V, 0.47 uF ceramic capacitor (pin table)"}
+    note: "Internal supply of the driver. Do not feed it from another rail. Whether it stays on in sleep mode is stated both ways in the datasheet."
+  CPL: {drive: analog, note: "Charge pump: 0.01 uF ceramic rated for VM between CPH and CPL (not checkable with the require vocabulary)."}
+  CPH:
+    drive: analog
+    note: "Charge pump: 0.01 uF ceramic rated for VM between CPH and CPL. Rides above VM (absolute maximum VM + 12 V)."
+    require:
+      - {cap_to_pin: {pin: CPL, min: 10n}, note: "0.01 uF ceramic between CPH and CPL (pin functions table)"}
+  VCP:
+    drive: analog
+    note: "Charge pump output: 0.1 uF, 16 V ceramic from VCP to VM, not to ground. Absolute maximum VM + 12 V."
+    require:
+      - {cap_to_pin: {pin: VM, min: 100n}, note: "0.1 uF ceramic from VCP to VM (pin functions table)"}
+  IN1: {drive: input, vih: 2.2, vil: 0.7, abs_max: 7, internal_pull: down, internal_pull_ohm: 100k,
+        note: "High pulls the half bridge high, low pulls it low; no effect while EN1 is low. PWM up to 250 kHz."}
+  IN2: {drive: input, vih: 2.2, vil: 0.7, abs_max: 7, internal_pull: down, internal_pull_ohm: 100k}
+  IN3: {drive: input, vih: 2.2, vil: 0.7, abs_max: 7, internal_pull: down, internal_pull_ohm: 100k}
+  EN1:
+    role: enable
+    active: high              # high enables the half bridge, low makes the output high impedance
+    drive: input
+    vih: 2.2
+    vil: 0.7
+    abs_max: 7
+    internal_pull: down
+    internal_pull_ohm: 100k
+  EN2: {role: enable, active: high, drive: input, vih: 2.2, vil: 0.7, abs_max: 7, internal_pull: down, internal_pull_ohm: 100k}
+  EN3: {role: enable, active: high, drive: input, vih: 2.2, vil: 0.7, abs_max: 7, internal_pull: down, internal_pull_ohm: 100k}
+  nSLEEP:
+    role: enable
+    active: high              # high: device awake; low: sleep (charge pump off, outputs high impedance)
+    drive: input
+    vih: 2.2
+    vil: 0.7
+    abs_max: 7
+    internal_pull: down
+    internal_pull_ohm: 100k
+    note: "About 1 ms from nSLEEP high until the driver is fully operational (7.4.1)."
+  nRESET:
+    role: reset
+    active: low               # low: outputs disabled, faults cleared, inputs ignored
+    drive: input
+    vih: 2.2                  # inferred: table 6.5 names only nSLEEP, ENx, INx
+    vil: 0.7
+    abs_max: 7
+    internal_pull: down       # so the driver is held in reset until something drives the pin high
+    internal_pull_ohm: 100k
+    note: "Has an internal power-up reset, so it need not be driven at power-up; it must be HIGH for the outputs to work. A low pulse (or cycling VM) is the only way to clear an overcurrent latch."
+  nFAULT:
+    role: irq
+    active: low
+    drive: open_drain
+    abs_max: 7
+    note: "Low on undervoltage, thermal shutdown or overcurrent. Open drain: requires an external pull-up (10 kOhm to the logic supply in Figure 15); sinks 10 mA at most, VOL 0.5 V max at 5 mA."
+  nCOMPO:
+    drive: open_drain
+    abs_max: 7
+    note: "Comparator output, open drain: requires an external pull-up when the comparator is used. Tie to GND with COMPP and COMPN when it is not (10.1)."
+  COMPP:
+    drive: analog
+    abs_max: 7
+    require:
+      - {not_floating: true, note: "Uncommitted comparator input: the datasheet's layouts tie COMPP, COMPN and nCOMPO to GND when the comparator is not used (10.1 p.23)", when: "comparator not used"}
+    note: "Common-mode range 0 to 5 V, offset +/-7 mV, bias +/-300 nA."
+  COMPN:
+    drive: analog
+    abs_max: 7
+    require:
+      - {not_floating: true, note: "Uncommitted comparator input: the datasheet's layouts tie COMPP, COMPN and nCOMPO to GND when the comparator is not used (10.1 p.23)", when: "comparator not used"}
+  OUT1:
+    drive: tri_state          # H / L while EN1 is high, high impedance while EN1 is low
+    note: "Half-bridge output to the load. 2.5 A peak; -0.7 V to VM + 0.7 V continuous."
+  OUT2: {drive: tri_state}
+  OUT3: {drive: tri_state}
+  NC: {role: nc}              # pin 21 on PWP: no internal connection
+  RSVD: {role: nc, note: "RHH package only (pin 18): reserved, leave disconnected."}
+
+# Bridge ratings.  Free-form: no check reads this section yet.
+driver:
+  type: half_bridge
+  channels: 3
+  i_out_peak_a: 2.5           # per half bridge (p.1)
+  i_out_rms_a: 1.75           # per half bridge at 24 V, 25 C with adequate PCB heat sinking: Rev. A (ZHCSAD6A p.1) only, not printed in Rev. D
+  i_ocp_min_a: 3              # overcurrent trip; the channel latches off until nRESET or a VM cycle
+  i_ocp_typ_a: 5
+  t_ocp_us: 5
+  rds_on_hs_mohm: {typ_25c: 240, typ_85c: 290, max_85c: 390}   # VM = 24 V, IO = 1 A
+  rds_on_ls_mohm: {typ_25c: 240, typ_85c: 290, max_85c: 390}
+  f_pwm_max_khz: 250
+  dead_time_ns: 90
+  t_wake_ms: 1
+  theta_ja: 31.6              # PWP (HTSSOP-28), C/W; 31.1 for RHH (VQFN-36)
+  theta_jc_bottom: 1.4        # PWP; 1.3 for RHH
+  theta_jb: 5.6
+  tj_max: 150
+  thermal_shutdown_c: [150, 160, 180]
+  thermal_shutdown_hyst_c: 35
+  ta_max: 125
+  charge_pump: {c_fly: 10n, c_fly_pins: [CPH, CPL], c_vcp: 100n, c_vcp_to: VM, c_vcp_rating_v: 16}
+  sense: {pins: [PGND1, PGND2, PGND3], v_max_recommended: 0.5, v_abs_max: 0.6, may_tie_to: [gnd, sense_resistor]}
+  comparator_unused: "tie COMPP, COMPN and nCOMPO to GND"

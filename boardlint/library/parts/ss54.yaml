@@ -1,0 +1,38 @@
+id: ss54
+match:
+  lcsc: [C22452]
+  value: ["SS54"]
+kind: D
+class: schottky
+description: "Schottky barrier rectifier, 40 V, 5 A, SMA (DO-214AC)"
+datasheet: "MDD (Microdiode Semiconductor) SS52 THRU SS5200, Rev 2024A4 (the PDF LCSC serves for C22452)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/3d29bdcdc3c46ec127d6db22edd72e83.pdf (MDD SS52 THRU SS5200, 3 pages; linked from https://www.lcsc.com/product-detail/C22452.html), downloaded 2026-11-24"
+  verified: true
+  notes: >
+    "Maximum Ratings And Electrical Characteristics" table p.1, SS54 column, 25 C ambient
+    (column boundaries checked on the rendered page): VRRM 40 V, VRMS 28 V, DC blocking 40 V;
+    average forward rectified current 5.0 A; peak forward surge 120 A (8.3 ms half sine);
+    maximum instantaneous forward voltage 0.55 V at 5.0 A (SS52 to SS54); maximum DC reverse
+    current at rated voltage 1.0 mA at 25 C and 50 mA at 100 C; junction capacitance 500 pF
+    typ at 4 V, 1 MHz; thermal resistance junction to ambient 60 C/W typ on 5 x 5 cm copper
+    pads; operating junction -55 to +125 C (SS52 to SS55). "Color band denotes cathode end".
+    diode.vf is the MAXIMUM at the full 5 A; at light load the drop is lower (Fig. 3 is a
+    typical curve only, no figure read from it). The reverse leakage is large and rises
+    steeply with temperature: it matters where the diode is meant to block (back-feed
+    protection, battery isolation). The value glob matches any maker's SS54: forward voltage
+    and leakage differ between makers; these are MDD's numbers.
+
+diode:
+  vr_max: 40
+  vrrm: 40
+  if_max_ma: 5000             # average rectified
+  ifsm_a: 120
+  vf: 0.55                    # maximum, at 5 A, 25 C
+  vf_max: 0.55
+  vf_at_ma: 5000
+  ir_max_ua: 1000             # at 40 V, 25 C
+  ir_max_100c_ua: 50000       # at 40 V, 100 C
+  cj_pf: 500
+  theta_ja: 60
+  tj_max: 125

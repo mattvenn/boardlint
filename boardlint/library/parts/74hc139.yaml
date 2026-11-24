@@ -1,0 +1,101 @@
+id: 74hc139
+match:
+  lcsc: [C5603]
+  value: ["74HC139*"]
+kind: IC
+class: logic
+description: "Dual 2-to-4 line decoder / demultiplexer, active-low outputs, one active-low enable per decoder, CMOS levels, 2 V to 6 V (74HC139D: SO16)"
+datasheet: "Nexperia 74HC139; 74HCT139, Rev. 6, 29 February 2024 (the PDF LCSC serves for C5603, 74HC139D,653)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/fb005ce6099ad7e98a5bfd31fb6ea8d0.pdf (Nexperia 74HC_HCT139 Rev. 6, 13 pages; linked from https://www.lcsc.com/product-detail/C5603.html), downloaded 2026-11-24. assets.nexperia.com refused the direct download."
+  verified: true
+  notes: >
+    Only the 74HC139 columns are recorded (the 74HCT139 has TTL thresholds and a 4.5 to 5.5 V
+    supply). General description p.1 ("When nE is HIGH all outputs are forced HIGH"; "Inputs
+    include clamp diodes. This enables the use of current limiting resistors to interface
+    inputs to voltages in excess of VCC"). Pinning 5.1 and Table 2 p.3: 1E pin 1 and 2E pin 15
+    enable (active LOW); 1A0 / 1A1 pins 2 / 3; 1Y0 to 1Y3 pins 4 to 7 (active LOW); GND pin 8;
+    2Y3 to 2Y0 pins 9 to 12; 2A1 / 2A0 pins 13 / 14; VCC pin 16. Function table Table 3 p.3
+    (nE low: the output selected by nA1 nA0 goes LOW, the other three stay HIGH). Limiting
+    values Table 4 p.4 (VCC -0.5 to +7 V; input and output clamping current +/-20 mA when the
+    pin is below -0.5 V or above VCC + 0.5 V; output current +/-25 mA; ICC / IGND 50 mA; Ptot
+    500 mW). Recommended operating conditions Table 5 p.4 (VCC 2.0 / 5.0 / 6.0 V; VI and VO
+    0 to VCC; Tamb -40 to +125 C; input rise / fall rate 625 ns/V max at 2.0 V, 139 at 4.5 V,
+    83 at 6.0 V). Static characteristics Table 6 p.5, limits for -40 to +125 C:
+    VIH min 1.5 V at VCC = 2.0 V, 3.15 V at 4.5 V, 4.2 V at 6.0 V;
+    VIL max 0.5 V at 2.0 V, 1.35 V at 4.5 V, 1.8 V at 6.0 V;
+    VOH min 1.9 / 4.4 / 5.9 V at IO = -20 uA; 3.7 V at -4.0 mA, VCC = 4.5 V; 5.2 V at -5.2 mA,
+    VCC = 6.0 V; VOL max 0.1 V at 20 uA; 0.4 V at 4.0 mA (4.5 V) and at 5.2 mA (6.0 V);
+    input leakage +/-1 uA; ICC 8 uA max at 25 C, 160 uA max at 125 C (VCC = 6.0 V, inputs at
+    the rails, no load); input capacitance 3.5 pF typ.
+    JUDGEMENT CALLS, for the reviewer:
+    (1) THE DATASHEET HAS NO 3.3 V ROW. io.vih_frac 0.75 and vil_frac 0.25 are the ratios it
+    gives at VCC = 2.0 V (1.5 V and 0.5 V), the stricter of its three supply points; at 4.5 V
+    and 6.0 V the ratios are 0.70 and 0.30. A straight line between the 2.0 V and 4.5 V rows
+    would put VIH near 2.36 V and VIL near 0.94 V at 3.3 V; that interpolation is NOT a
+    datasheet figure and is not used.
+    (2) Output drive is specified only at 4.5 V and 6.0 V for milliamp loads. At 3.3 V the only
+    guaranteed levels are the 20 uA ones (VCC - 0.1 V and 0.1 V); voh_frac 0.95 is that figure
+    at the lowest supply (1.9 V / 2.0 V), valid for CMOS loads only.
+    (3) The absolute-maximum table limits the input by clamp CURRENT (20 mA), not by a voltage;
+    abs_max_over_supply 0.5 is the voltage at which the clamp diodes start to conduct.
+    (4) The datasheet asks for no decoupling capacitor and does not say that unused inputs
+    must be tied off (general CMOS practice, not recorded as a requirement).
+    (5) 1E and 2E are active LOW and each enables ONE decoder only. They carry `role: enable`
+    but not the schema's `active: low`: pin.floating_control reads `active` as "this pin
+    switches the whole part", and reported the usual way of parking the unused decoder (its
+    nE tied HIGH) as an error, "the part never runs". The polarity is kept in `active_level`
+    and the outputs each pin gates in `enables`, two keys no check reads yet. The price: an
+    nE tied HIGH on a decoder that IS in use is not caught.
+    No errata search was done.
+
+supplies:
+  - pins: [VCC]
+    vmin: 2.0
+    vmax: 6.0
+    abs_max: 7.0
+    i_typ_ma: 0.008           # ICC maximum at 25 C (quiescent, inputs at the rails, no load, VCC = 6.0 V)
+    i_max_ma: 0.16            # ICC maximum at 125 C; 0.08 at 85 C
+
+io:
+  vih_frac: 0.75              # at VCC = 2.0 V; 0.70 at 4.5 V and 6.0 V; no 3.3 V row in the datasheet
+  vil_frac: 0.25              # at VCC = 2.0 V; 0.30 at 4.5 V and 6.0 V
+  vih_table: [{vcc: 2.0, v: 1.5}, {vcc: 4.5, v: 3.15}, {vcc: 6.0, v: 4.2}]
+  vil_table: [{vcc: 2.0, v: 0.5}, {vcc: 4.5, v: 1.35}, {vcc: 6.0, v: 1.8}]
+  voh_frac: 0.95              # VCC - 0.1 V at IO = -20 uA, taken at VCC = 2.0 V
+  voh_drop: 0.1               # at IO = -20 uA
+  vol: 0.1                    # at IO = 20 uA
+  voh_table: [{vcc: 4.5, io_ma: 4.0, v: 3.7}, {vcc: 6.0, io_ma: 5.2, v: 5.2}]   # -40 to +125 C
+  vol_table: [{vcc: 4.5, io_ma: 4.0, v: 0.4}, {vcc: 6.0, io_ma: 5.2, v: 0.4}]
+  abs_max_over_supply: 0.5    # input clamp diodes; clamp current 20 mA maximum
+  i_out_max_ma: 25            # absolute maximum per output
+  tolerant_5v: false
+  c_in_pf: 3.5
+
+pins:
+  VCC: {role: power_in}
+  GND: {role: gnd}
+  "1E":
+    role: enable
+    active_level: low         # deliberately not `active: low`: see judgement call (5)
+    enables: ["1Y0", "1Y1", "1Y2", "1Y3"]
+    drive: input
+    note: "Enable of decoder 1 only, active LOW. HIGH forces 1Y0 to 1Y3 HIGH."
+  "2E":
+    role: enable
+    active_level: low
+    enables: ["2Y0", "2Y1", "2Y2", "2Y3"]
+    drive: input
+    note: "Enable of decoder 2 only, active LOW. HIGH forces 2Y0 to 2Y3 HIGH."
+  "1A0": {drive: input}
+  "1A1": {drive: input}
+  "2A0": {drive: input}
+  "2A1": {drive: input}
+  "1Y0": {drive: push_pull, active: low}
+  "1Y1": {drive: push_pull, active: low}
+  "1Y2": {drive: push_pull, active: low}
+  "1Y3": {drive: push_pull, active: low}
+  "2Y0": {drive: push_pull, active: low}
+  "2Y1": {drive: push_pull, active: low}
+  "2Y2": {drive: push_pull, active: low}
+  "2Y3": {drive: push_pull, active: low}

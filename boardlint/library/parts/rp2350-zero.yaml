@@ -1,0 +1,140 @@
+id: rp2350-zero
+match:
+  value: ["RP2350-Zero*", "RP2350_Zero*"]
+kind: IC
+class: mcu_module
+description: "Waveshare RP2350-Zero: RP2350A (QFN-60) module with USB Type-C, 4 MB flash, 3.3 V LDO and a WS2812B on GPIO16; 23 castellated edge pads (GP0-GP15, GP26-GP29, 5V, GND, 3V3)"
+datasheet: "Waveshare RP2350-Zero schematic (files.waveshare.com/wiki/RP2350-Zero/RP2350_Zero.pdf) and product page (waveshare.com/rp2350-zero.htm); Raspberry Pi RP2350 Datasheet, release 9, build date 19/11/2026"
+provenance:
+  source: "https://files.waveshare.com/wiki/RP2350-Zero/RP2350_Zero.pdf ; https://www.waveshare.com/rp2350-zero.htm ; https://www.waveshare.com/wiki/RP2350-Zero ; RP2350 datasheet from pip-assets.raspberrypi.com (RP-008373-DS-4-rp2350-datasheet.pdf, 1371 pages)"
+  verified: true
+  notes: >
+    All four sources were opened on 2026-11-24. Waveshare schematic (one sheet, "RP2350A-Zreo"):
+    the Type-C VBUS pins go straight to net VBUS, which is header P1 pad 23 (drawn as VBUS; it is
+    the corner pad next to GND and 3V3 that carrier symbols call 5V) and VIN of U3 ME6217C33M5G; there is no series diode, fuse or switch
+    between the connector and the pad. ED1 ESD5451N is from VBUS to GND; C15 10 uF on VBUS; U3 CE
+    is tied to VIN; C16 + C19 2 x 10 uF on 3V3; CC1 / CC2 5.1 k to GND. Net 3V3 is P1 pad 21 and
+    feeds IOVDD, QSPI_IOVDD, USB_OTP_VDD, ADC_AVDD, VREG_VIN and (through R2 33R) VREG_AVDD as
+    drawn, the flash U1 and the WS2812B (DIN on GPIO16). P1 pads 1-16 are GPIO0-GPIO15, 17-20 are
+    GPIO26_ADC0-GPIO29_ADC3; GPIO17-GPIO25 are on the two 5-way solder-point groups P2 / P3; GPIO16 is not
+    brought out. Waveshare product page, "What's On Board": "ME6217C33M5G Low dropout regulator,
+    800mA output (Max.)"; "29 x multi-function GPIO pins (20 x via edge pinout, others via
+    solder points)". Neither Waveshare page gives a supply range for the 5V pad, a current
+    consumption figure for the module, or a dropout / tolerance for the regulator, so those
+    fields are left out (the ME6217 datasheet was not opened).
+    RP2350 datasheet: GPIO functions Table 3 p.17-18 (F1 SPI, F2 UART, F3 I2C, F11 UART TX / RX
+    on the pins whose F2 function is CTS / RTS; that F11 column does not exist on RP2040). The
+    table was typed from the datasheet and compared by script with Raspberry Pi's RP2350.svd
+    (pico-sdk 2.0.0, shipped in the rp235x-pac 0.2.0 crate): GPIO0-29 agree. Pin types Table 1673
+    p.1331 and pin list Table 1674 p.1332-1333: on QFN-60 GPIO0-25 are "Digital IO (FT)",
+    GPIO26_ADC0-GPIO29_ADC3 are "Digital IO / Analogue" (standard pads); reset state of every
+    GPIO is pull-down. FT: "they will tolerate voltages up to 5.5 V, provided IOVDD is powered to
+    3.3 V"; "very little current flows into the pin whilst it is below 3.63 V and IOVDD is 0 V".
+    Absolute maximum Table 1680 p.1335: IOVDD -0.5 to 3.63 V; standard IO -0.5 V to IOVDD + 0.5 V;
+    FT IO 5.5 V at IOVDD = 3.3 V ("IOVDD must be present"), 4.2 V at 2.5 V, 3.63 V at 1.8 V and at
+    IOVDD = 0 V. Digital IO Table 1683 p.1336-1337 at IOVDD = 3.3 V: VIH 2 V min, VIL 0.8 V max,
+    hysteresis 0.2 V, VOH 2.62 V min and VOL 0.5 V max at the selected 2 / 4 / 8 / 12 mA drive
+    (default 4 mA), pull-up 32-86 k, pull-down 36-113 k, 100 mA total sourced and 100 mA total
+    sunk by all GPIO. ADC Table 1685 p.1338: input 0 V to ADC_AVDD, 12 bits, ENOB 9 min / 9.5 typ,
+    input impedance 100 k min. Supplies Table 1688 p.1340-1341: IOVDD 1.62-3.63 V, VREG_AVDD and
+    USB_OTP_VDD 3.135-3.63 V, ADC_AVDD 1.62-3.63 V. Chip-only typical current, Table 1693 p.1344,
+    all rails at 3.3 V: hello_usb 14.70 + 0.216 + 0.453 + 0.022 + 0.001 + 0.570 mA (52.7 mW).
+    Computed, not printed: voh_frac = 2.62 / 3.3; the 3.135 V minimum of the 3V3 pad is the
+    tightest of the chip rails wired to it (VREG_AVDD, USB_OTP_VDD).
+    Because the schema judges I/O against the highest modelled supply, only the 3V3 pad is
+    listed under supplies (it is the I/O rail); the 5V pad is described under pins and module.
+
+supplies:
+  - pins: ["3V3"]             # LDO output and the chip's I/O rail (IOVDD, USB_OTP_VDD, ADC_AVDD, VREG_VIN)
+    vmin: 3.135               # only matters if the pad is fed from outside: VREG_AVDD / USB_OTP_VDD minimum
+    vmax: 3.63
+    abs_max: 3.63             # IOVDD absolute maximum
+    note: "Output of the on-board ME6217C33M5G when USB is connected. 2 x 10 uF are on the module."
+
+io:                           # IOVDD = 3.3 V
+  vih: 2.0
+  vil: 0.8
+  voh_frac: 0.79              # VOH 2.62 V min at the selected drive strength (2 / 4 / 8 / 12 mA, default 4 mA)
+  voh: 2.62
+  vol: 0.5
+  abs_max_over_supply: 0.5    # standard pads (GP26-GP29): IOVDD + 0.5 V
+  abs_max: 3.63               # FT pads (GP0-GP25) with IOVDD = 0 V; 5.5 V only while IOVDD is at 3.3 V
+  tolerant_5v: false
+  tolerant_5v_condition: "GP0-GP25 (FT pads) tolerate up to 5.5 V only while IOVDD (the 3V3 rail) is powered at 3.3 V; with the module unpowered the limit is 3.63 V. GP26-GP29 (ADC pads) are never 5 V tolerant: IOVDD + 0.5 V."
+  reset_pull: down            # every GPIO; software can change it
+  internal_pull_ohm: 36k      # pull-down 36-113 k, pull-up 32-86 k at 3.3 V
+  i_source_total_ma: 100      # sum over all GPIO
+  i_sink_total_ma: 100
+
+pins:
+  "5V":
+    role: power_out
+    note: "USB VBUS, wired straight from the Type-C connector: no diode, no fuse (Waveshare schematic). Everything drawn from this pad is drawn from the USB host port; feeding 5 V in here while USB is plugged in ties the two sources together."
+  "3V3":
+    role: power_out
+    vout_v: 3.3
+    regulator: ME6217C33M5G
+    i_max_ma: 800             # "800mA output (Max.)" (Waveshare); the module's own chip, flash and LED come out of it
+  GND: {role: gnd}
+  "GP0/GPIO0": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso], periph: [SPI0 RX, UART0 TX, I2C0 SDA]}
+  "GP1/GPIO1": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI0 CSn, UART0 RX, I2C0 SCL]}
+  "GP2/GPIO2": {role: gpio, alt: [i2c_sda, uart_cts, uart_tx, spi_ctrl_sck], periph: [SPI0 SCK, UART0 CTS, I2C1 SDA, UART0 TX (F11)]}
+  "GP3/GPIO3": {role: gpio, alt: [i2c_scl, uart_rts, uart_rx, spi_mosi], periph: [SPI0 TX, UART0 RTS, I2C1 SCL, UART0 RX (F11)]}
+  "GP4/GPIO4": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso], periph: [SPI0 RX, UART1 TX, I2C0 SDA]}
+  "GP5/GPIO5": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI0 CSn, UART1 RX, I2C0 SCL]}
+  "GP6/GPIO6": {role: gpio, alt: [i2c_sda, uart_cts, uart_tx, spi_ctrl_sck], periph: [SPI0 SCK, UART1 CTS, I2C1 SDA, UART1 TX (F11)]}
+  "GP7/GPIO7": {role: gpio, alt: [i2c_scl, uart_rts, uart_rx, spi_mosi], periph: [SPI0 TX, UART1 RTS, I2C1 SCL, UART1 RX (F11)]}
+  "GP8/GPIO8": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso], periph: [SPI1 RX, UART1 TX, I2C0 SDA]}
+  "GP9/GPIO9": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI1 CSn, UART1 RX, I2C0 SCL]}
+  "GP10/GPIO10": {role: gpio, alt: [i2c_sda, uart_cts, uart_tx, spi_ctrl_sck], periph: [SPI1 SCK, UART1 CTS, I2C1 SDA, UART1 TX (F11)]}
+  "GP11/GPIO11": {role: gpio, alt: [i2c_scl, uart_rts, uart_rx, spi_mosi], periph: [SPI1 TX, UART1 RTS, I2C1 SCL, UART1 RX (F11)]}
+  "GP12/GPIO12": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso], periph: [SPI1 RX, UART0 TX, I2C0 SDA]}
+  "GP13/GPIO13": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI1 CSn, UART0 RX, I2C0 SCL]}
+  "GP14/GPIO14": {role: gpio, alt: [i2c_sda, uart_cts, uart_tx, spi_ctrl_sck], periph: [SPI1 SCK, UART0 CTS, I2C1 SDA, UART0 TX (F11)]}
+  "GP15/GPIO15": {role: gpio, alt: [i2c_scl, uart_rts, uart_rx, spi_mosi], periph: [SPI1 TX, UART0 RTS, I2C1 SCL, UART0 RX (F11)]}
+  "GP17/GPIO17": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI0 CSn, UART0 RX, I2C0 SCL], pad: solder_point}
+  "GP18/GPIO18": {role: gpio, alt: [i2c_sda, uart_cts, uart_tx, spi_ctrl_sck], periph: [SPI0 SCK, UART0 CTS, I2C1 SDA, UART0 TX (F11)], pad: solder_point}
+  "GP19/GPIO19": {role: gpio, alt: [i2c_scl, uart_rts, uart_rx, spi_mosi], periph: [SPI0 TX, UART0 RTS, I2C1 SCL, UART0 RX (F11)], pad: solder_point}
+  "GP20/GPIO20": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso], periph: [SPI0 RX, UART1 TX, I2C0 SDA], pad: solder_point}
+  "GP21/GPIO21": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI0 CSn, UART1 RX, I2C0 SCL], pad: solder_point}
+  "GP22/GPIO22": {role: gpio, alt: [i2c_sda, uart_cts, uart_tx, spi_ctrl_sck], periph: [SPI0 SCK, UART1 CTS, I2C1 SDA, UART1 TX (F11)], pad: solder_point}
+  "GP23/GPIO23": {role: gpio, alt: [i2c_scl, uart_rts, uart_rx, spi_mosi], periph: [SPI0 TX, UART1 RTS, I2C1 SCL, UART1 RX (F11)], pad: solder_point}
+  "GP24/GPIO24": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso], periph: [SPI1 RX, UART1 TX, I2C0 SDA], pad: solder_point}
+  "GP25/GPIO25": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI1 CSn, UART1 RX, I2C0 SCL], pad: solder_point}
+  "GP26/GPIO26/GPIO26_ADC0": {role: gpio, alt: [i2c_sda, uart_cts, uart_tx, spi_ctrl_sck], periph: [SPI1 SCK, UART1 CTS, I2C1 SDA, UART1 TX (F11)], adc: ADC0}
+  "GP27/GPIO27/GPIO27_ADC1": {role: gpio, alt: [i2c_scl, uart_rts, uart_rx, spi_mosi], periph: [SPI1 TX, UART1 RTS, I2C1 SCL, UART1 RX (F11)], adc: ADC1}
+  "GP28/GPIO28/GPIO28_ADC2": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso], periph: [SPI1 RX, UART0 TX, I2C0 SDA], adc: ADC2}
+  "GP29/GPIO29/GPIO29_ADC3": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs], periph: [SPI1 CSn, UART0 RX, I2C0 SCL], adc: ADC3}
+
+mcu:
+  chip: RP2350A               # QFN-60
+  adc1_pins: [GP26, GP27, GP28, GP29]     # ADC0-ADC3; standard pads, not 5 V tolerant
+  adc_bits: 12
+  adc_enob: 9                 # min; 9.5 typ
+  adc_rin_min_ohm: 100k
+  adc_vmax: "ADC_AVDD (the 3V3 rail)"
+  ft_pins: "GP0 to GP25"      # fault-tolerant pads, see io.tolerant_5v_condition
+  onboard: {GPIO16: "WS2812B data in; not on a pad"}
+  solder_point_pads: [GP17, GP18, GP19, GP20, GP21, GP22, GP23, GP24, GP25]     # P2 / P3, not on the edge
+  chip_i_typ_ma: 16           # RP2350 alone, hello_usb example at 3.3 V; flash, WS2812B and LDO not included
+
+module:
+  usb_vbus_pin: "5V"
+  vbus_series_diode: false
+  vbus_fuse: false
+  vbus_capacitance: 10u       # C15 on the module, before anything on the carrier
+  regulator: {part: ME6217C33M5G, vin: "5V", vout: "3V3", vout_v: 3.3, i_max_ma: 800, cout: 20u}
+
+errata:
+  - id: usb-port-feeds-5v-pad
+    summary: "The 5V pad is the USB connector's VBUS with nothing in between, so loads on it (LED chains) add directly to the port current and there is no fuse or back-feed protection on the module."
+    source: "https://files.waveshare.com/wiki/RP2350-Zero/RP2350_Zero.pdf"
+    severity: warning
+  - id: rp2350-e9-pull-down
+    summary: "RP2350-E9: with the pad input enabled, a Bank 0 GPIO left in the undefined logic region sources about 120 uA and sits near 2.2 V, so the internal pull-down cannot pull it low; an external pull-down must be 8.2 k or less. Fixed by RP2350 A3; the stepping fitted to a given module is not stated by Waveshare."
+    source: "RP2350 datasheet release 9, appendix D.5.1 p.1358"
+    severity: info
+  - id: spi-csn-pulses-between-words
+    summary: "With the hardware SPI CSn function and SPO = 0, SPH = 0, the chip select pulses high between every data word of a continuous transfer; a peripheral that needs chip select held low across several bytes (an MCP3208 24-clock frame) must use SPH = 1 or a plain GPIO as chip select."
+    source: "RP2350 datasheet release 9, section 12.3.4.10 (Motorola SPI format with SPO=0, SPH=0)"
+    severity: info

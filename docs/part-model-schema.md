@@ -150,3 +150,4 @@ These came from boards the first schema could not describe. All are optional.
 | `internal_pull`, `internal_pull_ohm` | a pin | Internal pull and its strongest value. Used by `pin.strap_strength` and `reset.circuit` |
 | `sim.enable: [{pin: CS, level: 1}]` | `sim:` | Pin levels the simulation model needs before it answers on its bus |
 | `res_to_gnd: {min: 2k, max: 67k}` | a `require` entry | A range in place of `value` and `tol` |
+| `cap_to_pin: {pin: CPL, min: 10n}` | a `require` entry | A capacitor between this pin and another pin of the same part (charge pumps, bootstrap capacitors) |

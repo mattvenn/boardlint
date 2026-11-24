@@ -1,0 +1,224 @@
+id: xiao-esp32-s3-plus
+match:
+  value: ["XIAO-ESP32-S3*", "XIAO_ESP32S3*"]
+kind: IC
+class: mcu_module
+description: "Seeed Studio XIAO ESP32-S3 Plus: ESP32-S3R8 (8 MB PSRAM) + 16 MB flash, USB-C, Li-ion charger, 3.3 V buck regulator, 14 edge pads + 9 staggered pads (D11 to D19), 21 x 17.8 mm"
+datasheet: "Seeed Studio XIAO ESP32-S3 Series Datasheet v1.0, 2026-11-03; XIAO ESP32-S3 Plus schematic V1.1; Seeed wiki 'Getting Started with Seeed Studio XIAO ESP32-S3 Series'; Espressif ESP32-S3 Series Datasheet v1.6 (the copy Seeed hosts)"
+provenance:
+  source: "https://files.seeedstudio.com/wiki/XIAO/Seeed_Studio_XIAO_ESP32-S3_Series_Datasheet-26.11.3.pdf (107 pages); https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/XIAO_ESP32S3_Plus_V1.1_SCH_260115.pdf; https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/; https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/esp32-s3_datasheet.pdf (v1.6). All opened 2026-11-24."
+  verified: true
+  notes: >
+    "DS" is the Seeed series datasheet (printed page numbers; PDF page = printed + 1), "SCH"
+    the Plus schematic sheet 03 (rendered page), "WIKI" the getting-started page, "S3" the
+    Espressif chip datasheet v1.6.
+    PINS. DS Table 3-2 p.31-32 (D0 GPIO1, D1 GPIO2, D2 GPIO3 "Strapping (JTAG source)",
+    D3 GPIO4, D4 GPIO5 SDA, D5 GPIO6 SCL, D6 GPIO43 U0TXD, D7 GPIO44 U0RXD, D8 GPIO7 SCK,
+    D9 GPIO8 MISO, D10 GPIO9 MOSI; BOOT GPIO0; D+ GPIO20, D- GPIO19; USER LED GPIO21).
+    DS Table 3-4 p.34-35 (Plus: D11 GPIO38, D12 GPIO39 MTCK, D13 GPIO40 MTDO, D14 GPIO41
+    MTDI, D15 GPIO42 MTMS, D16 GPIO10, D17 GPIO13, D18 GPIO12, D19 GPIO11) and Table 3-5
+    p.35 (on the Sense, D11 / D12 are GPIO42 / GPIO41: Dx names are NOT portable, so this
+    model is keyed by GPIO number). SCH module footprint U2: pads 1 to 11 = D0 to D10,
+    12 VCC_3V3, 13 GND, 14 VBUS, 15 IO38, 16 IO39, 17 IO40, 18 IO41, 19 IO42, 20 IO10,
+    21 IO11, 22 IO12, 23 IO13. SCH also shows: R6 499 Ohm in series with D6 / U0TXD (DS 5.2
+    p.52 says the same), GPIO0 with R7 10 kOhm to 3V3 and the BOOT button to GND, EN with R8
+    10 kOhm to 3V3 and C21 1 uF, the user LED on IO21, no divider on IO10.
+    POWER. DS 4.1.2 / Table 4-1 p.41-42 (VBUS goes through a Schottky diode to the DC-DC
+    buck converter; the 3.3 V rail is "Output only - do not apply external voltage").
+    DS Table 4-2 p.42-43 (USB input current, Plus, system active, no charging: 50.15 mA at
+    5.0 V; with a battery charging 152.60 mA; "3.3V total load capability", "includes board
+    current": 1000 mA on USB supply, 650 mA on battery; 3.3 V output measured 3.29 V).
+    DS 4.3.1 p.44 (the VBUS pin "can also accept an external regulated 5V input when USB is
+    disconnected. Connect the external supply through a series Schottky diode (anode to the
+    supply, cathode to the 5V pin) to prevent back-feeding the USB host ... do not use the
+    3V3 pin as a power input"). DS Table 4-4 p.45-46 (regulator SGM6029C: input 1.95 to 5.5 V,
+    output 3.2 / 3.3 / 3.4 V, IC rating 1000 mA). DS Table 4-6 p.47, measured at the 3.7 V
+    battery input, Plus: Wi-Fi TX 168.76 mA, Wi-Fi RX 93.28 mA, CPU active with RF off
+    61.74 mA, modem-sleep 38.41 mA, light-sleep 2.26 mA, deep-sleep 19.40 uA. DS Table 6-1
+    p.66 (absolute maximum: USB input 6.0 V "via Type-C port", GPIO input 3.6 V "not
+    5V-tolerant"). DS Table 6-3 p.67 (VIH 0.75 VIO, VIL 0.25 VIO, VOH 2.64 V at -8 mA, VOL
+    0.4 V at 8 mA, Plus 3.3 V rail droop under 5 % for 6 to 7 mA per pin, pulls 45 kOhm).
+    WIKI "Power Pins": "3V3 - This is the regulated output from the onboard regulator. You
+    can draw 700mA"; the 5V pin needs "some sort of diode ... between your external power
+    source and this pin"; specification table, Plus: 5 V at 28 mA, Wi-Fi active 81 mA,
+    BLE active 101 mA.
+    CHIP. S3 Table 2-1 p.14 (U0TXD and U0RXD: input enabled with weak pull-up at and after
+    reset; GPIO45 and GPIO46 weak pull-down); Table 2-2 p.14-15 (power-up glitches);
+    2.6 p.23-25 (strapping pins, 3 ms hold time, GPIO3 "does not have any internal pull
+    resistors and the strapping value must be controlled by the external circuit that cannot
+    be in a high impedance state", ignored unless EFUSE_STRAP_JTAG_SEL is burnt; ROM messages
+    are printed to "UART and USB Serial/JTAG controller" by default); Table 4-1 / 4-2 p.56
+    (supply 3.0 / 3.3 / 3.6 V, absolute maximum 3.6 V); Table 4-4 p.57 (VOH 0.8 VDD, VOL
+    0.1 VDD, high-impedance load); Table 4-6 p.58 (peak current at 3.3 V: TX 802.11b 1 Mbps
+    at 21 dBm 340 mA, RX HT20 88 mA).
+    JUDGEMENT CALLS, for the reviewer:
+    (1) HOW THE SUPPLY IS MODELLED. The module is described the way it is built: a buck
+    regulator (`regulator:`) from the 5V / VBUS pin to the 3V3 pin, with the module's own
+    consumption as a load on its 3V3 rail (`supplies:` on 3V3). The 5V pin is deliberately NOT
+    a `supplies` entry: boardlint judges every I/O pin of a part against its highest supply
+    domain, so a 5 V supply entry would make the checker treat the 3.3 V GPIOs as 5 V outputs
+    (rp2350-zero.yaml does the same). The top-level `regulator:` is what lets the checker pass
+    the 3V3 loads on to whatever feeds the 5V pin; `module:` repeats it in the form
+    rp2350-zero.yaml uses. The 5V pin has role power_out, as there, because the pad is the USB
+    connector's VBUS: with `module.usb_vbus_pin` the source-pin check then counts loads hung
+    on it against a USB port.
+    (2) CURRENT. Seeed gives no Wi-Fi peak for the 5 V pin (only averages measured at the
+    battery input), so i_typ_ma / i_max_ma on the 3V3 rail are the ESP32-S3 CHIP figures at
+    3.3 V (RX 88 mA, TX peak 340 mA, S3 Table 4-6); PSRAM, flash and LED come on top and are
+    not specified. Through the buck converter the 5 V pin draws less than the 3V3 rail
+    current; the regulator check converts it. Seeed's own 5 V figure for a running board
+    without radio load is 50.15 mA.
+    (3) 5 V INPUT RANGE. Seeed states only "nominal 5.0 V" for the VBUS pin; DS 8.1.1 refers
+    to "the VBUS input voltage range in Table 6-2", but that table has no VBUS row. No
+    vmin / vmax is recorded. Context: the on-module regulator accepts 1.95 to 5.5 V after
+    the module's own Schottky diode, and the charger IC also sits on VBUS.
+    (4) 3V3 OUTPUT BUDGET. i_out_max_ma 700 is the wiki's "You can draw 700mA"; the datasheet
+    says instead 1000 mA total INCLUDING the board's own current on USB / VBUS supply
+    (650 mA on battery) and tells the designer to subtract the board's consumption.
+    regulator.i_max_ma is that 1000 mA total, because the module itself is counted as a load.
+    (5) rtc_pins / touch_pins / adc lists hold only GPIOs that reach a pad of the Plus
+    (DS Tables 5-10, 5-11, 5-20).
+    (6) The value globs also match the plain XIAO ESP32-S3 and the Sense. GPIO-keyed entries
+    stay correct for them; the Plus-only pads and the "16 MB flash" do not apply.
+    Not expressible in the schema: the series Schottky diode the 5V pin requires when fed
+    from an external supply (a `require` cannot describe a diode); pins that exist on the
+    module but not on a 23-pad symbol (BAT+, BAT-, EN, BOOT / GPIO0, USB D+ / D-, the JTAG
+    test pads) are listed under `mcu:` only.
+
+gpio_pattern: "^(D\\d+/)?GPIO\\d+"   # matched against the whole pin name; every pad is also listed below
+
+supplies:
+  - pins: ["3V3"]             # the module's own load, on the rail its regulator makes
+    vmin: 3.0                 # ESP32-S3 recommended supply (S3 Table 4-2); the pin is an OUTPUT
+    vmax: 3.6
+    abs_max: 3.6
+    i_typ_ma: 88              # ESP32-S3 chip, Wi-Fi RX HT20, 3.3 V (S3 Table 4-6); Seeed has no 3.3 V-rail figure
+    i_max_ma: 340             # ESP32-S3 chip, peak, TX 802.11b 1 Mbps at 21 dBm (S3 Table 4-6)
+    i_active_no_rf_ma: 61.74  # Seeed, Plus, measured at a 3.7 V battery input (DS Table 4-6), as are the next four
+    i_wifi_tx_avg_ma: 168.76
+    i_wifi_rx_ma: 93.28
+    i_light_sleep_ma: 2.26
+    i_deep_sleep_ma: 0.0194
+    note: "Regulated output of the on-board DC-DC converter. Output only: do not apply an external voltage (DS Table 4-1, 4.3.1)."
+
+io:
+  vih_frac: 0.75              # of the 3.3 V rail (DS Table 6-3, from the ESP32-S3 datasheet)
+  vil_frac: 0.25
+  voh_frac: 0.8               # 2.64 V at 3.3 V: at -8 mA per DS Table 6-3; with a high-impedance load per S3 Table 4-4
+  vol_frac: 0.1               # S3 Table 4-4; DS: 0.4 V at 8 mA
+  abs_max_over_supply: 0.3    # VIH maximum VIO + 0.3 V
+  abs_max: 3.6                # GPIO input voltage, absolute maximum: "not 5V-tolerant" (DS Table 6-1)
+  tolerant_5v: false
+  internal_pull_ohm: 45k      # software-enabled weak pull-up / pull-down, typ
+  i_pin_ma: 6                 # Plus: 6 to 7 mA per pin keeps the 3.3 V rail droop under 5 % (DS Table 6-3)
+  i_source_max_ma: 26         # typ, with VOH allowed to fall to 2.64 V
+
+pins:
+  "VBUS/5V":
+    role: power_out           # the pad IS the USB connector's VBUS net (SCH): an output on USB power, the 5 V input otherwise
+    abs_max: 6.0              # "USB input voltage ... via Type-C port" (DS Table 6-1); the 5V pad is the same VBUS net (SCH)
+    vnom: 5.0                 # Seeed gives a nominal value only, no range
+    i_in_typ_ma: 50.15        # USB input current at 5.0 V, Plus, system active, no battery charging (DS Table 4-2)
+    i_in_charging_ma: 152.60  # the same with a battery on the BAT pads being charged
+    note: "5 V out when USB is plugged in; 5 V in when it is not. An external supply must come through a series Schottky diode (anode to the supply, cathode to this pin) so that it cannot back-feed the USB host (DS 4.3.1, 8.1.1; WIKI)."
+  "3V3":
+    role: power_out
+    vout_v: 3.3
+    tol: 0.03
+    vout_min: 3.2             # regulator specification (DS Table 4-4); 3.29 V measured
+    vout_max: 3.4
+    i_out_max_ma: 700         # for external loads, per the wiki; the datasheet says 1000 mA total including the module itself (650 mA on battery)
+    note: "Regulated output only. Never use it as a power input (DS 4.3.1, 8.1.1)."
+  GND: {role: gnd}
+  GPIO1: {role: gpio}         # D0, A0, ADC1_CH0, TOUCH1, RTC
+  GPIO2: {role: gpio}         # D1, A1, ADC1_CH1, TOUCH2, RTC
+  GPIO3:                      # D2, A2, ADC1_CH2, TOUCH3, RTC
+    role: boot_strap
+    internal_pull: none
+    require:
+      - {not_floating: true, note: "GPIO3 selects the JTAG signal source at reset and has no internal pull: its level must be set by an external circuit that cannot be high impedance (S3 2.6.4)", when: "only if EFUSE_STRAP_JTAG_SEL has been burnt to 1; with the default eFuses GPIO3 is not sampled (DS 3.5.1)"}
+  GPIO4: {role: gpio}         # D3, A3, ADC1_CH3, TOUCH4, RTC
+  GPIO5: {role: gpio}         # D4, A4, ADC1_CH4, TOUCH5, RTC; default I2C SDA
+  GPIO6: {role: gpio}         # D5, A5, ADC1_CH5, TOUCH6, RTC; default I2C SCL
+  GPIO43:                     # D6, U0TXD
+    role: gpio
+    internal_pull: up         # weak pull-up at and after reset (S3 Table 2-1)
+    internal_pull_ohm: 45k
+    series_r_ohm: 499         # R6 on the module, between the chip and the pad
+    note: "UART0 TX. The ROM boot loader prints its messages here at every reset (S3 2.6.3), so anything on this pad sees a burst of 3.3 V serial data at power-up, through the module's 499 Ohm series resistor. Not an RTC pin."
+  GPIO44:                     # D7, U0RXD
+    role: gpio
+    internal_pull: up
+    internal_pull_ohm: 45k
+    note: "UART0 RX. Not an RTC pin."
+  GPIO7: {role: gpio}         # D8, A8, ADC1_CH6, TOUCH7, RTC; default SPI SCK
+  GPIO8: {role: gpio}         # D9, A9, ADC1_CH7, TOUCH8, RTC; default SPI MISO
+  GPIO9: {role: gpio}         # D10, A10, ADC1_CH8, TOUCH9, RTC; default SPI MOSI
+  GPIO38: {role: gpio}        # D11 on the Plus; no ADC, no RTC
+  GPIO39: {role: gpio, note: "D12 on the Plus. Shared with external JTAG MTCK."}
+  GPIO40: {role: gpio, note: "D13 on the Plus. Shared with external JTAG MTDO."}
+  GPIO41: {role: gpio, note: "D14 on the Plus. Shared with external JTAG MTDI. No ADC, no RTC."}
+  GPIO42: {role: gpio, note: "D15 on the Plus. Shared with external JTAG MTMS. No ADC, no RTC."}
+  GPIO10: {role: gpio, note: "D16 on the Plus; ADC1_CH9, TOUCH10, RTC. Named ADC_BAT in the Arduino variant, but the module has NO battery divider on it: measuring the battery needs an external divider from BAT+ (DS 5.5.4)."}
+  GPIO13: {role: gpio}        # D17 on the Plus; ADC2_CH2, TOUCH13, RTC
+  GPIO12: {role: gpio}        # D18 on the Plus; ADC2_CH1, TOUCH12, RTC
+  GPIO11: {role: gpio}        # D19 on the Plus; ADC2_CH0, TOUCH11, RTC
+
+regulator:                    # the on-board SGM6029C buck converter, as seen from the pads
+  type: buck
+  vin: "VBUS/5V"
+  vout: "3V3"
+  vout_v: 3.3
+  tol: 0.03                   # 3.2 to 3.4 V (DS Table 4-4)
+  i_max_ma: 1000              # total 3.3 V load including the module's own current, USB / VBUS supply (DS Table 4-2)
+  i_max_battery_ma: 650
+  i_external_max_ma: 700      # wiki figure for loads on the 3V3 pin
+  input_diode: "Schottky LMBR4010BST5G between VBUS and the regulator input (SCH, DS 4.3.2)"
+
+module:
+  usb_vbus_pin: "5V"          # pad 14 and the Type-C connector's VBUS are one net: loads on the pad load the USB port
+  vbus_series_diode: false    # none between connector and pad; the module's own Schottky is between VBUS and its regulator
+  vbus_fuse: false
+  regulator: {part: SGM6029C, type: buck, vin: "5V", vout: "3V3", vout_v: 3.3, i_max_ma: 1000}
+  charger: {part: SGM40567-4.2, on: VBUS, i_charge_ma: 100, i_charge_note: "approximately (DS Table 4-3)", pads: "BAT+ / BAT- on the bottom, not on a 23-pad symbol"}
+
+mcu:
+  chip: ESP32-S3R8
+  strap_hold_ms: 3            # strapping levels must hold 3 ms after EN goes high (S3 Table 2-10)
+  strapping:
+    GPIO3:
+      default: floating       # no internal pull
+      boot_high: "JTAG from the USB Serial/JTAG controller (only if EFUSE_STRAP_JTAG_SEL = 1)"
+      boot_low: "JTAG from the pins MTDI / MTCK / MTMS / MTDO, i.e. GPIO41 / 39 / 42 / 40 (only if EFUSE_STRAP_JTAG_SEL = 1)"
+      when: "ignored with default eFuses"
+  strapping_not_brought_out:
+    GPIO0: "boot mode. Only on the BOOT button (to GND), with a 10 kOhm pull-up to 3V3 on the module; it reaches no pad of the 23-pad footprint"
+    GPIO45: "VDD_SPI voltage. Not connected to any pad; internal weak pull-down"
+    GPIO46: "boot mode / ROM messages. Not connected to any pad; internal weak pull-down"
+  usb_pins: {dm: GPIO19, dp: GPIO20}      # on the USB-C connector (22 Ohm in series) and on bottom pads, not on the 23 edge pads
+  uart0_pins: {tx: GPIO43, rx: GPIO44}    # D6 / D7; ROM boot messages on TX
+  user_led: GPIO21            # on the module, active low; no pad
+  adc1_pins: [GPIO1, GPIO2, GPIO3, GPIO4, GPIO5, GPIO6, GPIO7, GPIO8, GPIO9, GPIO10]
+  adc2_pins: [GPIO11, GPIO12, GPIO13]     # shared with Wi-Fi
+  touch_pins: [GPIO1, GPIO2, GPIO3, GPIO4, GPIO5, GPIO6, GPIO7, GPIO8, GPIO9, GPIO10, GPIO11, GPIO12, GPIO13]
+  rtc_pins: "GPIO1 to GPIO13"             # D0 to D5, D8 to D10, D16 to D19; D6, D7, D11 to D15 cannot wake from deep sleep
+  jtag_pins: {mtck: GPIO39, mtdo: GPIO40, mtdi: GPIO41, mtms: GPIO42}
+  adc_range_default_v: 2.5    # 11 dB attenuation (DS Table 6-4)
+
+errata:
+  - id: uart0-tx-boot-messages
+    summary: "GPIO43 (D6) is UART0 TX: the ROM prints boot messages on it at every reset, so a device wired to D6 as a plain logic input sees serial data before firmware takes the pin over. Printing can be turned off by eFuse or register only."
+    source: "https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/esp32-s3_datasheet.pdf section 2.6.3 p.25; Seeed series datasheet Table 5-3 p.52"
+    severity: info
+  - id: power-up-glitches
+    summary: "GPIO1 to GPIO14 drive a low-level glitch of about 60 us at chip power-up (GPIO18 to GPIO20 also a high-level one): outputs wired to them are not quiet until firmware runs."
+    source: "https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/esp32-s3_datasheet.pdf Table 2-2 p.14-15"
+    severity: info
+  - id: dx-names-differ-between-variants
+    summary: "D11 and D12 are GPIO38 / GPIO39 on the Plus but GPIO42 / GPIO41 on the Sense; D13 to D19 exist on the Plus only. Use GPIO numbers in firmware and check the symbol against the variant fitted."
+    source: "Seeed XIAO ESP32-S3 Series Datasheet v1.0, Table 3-5 p.35 and Table 3-11 p.39"
+    severity: info
+  - id: gpio10-adc-bat-has-no-divider
+    summary: "GPIO10 (D16) is called ADC_BAT in the Arduino board package and on the schematic, but the Plus has no battery divider on it: without an external divider it reads nothing useful, and with one the pin is no longer free."
+    source: "Seeed XIAO ESP32-S3 Series Datasheet v1.0, section 5.5.4 p.58 and 8.1.2 p.84; Plus schematic V1.1 sheet 03"
+    severity: info
