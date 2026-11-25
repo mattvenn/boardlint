@@ -42,7 +42,7 @@ vendor site was opened, so the whole commercial table is (S).
 | Name | Licence | Last activity | Does | Verdict |
 |---|---|---|---|---|
 | [kisi](https://github.com/riehlies/kisi) | GPL-3.0-only | 2026 | Node CLI on `.kicad_pcb`, JSON output. Impedance, neighbour crosstalk, IR drop, PDN impedance, decaps ranked by loop inductance. Estimates, not sign-off. | Reuse via subprocess |
-| [kicad-irdrop](https://github.com/firedanceio/kicad-irdrop) | Apache-2.0 | 2026 (6 commits) | Resistive-mesh DC drop. CLI, JSON, exit codes. Needs `pcbnew`. | Reuse |
+| [kicad-irdrop](https://github.com/firedanceio/kicad-irdrop) | Apache-2.0 | 2026 (6 commits) | Resistive-mesh DC drop. CLI, JSON, exit codes. Needs `pcbnew`. | Used as the reference in [crosscheck.md](crosscheck.md) |
 | [padne](https://github.com/atx/padne) | GPL-3 | 2026 | 2.5D FEM DC drop. Needs KiCad bindings. | Cross-check |
 | [KiPI](https://github.com/drewsum/KiPI) | GPL-3 plus no-commercial clauses | 2026 | DC drop, AC PDN impedance, regulator noise coupling. GUI/IPC only. | Borrow ideas |
 | [KiCad-Parasitics](https://github.com/Steffen-W/KiCad-Parasitics) | GPL-3 | 2026 | Point-to-point R and loop L (ngspice, bfieldtools). Plugin only. | Borrow ideas |

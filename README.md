@@ -27,7 +27,7 @@ commit (six flagged before the fix; the other two cannot be seen in the design f
 
 Reviews of real boards, each with the tool's full report: [DinoLight](docs/dino-board-review.md), [basic-ecp5-pcb](docs/ecp5-board-review.md), [ezbldc](docs/ezbldc-review.md), and [Density](docs/density-review.md).
 
-Supply resistance, track current and trace impedance are extracted from the routed copper: [docs/copper-extraction.md](docs/copper-extraction.md) gives the method, the evidence and the limits.
+Supply resistance, track current and trace impedance are extracted from the routed copper: [docs/copper-extraction.md](docs/copper-extraction.md) gives the method, the evidence and the limits. The resistances were checked against an independent solver, kicad-irdrop, on four boards: 37 cases agree within 10 %, median 1.6 % ([docs/crosscheck.md](docs/crosscheck.md)).
 
 A wider, blind test on 33 fix commits from projects listed by Kitspace flagged only one of them; [docs/kitspace-survey.md](docs/kitspace-survey.md) says why and what that means for the roadmap.
 
@@ -109,6 +109,7 @@ net_classes:
 sim: {keep_dir: build/boardlint-sim, load_tr_us: 10}
 signals: {rise_ns: 2}        # edge rate assumed for the "electrically long" test
 track: {temp_rise_c: 10}     # allowed rise for the IPC-2221 track current
+stackup: {outer_cu_um: 35, inner_cu_um: 17.5}   # copper weights, used when the board file has no stack-up
 waive:
   - {check: "power.budget", refs: [F1], reason: "firmware limits the LEDs to 30 %"}
 ```
@@ -148,7 +149,8 @@ python3 tools/regress.py /tmp/boardlint-regress
   problems; they do not replace a field solver or a bench measurement.
 - Copper resistance and current are solved at direct current on the routed copper, with pours as
   a coarse mesh and thermal-relief spokes left out. Impedance comes from formulas on the stack-up,
-  and the stack-up is assumed when the board file does not define one. See
+  and the stack-up is assumed when the board file does not define one (35 µm outer copper,
+  17.5 µm inner). See
   [docs/copper-extraction.md](docs/copper-extraction.md).
 - numpy is optional. Without it the copper solve uses a coarser mesh and is slower.
 - KiCad 5 legacy schematics are not netlisted: a KiCad 5 project needs its board file.
@@ -168,6 +170,6 @@ boardlint/
   sim/      ngspice.py  busgen.py  verilog/*.v       simulation
   engine.py  report.py  cli.py  faults.py
 docs/       PROPOSAL.md  prior-art.md  part-model-schema.md  simulation.md  copper-extraction.md  ...
-tools/      extract_prompt.md  fault_report.py
+tools/      extract_prompt.md  fault_report.py  regress.py  crosscheck_irdrop.py  ...
 tests/
 ```

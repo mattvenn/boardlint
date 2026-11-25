@@ -44,6 +44,76 @@ def _seg_dist(x, y, a, b):
     return math.hypot(x - (a[0] + u * dx), y - (a[1] + u * dy))
 
 
+def _clip(shape, t, grow):
+    """(u0, u1): the part of track t's centreline inside the shape grown by `grow`, or None."""
+    if shape[0] == 'poly':
+        # where the centreline crosses the outline; inside from the first crossing to the last
+        pts = shape[4]
+        dx, dy = t.x2 - t.x1, t.y2 - t.y1
+        us = [u for u, (x, y) in ((0.0, (t.x1, t.y1)), (1.0, (t.x2, t.y2))) if _in_poly(x, y, pts)]
+        for k in range(len(pts)):
+            (ax, ay), (bx, by) = pts[k], pts[(k + 1) % len(pts)]
+            ex, ey = bx - ax, by - ay
+            den = dx * ey - dy * ex
+            if abs(den) < 1e-12:
+                continue
+            u = ((ax - t.x1) * ey - (ay - t.y1) * ex) / den
+            v = ((ax - t.x1) * dy - (ay - t.y1) * dx) / den
+            if 0.0 <= u <= 1.0 and 0.0 <= v <= 1.0:
+                us.append(u)
+        if us:
+            return (min(us), max(us))
+        if grow > 0:                                    # touching: an end or a vertex within reach
+            near = [u for u in (0.0, 1.0) if min(_seg_dist(t.x1 + u * dx, t.y1 + u * dy, pts[k], pts[(k + 1) % len(pts)])
+                                               for k in range(len(pts))) <= grow]
+            if near:
+                return (min(near), max(near))
+        return None
+    x1, y1, x2, y2 = t.x1 - shape[1], t.y1 - shape[2], t.x2 - shape[1], t.y2 - shape[2]
+    if shape[0] == 'circle':
+        r = shape[3] + grow
+        dx, dy = x2 - x1, y2 - y1
+        a = dx * dx + dy * dy
+        bq = 2 * (x1 * dx + y1 * dy)
+        c = x1 * x1 + y1 * y1 - r * r
+        disc = bq * bq - 4 * a * c
+        if a <= 0 or disc < 0:
+            return None
+        q = math.sqrt(disc)
+        u0, u1 = max(0.0, (-bq - q) / (2 * a)), min(1.0, (-bq + q) / (2 * a))
+        return (u0, u1) if u0 <= u1 else None
+    _, _, _, hw, hh, ca, sa = shape
+    # board -> pad axes (KiCad angles are anticlockwise with y pointing down)
+    ax, ay = x1 * ca - y1 * sa, x1 * sa + y1 * ca
+    bx, by = x2 * ca - y2 * sa, x2 * sa + y2 * ca
+    u0, u1 = 0.0, 1.0
+    for p0, dp, half in ((ax, bx - ax, hw + grow), (ay, by - ay, hh + grow)):
+        if abs(dp) < 1e-12:
+            if abs(p0) > half:
+                return None
+            continue
+        ua, ub = sorted(((-half - p0) / dp, (half - p0) / dp))
+        u0, u1 = max(u0, ua), min(u1, ub)
+        if u0 > u1:
+            return None
+    return (u0, u1)
+
+
+def _across(shape, dx, dy):
+    """Width of the shape's copper measured across a track running in direction (dx, dy)."""
+    n = math.hypot(dx, dy) or 1.0
+    dx, dy = dx / n, dy / n
+    if shape[0] == 'circle':
+        return 2 * shape[3]
+    if shape[0] == 'rect':
+        _, _, _, hw, hh, ca, sa = shape
+        lx, ly = dx * ca - dy * sa, dx * sa + dy * ca          # direction in pad axes
+        # length of the cut through the centre at right angles to the track
+        return 2 * min(hw / max(abs(ly), 1e-9), hh / max(abs(lx), 1e-9))
+    proj = [-(px - shape[1]) * dy + (py - shape[2]) * dx for px, py in shape[4]]
+    return max(proj) - min(proj)
+
+
 class CopperNet:
     def __init__(self, d, net_name, max_cells=None):
         self.d, self.net = d, net_name
@@ -56,6 +126,7 @@ class CopperNet:
         self.pin_nodes = {}           # (ref, number) -> [node]
         self.counts = defaultdict(int)
         self.grid = None
+        self.pour_reach = {}
         self._build(max_cells or (20000 if _np is not None else 6000))
 
     # ------------------------------------------------------------------ building
@@ -88,11 +159,18 @@ class CopperNet:
         vias = [v for v in b.vias if v.net == self.net]
         net = d.nets.get(self.net)
         pins = [p for p in (net.pins if net else []) if p.pos]
-        # points that may land on a track: (x, y, layer, reach, node)
-        poi = []
+        # Things a track can land on.  A track end is a point: it joins another track that passes
+        # within half that track's width.  A via ring and a pad are areas of copper.
+        #  - Via ring: the stretch of a track's centreline inside it is shorted by the ring and
+        #    barrel, so it is tied to the via node where it enters and where it leaves.
+        #  - Pad: the stretch inside it runs through pad copper, which is wider than the track.
+        #    It is counted at the pad's width across the track, and the pad's node sits where the
+        #    centreline passes closest to the pad centre.  Solder and the part's lead, which
+        #    carry current too, are given no credit.
+        ends, areas = [], []                 # (x, y, layer, node, own track) / (layer, shape, node, is pad)
         for t in tracks:
             for (x, y) in ((t.x1, t.y1), (t.x2, t.y2)):
-                poi.append((x, y, t.layer, 0.0, self._node(t.layer, x, y), t))
+                ends.append((x, y, t.layer, self._node(t.layer, x, y), t))
         for v in vias:
             span = self.layers
             if len(v.layers) == 2 and all(l in self.layers for l in v.layers):
@@ -105,16 +183,29 @@ class CopperNet:
                 self._edge(na, nb, RHO * h / circ, ('via', v))
             self.counts['vias'] += 1
             for l, n in zip(span, nodes):
-                poi.append((v.x, v.y, l, v.size / 2, n, None))
+                areas.append((l, ('circle', v.x, v.y, v.size / 2), n, False))
         for p in pins:
             ls = self._pad_layers(p)
             nodes = [self._node(l, p.pos[0], p.pos[1], tag=('pad', p.comp.ref, p.number, l)) for l in ls]
             self.pin_nodes[(p.comp.ref, p.number)] = nodes
+            for n in nodes:                  # how far from its centre a pad can meet pour: half its size plus a relief gap
+                self.pour_reach[n] = max(p.size or (0.8, 0.8)) / 2 + 0.7
             for na, nb in zip(nodes, nodes[1:]):
                 self._edge(na, nb, 5e-4, ('pad',))                # plated hole
-            reach = max(p.size) / 2 if p.size else 0.4
+            ang = math.radians(p.angle)
+            ca, sa = math.cos(ang), math.sin(ang)
+            w, h = (p.anchor or p.size) if (p.anchor or p.size) else (0.8, 0.8)
+            if p.shape == 'circle' or (p.shape == 'oval' and abs(w - h) < 1e-6):
+                shapes = [('circle', p.pos[0], p.pos[1], w / 2)]
+            else:
+                shapes = [('rect', p.pos[0], p.pos[1], w / 2, h / 2, ca, sa)]
+            for poly in p.polys:                                    # custom pad: the drawn copper, in board axes
+                pts = [(p.pos[0] + x * ca + y * sa, p.pos[1] - x * sa + y * ca) for x, y in poly]
+                cx, cy = sum(q[0] for q in pts) / len(pts), sum(q[1] for q in pts) / len(pts)
+                shapes.append(('poly', cx, cy, max(math.hypot(q[0] - cx, q[1] - cy) for q in pts), pts))
             for l, n in zip(ls, nodes):
-                poi.append((p.pos[0], p.pos[1], l, reach, n, None))
+                for shape in shapes:
+                    areas.append((l, shape, n, True))
         # spatial hash of tracks
         cell = 2.0
         grid = defaultdict(list)
@@ -125,25 +216,66 @@ class CopperNet:
                 for j in range(int(y0 // cell) - 1, int(y1 // cell) + 2):
                     grid[(t.layer, i, j)].append(ti)
         splits = defaultdict(list)            # track index -> [(u, node)]
-        for (x, y, layer, reach, node, own) in poi:
+        widen = defaultdict(list)             # track index -> [(u0, u1, copper width there)]
+
+        def tie_at(ti, u, node, r=TIE, meta=('tie',)):
+            t = tracks[ti]
+            if u * t.length < 0.002:
+                self._edge(node, self._node(t.layer, t.x1, t.y1), r, meta)
+            elif (1 - u) * t.length < 0.002:
+                self._edge(node, self._node(t.layer, t.x2, t.y2), r, meta)
+            else:
+                n2 = self._node(t.layer, t.x1 + u * (t.x2 - t.x1), t.y1 + u * (t.y2 - t.y1))
+                self._edge(node, n2, r, meta)
+                splits[ti].append((u, n2))
+
+        def pad_tie(ti, u, node, shape):
+            # from a point on a track to the pad's node at its centre, through the pad's own copper
+            t = tracks[ti]
+            px, py = t.x1 + u * (t.x2 - t.x1), t.y1 + u * (t.y2 - t.y1)
+            dist = math.hypot(px - shape[1], py - shape[2])
+            w = max(t.width, _across(shape, px - shape[1], py - shape[2])) if dist > 1e-6 else t.width
+            tie_at(ti, u, node, RHO * dist / (w * self.stack.copper(t.layer)), ('inpad', t, 0.0))
+
+        for (x, y, layer, node, own) in ends:
             for ti in grid.get((layer, int(x // cell), int(y // cell)), ()):
                 t = tracks[ti]
                 if t is own:
                     continue
                 dx, dy = t.x2 - t.x1, t.y2 - t.y1
-                l2 = dx * dx + dy * dy
-                u = max(0.0, min(1.0, ((x - t.x1) * dx + (y - t.y1) * dy) / l2))
-                px, py = t.x1 + u * dx, t.y1 + u * dy
-                if math.hypot(x - px, y - py) > reach + t.width / 2 + 0.005:
-                    continue
-                if u * t.length < 0.002:
-                    self._edge(node, self._node(layer, t.x1, t.y1), TIE)
-                elif (1 - u) * t.length < 0.002:
-                    self._edge(node, self._node(layer, t.x2, t.y2), TIE)
-                else:
-                    n2 = self._node(layer, px, py)
-                    self._edge(node, n2, TIE)
-                    splits[ti].append((u, n2))
+                u = max(0.0, min(1.0, ((x - t.x1) * dx + (y - t.y1) * dy) / (dx * dx + dy * dy)))
+                if math.hypot(x - (t.x1 + u * dx), y - (t.y1 + u * dy)) <= t.width / 2 + 0.005:
+                    tie_at(ti, u, node)
+        for layer, shape, node, is_pad in areas:
+            r = math.hypot(shape[3], shape[4]) if shape[0] == 'rect' else shape[3]
+            x, y = shape[1], shape[2]
+            seen = set()
+            for i in range(int((x - r) // cell), int((x + r) // cell) + 1):
+                for j in range(int((y - r) // cell), int((y + r) // cell) + 1):
+                    for ti in grid.get((layer, i, j), ()):
+                        if ti in seen:
+                            continue
+                        seen.add(ti)
+                        t = tracks[ti]
+                        dx, dy = t.x2 - t.x1, t.y2 - t.y1
+                        uc = ((x - t.x1) * dx + (y - t.y1) * dy) / (dx * dx + dy * dy)
+                        inside = _clip(shape, t, 0.0)
+                        if inside is None:
+                            touch = _clip(shape, t, t.width / 2 + 0.005)       # overlaps the edge only
+                            if touch is not None:
+                                u = max(touch[0], min(touch[1], uc))
+                                pad_tie(ti, u, node, shape) if is_pad else tie_at(ti, u, node)
+                        elif not is_pad:
+                            tie_at(ti, inside[0], node)
+                            if inside[1] - inside[0] > 1e-9:
+                                tie_at(ti, inside[1], node)
+                        else:
+                            pad_tie(ti, max(inside[0], min(inside[1], uc)), node, shape)
+                            if inside[1] - inside[0] > 1e-9:
+                                widen[ti].append((inside[0], inside[1], max(t.width, _across(shape, dx, dy))))
+                                for u in inside:
+                                    if 0.002 < u * t.length < t.length - 0.002:
+                                        splits[ti].append((u, self._node(t.layer, t.x1 + u * dx, t.y1 + u * dy)))
         for ti, t in enumerate(tracks):
             tcu = self.stack.copper(t.layer)
             pts = sorted([(0.0, self._node(t.layer, t.x1, t.y1))] + splits.get(ti, []) +
@@ -151,7 +283,12 @@ class CopperNet:
             for (ua, na), (ub, nb) in zip(pts, pts[1:]):
                 ln = (ub - ua) * t.length
                 if na != nb and ln > 0:
-                    self._edge(na, nb, RHO * ln / (t.width * tcu), ('track', t, ln))
+                    um = (ua + ub) / 2
+                    w = max([ww for u0, u1, ww in widen.get(ti, ()) if u0 <= um <= u1] or [0.0])
+                    if w > t.width:
+                        self._edge(na, nb, RHO * ln / (w * tcu), ('inpad', t, ln))
+                    else:
+                        self._edge(na, nb, RHO * ln / (t.width * tcu), ('track', t, ln))
             self.counts['segments'] += 1
         self._zones(max_cells)
 
@@ -162,7 +299,7 @@ class CopperNet:
         def poly_area(p):
             return abs(sum(p[k][0] * p[(k + 1) % len(p)][1] - p[(k + 1) % len(p)][0] * p[k][1] for k in range(len(p)))) / 2
         area = sum(poly_area(p) for z in zones for p in z.polys)
-        g = self.grid = max(0.4, math.sqrt(area / max_cells))
+        g = self.grid = max(0.1, math.sqrt(area / max_cells))
         cells = {}
         polys = []                                  # (layer, bbox, points, [cell nodes])
         for z in zones:
@@ -237,16 +374,17 @@ class CopperNet:
                         break
             # 4, 5. A pad on thermal relief has no fill under its centre: the fill starts a clearance
             # away and reaches it through spokes, which are not modelled, so pour copper within
-            # about a millimetre counts as joined.
+            # the pad's half size plus 0.7 mm counts as joined.
+            near = self.pour_reach.get(n, 0.5)
             if c is None:
                 for idx in by_layer[layer]:
                     _, bb, poly, own = polys[idx]
-                    if not own and bb[0] - 0.8 <= x <= bb[2] + 0.8 and bb[1] - 0.8 <= y <= bb[3] + 0.8 and \
-                            min(_seg_dist(x, y, poly[q], poly[(q + 1) % len(poly)]) for q in range(len(poly))) <= 0.8:
+                    if not own and bb[0] - near <= x <= bb[2] + near and bb[1] - near <= y <= bb[3] + near and \
+                            min(_seg_dist(x, y, poly[q], poly[(q + 1) % len(poly)]) for q in range(len(poly))) <= near:
                         c = island(idx)
                         break
             if c is None:
-                reach = 1.0 + 0.71 * g
+                reach = near + 0.71 * g
                 span = int(math.ceil(reach / g))
                 best = None
                 for i in range(i0 - span, i0 + span + 1):
@@ -358,23 +496,27 @@ def _cg_numpy(n, ea, eb, eg, diag, rhs, tol):
             y -= _np.bincount(ea, weights=eg * x[eb], minlength=n)
             y -= _np.bincount(eb, weights=eg * x[ea], minlength=n)
         return y
+
+    def dot(u, v):
+        # not u @ v: threaded BLAS on vectors this small is slow whenever the machine is busy
+        return float((u * v).sum())
     x = _np.zeros(n)
     r = b.copy()
     z = r / diag
     p = z.copy()
-    rz = float(r @ z)
-    bn = float(_np.linalg.norm(b)) or 1.0
+    rz = dot(r, z)
+    bn = math.sqrt(dot(b, b)) or 1.0
     its, res = 0, 1.0
     for its in range(1, 20 * int(math.sqrt(n)) + 2001):
         ap = mv(p)
-        alpha = rz / float(p @ ap)
+        alpha = rz / dot(p, ap)
         x += alpha * p
         r -= alpha * ap
-        res = float(_np.linalg.norm(r)) / bn
+        res = math.sqrt(dot(r, r)) / bn
         if res < tol:
             break
         z = r / diag
-        rz2 = float(r @ z)
+        rz2 = dot(r, z)
         p = z + (rz2 / rz) * p
         rz = rz2
     return x.tolist(), its, res

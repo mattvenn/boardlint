@@ -1,0 +1,66 @@
+[
+ {
+  "net": "+12V",
+  "source": "D1",
+  "loads": [
+   "U7"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+12V",
+  "source": "D1",
+  "loads": [
+   "F1"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+12V",
+  "source": "D1",
+  "loads": [
+   "F4"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+5V",
+  "source": "U7",
+  "loads": [
+   "D2"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "U1",
+  "loads": [
+   "D3"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "U1",
+  "loads": [
+   "U6"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "U1",
+  "loads": [
+   "U2"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "U1",
+  "loads": [
+   "U5"
+  ],
+  "amps": 1.0
+ }
+]

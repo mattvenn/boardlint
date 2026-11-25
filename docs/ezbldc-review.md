@@ -69,5 +69,5 @@ Checks that changed because of this board:
 The linked report was regenerated with the copper extraction
 ([copper-extraction.md](copper-extraction.md)): 0 errors, 3 warnings, 17 notes. No new warnings.
 The new notes: 12 mV lost on +12V at 386 mA, 7 mV on +5V, 1 mV on +3V3; the encoder clock is
-153 mm end to end and has 47 Ω resistors in series (R12, R22, R32, R42), which damp it. Motor
+148 mm end to end and has 47 Ω resistors in series (R12, R22, R32, R42), which damp it. Motor
 current is not in the DRV8313 model, so the motor supply tracks are not judged.

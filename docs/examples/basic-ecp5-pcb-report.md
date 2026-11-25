@@ -86,17 +86,17 @@ X1 (SiT2001B), symbol clock:SiT2001B, footprint Package_TO_SOT_SMD:SOT-23-5. The
 
 Basis: pin numbers in the schematic symbol against pad numbers in the board file.
 
-### sd_clk is electrically long: 73 mm end to end, 444 ps one way
+### sd_clk is electrically long: 72 mm end to end, 436 ps one way
 
 `layout.impedance` · parts: U1 · nets: sd_clk · confidence: low
 
-SPI. 73 mm between its furthest pads (77 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 55 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. On a clock that can be seen as a second edge. A 22 to 47 ohm resistor at the driver is the usual fix. Line impedance about 72 ohm.
+SPI. 72 mm between its furthest pads (77 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 55 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. On a clock that can be seen as a second edge. A 22 to 47 ohm resistor at the driver is the usual fix. Line impedance about 72 ohm.
 
 | | |
 |---|---|
-| end_to_end_mm | 72.8 |
+| end_to_end_mm | 71.5 |
 | routed_mm | 77.3 |
-| delay_ps | 444 |
+| delay_ps | 436 |
 | z0 | 72 |
 | assumed_rise_ns | 2.0 |
 | stack_up | assumed |
@@ -133,7 +133,7 @@ sd_clk: 77 mm, 0.15 mm on F.Cu, 72 ohm, 471 ps, 6.0 pF, 88% over a plane, 3 vias
 
 | | |
 |---|---|
-| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.06 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
+| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.095 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
 
 Basis: microstrip / stripline formulas on the stack-up.
 
@@ -221,10 +221,10 @@ pull-up 10k (RN1.4); connector J9.13(Pin_13), J2.13(Pin_13), J10.10(Pin_10).
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 1 finding(s), 0.00 s |
 | `i2c.bus` | ran | 0 finding(s), 0.00 s |
-| `layout.coupling` | ran | 0 finding(s), 0.03 s |
-| `layout.impedance` | ran | 2 finding(s), 0.05 s |
+| `layout.coupling` | ran | 0 finding(s), 0.02 s |
+| `layout.impedance` | ran | 2 finding(s), 0.04 s |
 | `layout.ir_drop` | ran | 0 finding(s), 0.00 s |
-| `layout.return_path` | ran | 0 finding(s), 0.15 s |
+| `layout.return_path` | ran | 0 finding(s), 0.12 s |
 | `layout.track_current` | ran | 0 finding(s), 0.00 s |
 | `led.chain` | ran | 0 finding(s), 0.00 s |
 | `load.inductive` | ran | 0 finding(s), 0.00 s |
@@ -240,11 +240,11 @@ pull-up 10k (RN1.4); connector J9.13(Pin_13), J2.13(Pin_13), J10.10(Pin_10).
 | `power.budget` | ran | 0 finding(s), 0.00 s |
 | `power.droop` | ran | 0 finding(s), 0.00 s |
 | `power.logic_level` | ran | 0 finding(s), 0.00 s |
-| `power.pin_voltage` | ran | 0 finding(s), 0.30 s |
+| `power.pin_voltage` | ran | 0 finding(s), 0.26 s |
 | `power.rails` | ran | 2 finding(s), 0.00 s |
 | `power.regulator` | ran | 0 finding(s), 0.00 s |
 | `power.source_pin` | ran | 0 finding(s), 0.00 s |
-| `power.supply_range` | ran | 0 finding(s), 0.00 s |
+| `power.supply_range` | ran | 0 finding(s), 0.01 s |
 | `ratings.fets` | ran | 0 finding(s), 0.00 s |
 | `ratings.passives` | ran | 1 finding(s), 0.00 s |
 | `reset.circuit` | ran | 1 finding(s), 0.00 s |

@@ -37,17 +37,17 @@ Basis: part model parts/xl-5050rgbc-ws2812b.yaml (verified against datasheet).
 
 ## Notes
 
-### ENC1_CLK is electrically long: 153 mm end to end, 966 ps one way
+### ENC1_CLK is electrically long: 148 mm end to end, 931 ps one way
 
 `layout.impedance` · parts: U1 · nets: ENC1_CLK, ENC2_CLK, ENC3_CLK, ENC4_CLK, ENC_CLK · confidence: low
 
-clock. 153 mm between its furthest pads (160 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 53 mm (delay over one sixth of the rise time). It has R12 (47R), R22 (47R), R32 (47R), R42 (47R) in series, which damps the reflection. Line impedance about 64 ohm.
+clock. 148 mm between its furthest pads (160 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 53 mm (delay over one sixth of the rise time). It has R12 (47R), R22 (47R), R32 (47R), R42 (47R) in series, which damps the reflection. Line impedance about 64 ohm.
 
 | | |
 |---|---|
-| end_to_end_mm | 153.0 |
+| end_to_end_mm | 147.5 |
 | routed_mm | 160.0 |
-| delay_ps | 966 |
+| delay_ps | 931 |
 | z0 | 64 |
 | assumed_rise_ns | 2.0 |
 | stack_up | assumed |
@@ -62,7 +62,7 @@ ENC1_CLK: 160 mm, 0.2 mm on B.Cu, 64 ohm, 1010 ps, 11.5 pF, 63% over a plane, 10
 
 | | |
 |---|---|
-| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.06 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
+| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.095 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
 
 Basis: microstrip / stripline formulas on the stack-up.
 
@@ -78,7 +78,7 @@ With every load on +12V at its maximum (386 mA in all), fed from D1 (from 12V_JA
 | total_load_A | 0.386 |
 | worst | U7.1(IN): 12 mV (11 supply + 0 return) |
 | next | F4.1 0 mV; F3.1 0 mV; F2.1 0 mV |
-| copper | 21 track segments, 14 vias, 1579 pour cells |
+| copper | 21 track segments, 14 vias, 19624 pour cells |
 | ground | ground return through GND to J1.2 included (20235 pour cells, grid 0.7 mm) |
 | stack_up | assumed |
 
@@ -88,13 +88,13 @@ Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads 
 
 `layout.ir_drop` · parts: D3, U1 · nets: +3V3 · confidence: medium
 
-With every load on +3V3 at its maximum (36 mA in all), fed from U1 output. Supply side 1 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+With every load on +3V3 at its maximum (36 mA in all), fed from U1 output. Supply side 0 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
 
 | | |
 |---|---|
 | source | U1 output |
 | total_load_A | 0.036 |
-| worst | D3.1(VDD): 1 mV (1 supply + 0 return) |
+| worst | D3.1(VDD): 1 mV (0 supply + 0 return) |
 | next | U6.16(VCC) 0 mV |
 | copper | 49 track segments, 22 vias, 19962 pour cells |
 | ground | ground return through GND to U1.13(GND) included (20235 pour cells, grid 0.7 mm) |
@@ -124,13 +124,13 @@ Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads 
 
 `layout.ir_drop` · parts: U1, D2 · nets: XIAO_5V · confidence: medium
 
-With every load on XIAO_5V at its maximum (358 mA in all), fed from D2 (from +5V). Supply side 2 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+With every load on XIAO_5V at its maximum (358 mA in all), fed from D2 (from +5V). Supply side 1 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
 
 | | |
 |---|---|
 | source | D2 (from +5V) |
 | total_load_A | 0.358 |
-| worst | U1.14(5V/VBUS): 2 mV (2 supply + 0 return) |
+| worst | U1.14(5V/VBUS): 2 mV (1 supply + 0 return) |
 | next | none |
 | copper | 1 track segments, 0 vias, 0 pour cells |
 | ground | ground return through GND to U7.2(GND) included (20235 pour cells, grid 0.7 mm) |
@@ -277,9 +277,9 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `footprint.pin_map` | ran | 0 finding(s), 0.00 s |
 | `i2c.bus` | ran | 2 finding(s), 0.00 s |
 | `layout.coupling` | ran | 0 finding(s), 0.00 s |
-| `layout.impedance` | ran | 2 finding(s), 0.05 s |
-| `layout.ir_drop` | ran | 4 finding(s), 6.19 s |
-| `layout.return_path` | ran | 0 finding(s), 0.34 s |
+| `layout.impedance` | ran | 2 finding(s), 0.04 s |
+| `layout.ir_drop` | ran | 4 finding(s), 6.06 s |
+| `layout.return_path` | ran | 0 finding(s), 0.24 s |
 | `layout.track_current` | ran | 0 finding(s), 0.00 s |
 | `led.chain` | ran | 3 finding(s), 0.00 s |
 | `load.inductive` | ran | 0 finding(s), 0.00 s |

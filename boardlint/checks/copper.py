@@ -327,7 +327,7 @@ def end_to_end(d, name):
     cn = copper_net(d, name)
     adj = defaultdict(list)
     for a, b, _, meta in cn.edges:
-        ln = meta[2] if meta and meta[0] == 'track' else 0.0
+        ln = meta[2] if meta and meta[0] in ('track', 'inpad') else 0.0
         adj[a].append((b, ln))
         adj[b].append((a, ln))
     pads = {ns[0] for ns in cn.pin_nodes.values() if ns}

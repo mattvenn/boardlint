@@ -1,0 +1,66 @@
+[
+ {
+  "net": "+3V3",
+  "source": "U3",
+  "loads": [
+   "U4"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "U3",
+  "loads": [
+   "U6"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "U3",
+  "loads": [
+   "U5"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+BATT",
+  "source": "Q1",
+  "loads": [
+   "Q2"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+BATT",
+  "source": "Q1",
+  "loads": [
+   "U3"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "VLED",
+  "source": "Q2",
+  "loads": [
+   "D20"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "VLED",
+  "source": "Q2",
+  "loads": [
+   "D1"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "BAT_RAW",
+  "source": "SJ1",
+  "loads": [
+   "Q1"
+  ],
+  "amps": 1.0
+ }
+]

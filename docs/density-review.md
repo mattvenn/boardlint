@@ -64,10 +64,13 @@ The linked report was regenerated with the copper extraction
 warnings have not been checked against the board's notes by its designer:
 
 - `layout.track_current`: a 0.5 mm segment of +5V on an inner layer carries all 811 mA of the LED
-  supply; IPC-2221 gives 723 mA there for a 10 °C rise. It depends on the same worst-case LED
+  supply, for 27 mm; IPC-2221 gives 438 mA there for a 10 °C rise in 0.5 oz (17.5 µm) inner copper,
+  which is the default assumed when the board file has no stack-up. It depends on the same worst-case LED
   current as the `power.source_pin` finding, so the firmware cap the notes ask for clears both.
-- `layout.impedance` x2: the shift-register clock `SR_CLK` (108 mm end to end) and the ADC clock
+- `layout.impedance` x2: the shift-register clock `SR_CLK` (106 mm end to end) and the ADC clock
   `ADC_SCK` (58 mm) have no series resistor. With an assumed 2 ns edge, anything over about 55 mm
   can ring. Low confidence: the real edge rate of the RP2350 pin at its default drive is not modelled.
 
-A note: 115 mV (2.3 %) is lost on +5V on the way to the furthest LED.
+A note: 136 mV (2.7 %) is lost on +5V on the way to the furthest LED.
+
+The extraction behind these figures was checked against an independent solver: [crosscheck.md](crosscheck.md).

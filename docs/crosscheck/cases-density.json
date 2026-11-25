@@ -1,0 +1,82 @@
+[
+ {
+  "net": "+5V",
+  "source": "A1",
+  "loads": [
+   "D5"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+5V",
+  "source": "A1",
+  "loads": [
+   "D20"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+5V",
+  "source": "A1",
+  "loads": [
+   "D1"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+5V",
+  "source": "A1",
+  "loads": [
+   "U8"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "A1",
+  "loads": [
+   "U5"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "A1",
+  "loads": [
+   "U7"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "+3V3",
+  "source": "A1",
+  "loads": [
+   "FB1"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "AVDD",
+  "source": "FB1",
+  "loads": [
+   "U4"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "AVDD",
+  "source": "FB1",
+  "loads": [
+   "U1"
+  ],
+  "amps": 1.0
+ },
+ {
+  "net": "AVDD",
+  "source": "FB1",
+  "loads": [
+   "RV17"
+  ],
+  "amps": 1.0
+ }
+]

@@ -58,6 +58,6 @@ agreement as encouraging, not as proof.
 
 The linked report was regenerated with the copper extraction
 ([copper-extraction.md](copper-extraction.md)): 2 errors, 7 warnings, 9 notes. One new warning:
-`layout.impedance` finds the SD card clock `sd_clk` 73 mm end to end with no series resistor
+`layout.impedance` finds the SD card clock `sd_clk` 72 mm end to end with no series resistor
 (assumed 2 ns edge, low confidence). The supply rails are not solved on this board: its regulators have no model, and
 the FPGA model gives no supply current.

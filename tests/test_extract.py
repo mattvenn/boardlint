@@ -13,7 +13,7 @@ def board(tracks=(), vias=(), zones=(), layers=('F.Cu', 'B.Cu'), pads=()):
     """pads: [(ref, x, y, layers)] all on net N."""
     d = Design(name='t')
     b = Board(tracks=list(tracks), vias=list(vias), zones=list(zones), copper_layers=list(layers))
-    b.stackup = default_stackup(list(layers), 1.6, T)
+    b.stackup = default_stackup(list(layers), 1.6, T, T)
     d.board = b
     n = d.nets['N'] = Net(name='N')
     for ref, x, y, ls in pads:
@@ -31,7 +31,8 @@ def r_between(d, a, b):
 def test_straight_track():
     d = board([Track('N', 'F.Cu', 0, 0, 100, 0, 0.5)], pads=[('A', 0, 0, ('F.Cu',)), ('B', 100, 0, ('F.Cu',))])
     r, l, _ = r_between(d, 'A', 'B')
-    assert r == pytest.approx(RHO * 100 / (0.5 * T), rel=1e-3)        # 98.3 mohm
+    # the pads are 1 mm square: the half millimetre of track under each one runs in copper 1 mm wide
+    assert r == pytest.approx(RHO * 99 / (0.5 * T) + RHO * 1.0 / (1.0 * T), rel=1e-6)         # 97.8 mohm
     assert 40 < l < 200                                               # 100 mm with no plane: order of 100 nH
 
 
@@ -41,14 +42,14 @@ def test_two_layers_in_parallel_through_vias():
     d = board(tr, vias, pads=[('A', 0, 0, ('F.Cu',)), ('B', 100, 0, ('F.Cu',))])
     r, _, _ = r_between(d, 'A', 'B')
     one = RHO * 100 / (0.5 * T)
-    assert one / 2 < r < one / 2 * 1.05                               # half, plus two via barrels
+    assert 0.98 * one / 2 < r < one / 2 * 1.02                        # half, less the pad ends, plus the barrels
 
 
 def test_t_junction_in_the_middle_of_a_track():
     tr = [Track('N', 'F.Cu', 0, 0, 100, 0, 0.5), Track('N', 'F.Cu', 50, 0, 50, 10, 0.25)]
     d = board(tr, pads=[('A', 0, 0, ('F.Cu',)), ('C', 50, 10, ('F.Cu',))])
     r, _, _ = r_between(d, 'A', 'C')
-    assert r == pytest.approx(RHO * 50 / (0.5 * T) + RHO * 10 / (0.25 * T), rel=1e-3)
+    assert r == pytest.approx(RHO * 49.5 / (0.5 * T) + RHO * 9.5 / (0.25 * T) + RHO * 1.0 / (1.0 * T), rel=1e-6)
 
 
 def test_unconnected_pad_is_reported_not_solved():
@@ -101,11 +102,14 @@ def test_current_is_conserved_and_ties_do_not_spoil_the_solve():
     node = lambda r: cn.pin_nodes[(r, '1')][0]
     V, lost = cn.solve([node('A')], {node('B'): 0.3, node('C'): 0.2})
     assert not lost and cn.last_solve['residual'] < 1e-9
-    cur = {(round(t.x1), round(t.x2), round(t.y2)): a for a, (_, t, _) in cn.currents(V)}
+    cur = {}
+    for a, (_, t, _) in cn.currents(V):                              # the piece under a pad carries nothing
+        k = (round(t.x1), round(t.x2), round(t.y2))
+        cur[k] = max(cur.get(k, 0.0), a)
     assert cur[(0, 50, 0)] == pytest.approx(0.5, rel=1e-6)            # the trunk carries both loads
     assert cur[(50, 100, 0)] == pytest.approx(0.3, rel=1e-6)
     assert cur[(50, 50, 40)] == pytest.approx(0.2, rel=1e-6)
-    assert -V[node('B')] == pytest.approx(RHO * 50 / (0.3 * T) * (0.5 + 0.3), rel=1e-6)
+    assert -V[node('B')] == pytest.approx(RHO * 49.5 / (0.3 * T) * (0.5 + 0.3) + RHO * 0.5 / (1.0 * T) * (0.5 + 0.3), rel=1e-6)
 
 
 def test_custom_pad_takes_its_size_from_the_drawn_shape(tmp_path):
@@ -140,3 +144,27 @@ def test_pad_on_thermal_relief_joins_the_pour_around_it():
     d = board(zones=[z], pads=[('A', 10, 10, ('F.Cu',)), ('B', 2, 2, ('F.Cu',))])
     r, _, _ = r_between(d, 'A', 'B')
     assert r is not None and 0 < r < 0.01
+
+
+def test_track_inside_a_pad_counts_at_the_pad_width_and_a_via_ring_shorts_it():
+    # a 3 x 1 mm pad turned 90 degrees, so it is 3 mm tall: a track leaves its centre downwards,
+    # runs 1.5 mm inside the pad (copper 1 mm wide there), then 3.2 mm to the ring of a via
+    d = board([Track('N', 'F.Cu', 10, 10, 10, 15, 0.25), Track('N', 'B.Cu', 10, 15, 30, 15, 0.25)],
+              [Via('N', 10, 15, 0.6, 0.3)], pads=[('A', 10, 10, ('F.Cu',)), ('B', 30, 15, ('B.Cu',))])
+    pa, pb = d.components['A'].pins['1'], d.components['B'].pins['1']
+    pa.size, pa.angle, pa.shape = (3.0, 1.0), 90.0, 'rect'
+    pb.size = (0.25, 0.25)                                            # no wider than the track: changes nothing
+    r, _, cn = r_between(d, 'A', 'B')
+    barrel = RHO * cn.stack.between('F.Cu', 'B.Cu')[0] / (math.pi * 0.32 * 0.02)
+    expect = RHO * 1.5 / (1.0 * T) + RHO * (5 - 1.5 - 0.3) / (0.25 * T) + barrel + RHO * (20 - 0.3) / (0.25 * T)
+    assert r == pytest.approx(expect, rel=1e-6)
+    pa.angle = 0.0              # lying down: 0.5 mm under the pad, in copper 3 mm wide; 1 mm more of bare track
+    r0, _, _ = r_between(d, 'A', 'B')
+    assert r0 - r == pytest.approx(RHO * 1.0 / (0.25 * T) + RHO * 0.5 / (3.0 * T) - RHO * 1.5 / (1.0 * T), rel=1e-6)
+
+
+def test_default_stackup_has_half_ounce_inner_copper():
+    st = default_stackup(['F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'], 1.6)
+    cu = {n: t for n, k, t, _ in st if k == 'copper'}
+    assert cu == {'F.Cu': 0.035, 'In1.Cu': 0.0175, 'In2.Cu': 0.0175, 'B.Cu': 0.035}
+    assert sum(t for _, _, t, _ in st) == pytest.approx(1.6)

@@ -1,0 +1,492 @@
+{
+ "dino-latest": [
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U4"
+   ],
+   "boardlint_mohm": 168.854,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 171.337,
+    "0.025": 172.89,
+    "0.05": 177.908
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U7"
+   ],
+   "boardlint_mohm": 188.525,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 191.0,
+    "0.025": 192.577,
+    "0.05": 199.181
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U10"
+   ],
+   "boardlint_mohm": 236.383,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 240.087,
+    "0.025": 242.029,
+    "0.05": 248.177
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U6"
+   ],
+   "boardlint_mohm": 135.917,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 137.305,
+    "0.025": 138.454,
+    "0.05": 143.11
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U5"
+   ],
+   "boardlint_mohm": 36.463,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 36.957,
+    "0.025": 37.642,
+    "0.05": 38.588
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U11"
+   ],
+   "boardlint_mohm": 51.226,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 52.457,
+    "0.025": 53.487,
+    "0.05": 55.367
+   }
+  },
+  {
+   "net": "+BATT",
+   "source": "Q1",
+   "loads": [
+    "Q2"
+   ],
+   "boardlint_mohm": 95.852,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 96.35,
+    "0.025": 97.834,
+    "0.05": 101.495
+   }
+  },
+  {
+   "net": "+BATT",
+   "source": "Q1",
+   "loads": [
+    "U3"
+   ],
+   "boardlint_mohm": 11.145,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 11.323,
+    "0.025": 11.448,
+    "0.05": 11.887
+   }
+  },
+  {
+   "net": "VLED",
+   "source": "Q2",
+   "loads": [
+    "D18"
+   ],
+   "boardlint_mohm": 167.448,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 166.708,
+    "0.025": 167.966,
+    "0.05": 170.191
+   }
+  },
+  {
+   "net": "VLED",
+   "source": "Q2",
+   "loads": [
+    "D1"
+   ],
+   "boardlint_mohm": 53.683,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 53.605,
+    "0.025": 54.048,
+    "0.05": 54.565
+   }
+  },
+  {
+   "net": "VLED",
+   "source": "Q2",
+   "loads": [
+    "D9"
+   ],
+   "boardlint_mohm": 111.547,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 110.505,
+    "0.025": 111.299,
+    "0.05": 112.585
+   }
+  },
+  {
+   "net": "BAT_RAW",
+   "source": "SJ1",
+   "loads": [
+    "Q1"
+   ],
+   "boardlint_mohm": 18.765,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 19.818,
+    "0.025": 20.185,
+    "0.05": 20.666
+   }
+  }
+ ],
+ "dino-4da182c": [
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U4"
+   ],
+   "boardlint_mohm": 151.729,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 152.813,
+    "0.025": 154.088,
+    "0.05": 156.743
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U6"
+   ],
+   "boardlint_mohm": 115.161,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 115.641,
+    "0.025": 116.67,
+    "0.05": 118.75
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U3",
+   "loads": [
+    "U5"
+   ],
+   "boardlint_mohm": 42.1,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 42.59,
+    "0.025": 43.53,
+    "0.05": 44.482
+   }
+  },
+  {
+   "net": "+BATT",
+   "source": "Q1",
+   "loads": [
+    "Q2"
+   ],
+   "boardlint_mohm": 151.911,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 151.514,
+    "0.025": 151.782,
+    "0.05": 152.998
+   }
+  },
+  {
+   "net": "+BATT",
+   "source": "Q1",
+   "loads": [
+    "U3"
+   ],
+   "boardlint_mohm": 17.776,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 17.378,
+    "0.025": 17.406,
+    "0.05": 17.625
+   }
+  },
+  {
+   "net": "VLED",
+   "source": "Q2",
+   "loads": [
+    "D20"
+   ],
+   "boardlint_mohm": 154.299,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 154.756,
+    "0.025": 155.757,
+    "0.05": 159.083
+   }
+  },
+  {
+   "net": "VLED",
+   "source": "Q2",
+   "loads": [
+    "D1"
+   ],
+   "boardlint_mohm": 36.508,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 36.694,
+    "0.025": 36.882,
+    "0.05": 38.44
+   }
+  },
+  {
+   "net": "BAT_RAW",
+   "source": "SJ1",
+   "loads": [
+    "Q1"
+   ],
+   "boardlint_mohm": 18.636,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 18.394,
+    "0.025": 18.549,
+    "0.05": 19.111
+   }
+  }
+ ],
+ "ezbldc": [
+  {
+   "net": "+12V",
+   "source": "D1",
+   "loads": [
+    "U7"
+   ],
+   "boardlint_mohm": 30.601,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 28.79,
+    "0.025": 28.873,
+    "0.05": 28.895
+   }
+  },
+  {
+   "net": "+12V",
+   "source": "D1",
+   "loads": [
+    "F1"
+   ],
+   "boardlint_mohm": 4.914,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 4.55,
+    "0.025": 4.564,
+    "0.05": 4.592
+   }
+  },
+  {
+   "net": "+12V",
+   "source": "D1",
+   "loads": [
+    "F4"
+   ],
+   "boardlint_mohm": 10.123,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 9.392,
+    "0.025": 9.417,
+    "0.05": 9.463
+   }
+  },
+  {
+   "net": "+5V",
+   "source": "U7",
+   "loads": [
+    "D2"
+   ],
+   "boardlint_mohm": 20.286,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 20.6,
+    "0.025": 20.651,
+    "0.05": 21.693
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U1",
+   "loads": [
+    "D3"
+   ],
+   "boardlint_mohm": 12.077,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.05": 11.68
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U1",
+   "loads": [
+    "U6"
+   ],
+   "boardlint_mohm": 9.087,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.05": 8.695
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U1",
+   "loads": [
+    "U2"
+   ],
+   "boardlint_mohm": 16.491,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.05": 15.77
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "U1",
+   "loads": [
+    "U5"
+   ],
+   "boardlint_mohm": 17.333,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.05": 16.592
+   }
+  }
+ ],
+ "density": [
+  {
+   "net": "+5V",
+   "source": "A1",
+   "loads": [
+    "D5"
+   ],
+   "boardlint_mohm": 289.058,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 296.504,
+    "0.025": 298.505,
+    "0.05": 304.607
+   }
+  },
+  {
+   "net": "+5V",
+   "source": "A1",
+   "loads": [
+    "D20"
+   ],
+   "boardlint_mohm": 137.223,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 142.431,
+    "0.025": 144.087,
+    "0.05": 147.039
+   }
+  },
+  {
+   "net": "+5V",
+   "source": "A1",
+   "loads": [
+    "D1"
+   ],
+   "boardlint_mohm": 167.725,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 173.581,
+    "0.025": 175.235,
+    "0.05": 180.492
+   }
+  },
+  {
+   "net": "+5V",
+   "source": "A1",
+   "loads": [
+    "U8"
+   ],
+   "boardlint_mohm": 152.961,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 158.836,
+    "0.025": 160.241,
+    "0.05": 165.238
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "A1",
+   "loads": [
+    "U5"
+   ],
+   "boardlint_mohm": 43.344,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 43.834,
+    "0.025": 43.878,
+    "0.05": 43.974
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "A1",
+   "loads": [
+    "U7"
+   ],
+   "boardlint_mohm": 105.646,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 109.346,
+    "0.025": 109.514,
+    "0.05": 110.89
+   }
+  },
+  {
+   "net": "+3V3",
+   "source": "A1",
+   "loads": [
+    "FB1"
+   ],
+   "boardlint_mohm": 61.315,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 62.664,
+    "0.025": 62.745,
+    "0.05": 62.906
+   }
+  },
+  {
+   "net": "AVDD",
+   "source": "FB1",
+   "loads": [
+    "U4"
+   ],
+   "boardlint_mohm": 25.223,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 26.517,
+    "0.025": 26.882,
+    "0.05": 27.529
+   }
+  },
+  {
+   "net": "AVDD",
+   "source": "FB1",
+   "loads": [
+    "U1"
+   ],
+   "boardlint_mohm": 55.209,
+   "kicad_irdrop_mohm_by_grid_mm": {
+    "0.0125": 57.786,
+    "0.025": 58.609,
+    "0.05": 59.851
+   }
+  },
+  {
+   "net": "AVDD",
+   "source": "FB1",
+   "loads": [
+    "RV17"
+   ],
+   "boardlint_mohm": 155.803,
+   "kicad_irdrop_mohm_by_grid_mm": {}
+  }
+ ]
+}

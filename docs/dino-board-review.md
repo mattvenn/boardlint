@@ -107,17 +107,33 @@ routed copper ([copper-extraction.md](copper-extraction.md)), so it now reads 1 
 42 notes. The text above describes the first run and is left as it was. What the new checks add on
 this commit:
 
-- `layout.ir_drop`: 140 mV (3.9 %) is lost between the reverse-protection transistor Q1 and the LED
+- `layout.ir_drop`: 139 mV (3.9 %) is lost between the reverse-protection transistor Q1 and the LED
   switch Q2 on +BATT at 1269 mA. The earlier estimate could not see a rail fed through a transistor.
 - `layout.ir_drop`: the ground pour is in separate pieces, and 27 parts have no copper return path
   to their supply. The board's notes say the same: "79 ground items unconnected".
 - `layout.ir_drop`: U7 pin 20 (VDD) and the battery connector's path to fuse F1 have no copper at
-  this commit. KiCad's DRC reports these as unrouted; they are listed here because the current
-  solve cannot reach them.
-- `power.droop` now uses the extracted path from the regulator to the ESP32 module: 156 mΩ and
-  94 nH, where the estimate was 185 mΩ and 212 nH. The result is the same error (2.05 V).
+  this commit. KiCad's DRC, run later for the cross-check, lists both as unconnected, along with
+  79 ground items.
+- `power.droop` now uses the extracted path from the regulator to the ESP32 module: 152 mΩ and
+  90 nH, where the estimate was 185 mΩ and 212 nH. The result is the same error (2.05 V).
 - `layout.impedance` (notes): on a two-layer board the USB pair is about 193 Ω differential, far
   from 90 Ω. That is normal for two layers and tolerable at full speed.
+
+The extraction was then checked against an independent solver ([crosscheck.md](crosscheck.md)).
+That check changed one assumption that matters for the four-layer version of this board (commit
+`03e16f5`): inner layers are now taken as 0.5 oz (17.5 µm) copper, JLCPCB's default, not 1 oz. With
+that, on the four-layer board:
+
+- `layout.track_current` (warning): the battery rail +BATT and the LED rail VLED run on inner
+  layer In2 as 0.4 mm tracks carrying 827 mA with the LEDs at full white, for 83 mm and 35 mm.
+  IPC-2221 gives 372 mA for a 10 °C rise in 0.5 oz inner copper at that width.
+- `layout.ir_drop` (warning): 144 mV (4.0 %) is lost on +BATT and a further 117 mV (3.2 %) on VLED
+  before the last LED, on top of the fuse and the two transistors.
+- `layout.ir_drop` (note): 79 mV is lost between the regulator and the ESP32 module (220 mΩ).
+
+The first two rest on the same worst-case LED current as the earlier `power.budget` finding, so a
+firmware brightness cap eases them. Wider tracks, the outer layers, or 1 oz inner copper
+(`stackup: {inner_cu_um: 35}` to see the effect) would ease them in the layout.
 
 # Second run: commit `eb2fd13` (2026-11-23), with the owner's description to check against
 

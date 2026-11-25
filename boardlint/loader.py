@@ -51,6 +51,12 @@ def load_project(path: str, pcb: str | None = None, sch: str | None = None, netl
     bcomps = {}
     if pcb:
         bcomps, d.board, notes = kicad_pcb.load_board(pcb)
+        su = d.config.get('stackup') or {}
+        if d.board.stackup_assumed and su:
+            # the board file has no stack-up: take the copper weights from boardlint.yaml
+            d.board.copper_um = float(su.get('outer_cu_um', d.board.copper_um))
+            d.board.stackup = kicad_pcb.default_stackup(d.board.copper_layers or ['F.Cu', 'B.Cu'], d.board.thickness,
+                                                        d.board.copper_um / 1000, float(su.get('inner_cu_um', 17.5)) / 1000)
         d.notes += notes
         d.sources.append(pcb)
 
@@ -99,7 +105,8 @@ def load_project(path: str, pcb: str | None = None, sch: str | None = None, netl
                     sp = sc.pins[num] = Pin(comp=sc, number=num, name=bp.name, etype=bp.etype)
                     if not use_pcb_nets:
                         sp.net = None
-                sp.pos, sp.layers, sp.size, sp.drill = bp.pos, bp.layers, bp.size, bp.drill
+                sp.pos, sp.layers, sp.size, sp.drill, sp.angle, sp.shape = bp.pos, bp.layers, bp.size, bp.drill, bp.angle, bp.shape
+                sp.anchor, sp.polys = bp.anchor, bp.polys
                 if use_pcb_nets:
                     sp.net = bp.net
             if use_pcb_nets:

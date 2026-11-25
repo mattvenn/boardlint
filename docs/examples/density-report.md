@@ -36,36 +36,36 @@ clock. 58 mm between its furthest pads (59 mm routed in all). For a 2 ns edge a 
 
 Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
 
-### SR_CLK is electrically long: 108 mm end to end, 663 ps one way
+### SR_CLK is electrically long: 106 mm end to end, 650 ps one way
 
 `layout.impedance` · parts: A1 · nets: SR_CLK · confidence: low
 
-clock. 108 mm between its furthest pads (119 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 54 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. On a clock that can be seen as a second edge. A 22 to 47 ohm resistor at the driver is the usual fix. Line impedance about 81 ohm.
+clock. 106 mm between its furthest pads (119 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 54 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. On a clock that can be seen as a second edge. A 22 to 47 ohm resistor at the driver is the usual fix. Line impedance about 82 ohm.
 
 | | |
 |---|---|
-| end_to_end_mm | 108.0 |
+| end_to_end_mm | 106.0 |
 | routed_mm | 119.0 |
-| delay_ps | 663 |
-| z0 | 81 |
+| delay_ps | 650 |
+| z0 | 82 |
 | assumed_rise_ns | 2.0 |
 | stack_up | assumed |
 
 Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
 
-### +5V: a 0.5 mm segment carries 811 mA; IPC-2221 gives 723 mA for a 10 C rise
+### +5V: a 0.5 mm segment carries 811 mA; IPC-2221 gives 438 mA for a 10 C rise
 
 `layout.track_current` · nets: +5V · confidence: medium
 
-At (88.4, 62.7) mm on In2.Cu, an inner layer. 23.0 mm of the net's track is over its limit with every load at maximum. This is the current that segment actually carries in the solved network, not the net's total.
+At (95.5, 78.2) mm on In2.Cu, an inner layer. 26.9 mm of the net's track is over its limit with every load at maximum. This is the current that segment actually carries in the solved network, not the net's total.
 
 | | |
 |---|---|
-| segment | (88.4, 62.7) mm on In2.Cu |
+| segment | (95.5, 78.2) mm on In2.Cu |
 | width_mm | 0.5 |
 | current_A | 0.811 |
-| ipc2221_A | 0.72 |
-| length_over_limit_mm | 23.0 |
+| ipc2221_A | 0.44 |
+| length_over_limit_mm | 26.9 |
 | net_total_A | 0.811 |
 
 Basis: IPC-2221 formula; segment current from the resistor-network solve; loads are model maxima.
@@ -101,7 +101,7 @@ Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one 
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
 | bus_c_est_pF | 88 |
-| t_rise_ns | 350 |
+| t_rise_ns | 349 |
 
 ### I2C net SDA leaves the board with 4.7k already fitted
 
@@ -116,13 +116,13 @@ Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one 
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
 | bus_c_est_pF | 89 |
-| t_rise_ns | 355 |
+| t_rise_ns | 354 |
 
 ### I2C pull-up on SCL (4.7k) is too weak for 400 kHz once a cable and module are plugged in
 
 `i2c.bus` · parts: R10 · nets: SCL · confidence: medium
 
-Estimated rise time 350 ns with about 88 pF (board alone: 151 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
+Estimated rise time 349 ns with about 88 pF (board alone: 150 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
 
 | | |
 |---|---|
@@ -131,7 +131,7 @@ Estimated rise time 350 ns with about 88 pF (board alone: 151 ns; 50 pF allowed 
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
 | bus_c_est_pF | 88 |
-| t_rise_ns | 350 |
+| t_rise_ns | 349 |
 
 Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
@@ -139,7 +139,7 @@ Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
 `i2c.bus` · parts: R11 · nets: SDA · confidence: medium
 
-Estimated rise time 355 ns with about 89 pF (board alone: 156 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
+Estimated rise time 354 ns with about 89 pF (board alone: 155 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
 
 | | |
 |---|---|
@@ -148,7 +148,7 @@ Estimated rise time 355 ns with about 89 pF (board alone: 156 ns; 50 pF allowed 
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
 | bus_c_est_pF | 89 |
-| t_rise_ns | 355 |
+| t_rise_ns | 354 |
 
 Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
@@ -199,26 +199,26 @@ Basis: microstrip / stripline formulas on the stack-up; rise time is an assumpti
 
 `layout.impedance` · confidence: low
 
-SR_CLK: 119 mm, 0.15 mm on B.Cu, 81 ohm, 730 ps, 9.1 pF, 97% over a plane, 4 vias; ADC_MISO: 61 mm, 0.15 mm on F.Cu, 72 ohm, 368 ps, 5.0 pF, 98% over a plane, 0 vias; ADC_SCK: 59 mm, 0.15 mm on F.Cu, 72 ohm, 353 ps, 4.8 pF, 98% over a plane, 0 vias; ADC_MOSI: 33 mm, 0.15 mm on F.Cu, 72 ohm, 203 ps, 2.7 pF, 95% over a plane, 2 vias; LEDC16: 33 mm, 0.15 mm on In2.Cu, 64 ohm, 230 ps, 3.5 pF, 94% over a plane, 2 vias; LEDC4: 27 mm, 0.15 mm on In2.Cu, 65 ohm, 186 ps, 2.9 pF, 99% over a plane, 2 vias; LEDC12: 27 mm, 0.15 mm on In2.Cu, 65 ohm, 186 ps, 2.9 pF, 99% over a plane, 2 vias; LEDC8: 26 mm, 0.15 mm on F.Cu, 72 ohm, 153 ps, 2.1 pF, 100% over a plane, 0 vias; LEDC10: 24 mm, 0.15 mm on In2.Cu, 89 ohm, 162 ps, 2.0 pF, 95% over a plane, 2 vias; LEDC7: 23 mm, 0.15 mm on In2.Cu, 65 ohm, 153 ps, 2.3 pF, 96% over a plane, 2 vias....
+SR_CLK: 119 mm, 0.15 mm on B.Cu, 82 ohm, 730 ps, 9.1 pF, 97% over a plane, 4 vias; ADC_MISO: 61 mm, 0.15 mm on F.Cu, 72 ohm, 368 ps, 5.0 pF, 98% over a plane, 0 vias; ADC_SCK: 59 mm, 0.15 mm on F.Cu, 72 ohm, 353 ps, 4.8 pF, 98% over a plane, 0 vias; ADC_MOSI: 33 mm, 0.15 mm on F.Cu, 72 ohm, 203 ps, 2.7 pF, 95% over a plane, 2 vias; LEDC16: 33 mm, 0.15 mm on In2.Cu, 66 ohm, 230 ps, 3.3 pF, 94% over a plane, 2 vias; LEDC4: 27 mm, 0.15 mm on In2.Cu, 67 ohm, 186 ps, 2.8 pF, 99% over a plane, 2 vias; LEDC12: 27 mm, 0.15 mm on In2.Cu, 67 ohm, 186 ps, 2.8 pF, 99% over a plane, 2 vias; LEDC8: 26 mm, 0.15 mm on F.Cu, 72 ohm, 153 ps, 2.1 pF, 100% over a plane, 0 vias; LEDC10: 24 mm, 0.15 mm on In2.Cu, 93 ohm, 162 ps, 1.9 pF, 95% over a plane, 2 vias; LEDC7: 23 mm, 0.15 mm on In2.Cu, 68 ohm, 153 ps, 2.2 pF, 96% over a plane, 2 vias....
 
 | | |
 |---|---|
-| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.06 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
+| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.095 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
 
 Basis: microstrip / stripline formulas on the stack-up.
 
-### +5V: 115 mV is lost in the copper on the way to D5.2(VDD) (2.3% of the rail)
+### +5V: 136 mV is lost in the copper on the way to D5.2(VDD) (2.7% of the rail)
 
 `layout.ir_drop` · parts: D5, A1 · nets: +5V · confidence: medium
 
-With every load on +5V at its maximum (811 mA in all), fed from A1 5V pin. Supply side 115 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+With every load on +5V at its maximum (811 mA in all), fed from A1 5V pin. Supply side 135 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
 
 | | |
 |---|---|
 | source | A1 5V pin |
 | total_load_A | 0.811 |
-| worst | D5.2(VDD): 115 mV (115 supply + 0 return) |
-| next | D4.2(VDD) 115 mV; D3.2(VDD) 113 mV; D6.2(VDD) 111 mV |
+| worst | D5.2(VDD): 136 mV (135 supply + 0 return) |
+| next | D4.2(VDD) 135 mV; D3.2(VDD) 132 mV; D6.2(VDD) 130 mV |
 | copper | 290 track segments, 21 vias, 0 pour cells |
 | ground | ground return through GND to A1.2(GND) included (19995 pour cells, grid 1.6 mm) |
 | stack_up | assumed |
@@ -343,11 +343,11 @@ U3.10(~{CS}/SHDN) floats while the MCU is in reset or booting; a 10k pull-up kee
 | `decoupling.per_part` | ran | 1 finding(s), 0.00 s |
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 0 finding(s), 0.00 s |
-| `i2c.bus` | ran | 4 finding(s), 0.13 s |
-| `layout.coupling` | ran | 2 finding(s), 3.80 s |
-| `layout.impedance` | ran | 4 finding(s), 0.44 s |
-| `layout.ir_drop` | ran | 1 finding(s), 3.17 s |
-| `layout.return_path` | ran | 1 finding(s), 1.82 s |
+| `i2c.bus` | ran | 4 finding(s), 0.11 s |
+| `layout.coupling` | ran | 2 finding(s), 3.49 s |
+| `layout.impedance` | ran | 4 finding(s), 0.48 s |
+| `layout.ir_drop` | ran | 1 finding(s), 2.49 s |
+| `layout.return_path` | ran | 1 finding(s), 1.87 s |
 | `layout.track_current` | ran | 1 finding(s), 0.00 s |
 | `led.chain` | ran | 2 finding(s), 0.00 s |
 | `load.inductive` | ran | 0 finding(s), 0.00 s |
@@ -372,7 +372,7 @@ U3.10(~{CS}/SHDN) floats while the MCU is in reset or booting; a 10k pull-up kee
 | `ratings.passives` | ran | 1 finding(s), 0.00 s |
 | `reset.circuit` | ran | 0 finding(s), 0.00 s |
 | `sim.i2c` | ran | 0 finding(s), 0.00 s |
-| `sim.led_chain` | ran | 1 finding(s), 0.04 s |
+| `sim.led_chain` | ran | 1 finding(s), 0.05 s |
 | `spi.bus` | ran | 1 finding(s), 0.00 s |
 | `sync.schematic_board` | ran | 0 finding(s), 0.00 s |
 | `uart.direction` | ran | 0 finding(s), 0.00 s |

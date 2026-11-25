@@ -17,6 +17,10 @@ class Pin:
     layers: tuple = ()
     size: Optional[tuple] = None  # pad size (mm), unrotated
     drill: float = 0.0            # > 0 for through-hole pads
+    angle: float = 0.0            # pad rotation on the board, degrees (KiCad stores it absolute)
+    shape: str = ''               # rect, roundrect, oval, circle, custom, ...
+    anchor: Optional[tuple] = None  # custom pads: size of the anchor; `size` is then the extent of the drawn copper
+    polys: tuple = ()             # custom pads: drawn polygons, in pad axes (mm)
 
     @property
     def id(self) -> str:
