@@ -4,8 +4,7 @@ import math
 import re
 from collections import defaultdict
 from . import check, F
-from .common import PASSIVE_KINDS, names
-from .power_checks import total_load, _summ
+from .common import PASSIVE_KINDS
 from ..classify import signal_group, pulls, caps_to_ground, fmt_r, is_analog_name
 
 EPS0 = 8.854e-15        # F/mm

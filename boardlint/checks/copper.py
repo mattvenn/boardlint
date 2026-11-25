@@ -5,8 +5,8 @@ import math
 import re
 from collections import defaultdict
 from . import check, F
-from .common import model_basis, can_drive, PASSIVE_KINDS
-from .power_checks import total_load, _summ
+from .common import can_drive
+from .power_checks import total_load
 from ..extract import CopperNet, ipc2221_amps
 from ..library import supply_spec
 from ..power import power_links, rail_loads, _pins_named
