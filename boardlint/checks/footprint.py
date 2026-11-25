@@ -67,10 +67,17 @@ def schematic_board(d):
     if not s:
         return
     src = 'board' if getattr(d, 'netlist_source', '') == 'pcb' else 'schematic'
+    buses = any('uses buses' in n for n in d.notes)
+    if buses and s['net_groups'] and not (s['fp'] or s['only_sch'] or s['only_pcb']):
+        yield F('sync.schematic_board', 'info', f"{s['net_groups']} net(s) could not be compared between schematic and board",
+                "The schematic passes signals between sheets as buses, which the built-in netlister does not expand, so those "
+                "nets look different from the board's. This run uses the board's netlist. KiCad's own schematic-parity "
+                "check is the one to trust here.", basis='comparison of the schematic netlist and the board file', confidence='low')
+        return
     if s['net_groups'] or s['fp'] or s['only_sch'] or s['only_pcb']:
         bits = []
         if s['net_groups']:
-            bits.append(f"{s['net_groups']} net(s) are connected differently")
+            bits.append(f"{s['net_groups']} net(s) are connected differently" + (" (some of these because buses are not expanded)" if buses else ''))
         if s['fp']:
             bits.append("footprint differs for " + ', '.join(f"{r} (schematic {a.split(':')[-1]}, board {b.split(':')[-1]})" for r, a, b in s['fp'][:6])
                         + ('...' if len(s['fp']) > 6 else ''))

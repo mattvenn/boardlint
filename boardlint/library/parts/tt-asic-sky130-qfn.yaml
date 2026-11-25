@@ -1,0 +1,91 @@
+id: tt-asic-sky130-qfn
+match:
+  value: ["Openframe_QFN_TT*"]
+kind: IC
+class: asic
+description: "Tiny Tapeout sky130 chip in QFN-64 (open-frame harness): 1.8 V core, 3.3 V I/O and analog"
+datasheet: "KiCad symbol Openframe_QFN_TT06_REV2 and the breakout-sky-qfn schematic (github.com/TinyTapeout/breakout-pcb)"
+provenance:
+  source: "KiCad symbol Openframe_QFN_TT06_REV2 and the breakout-sky-qfn schematic (github.com/TinyTapeout/breakout-pcb)"
+  verified: false
+  notes: >
+    Not from a datasheet. The pin list is the KiCad symbol on the Tiny Tapeout breakout board; the
+    rail voltages are what that board's regulators and links give each supply pin as fitted, and
+    the Tiny Tapeout guide's statement that "All the I/O expects 3.3V logic levels"
+    (tinytapeout.com/guides/get-started-demoboard-etr, read 2026-11-25). Supply ranges are the
+    nominal value plus and minus 10 %, an assumption. No supply current is given: the chip's draw
+    depends on the project selected. I/O limits are assumed, not read from pad-cell documentation.
+    Core (vccd) is fed from an AP2112K-1.8 on the breakout; vddio and vdda take the baseboard's
+    3.3 V through 0 ohm links.
+supplies:
+  - pins: [vccd, vccd1, vccd2]
+    vmin: 1.62
+    vmax: 1.98
+    decoupling:
+      - {c_min: 100n, count: 1, note: "one 100 nF per supply pin is what the breakout fits; no datasheet figure"}
+  - pins: [vddio]
+    vmin: 2.97
+    vmax: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1}
+  - pins: [vdda, vdda1, vdda2]
+    vmin: 2.97
+    vmax: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1}
+io:
+  abs_max_over_supply: 0.3    # assumed: an ordinary CMOS pad with clamp diodes to its I/O rail
+  tolerant_5v: false
+pins:
+  "ui_in[0]": {drive: input}
+  "ui_in[1]": {drive: input}
+  "ui_in[2]": {drive: input}
+  "ui_in[3]": {drive: input}
+  "ui_in[4]": {drive: input}
+  "ui_in[5]": {drive: input}
+  "ui_in[6]": {drive: input}
+  "ui_in[7]": {drive: input}
+  "uo_out[0]": {drive: push_pull}
+  "uo_out[1]": {drive: push_pull}
+  "uo_out[2]": {drive: push_pull}
+  "uo_out[3]": {drive: push_pull}
+  "uo_out[4]": {drive: push_pull}
+  "uo_out[5]": {drive: push_pull}
+  "uo_out[6]": {drive: push_pull}
+  "uo_out[7]": {drive: push_pull}
+  "uio[0]": {role: gpio}
+  "uio[1]": {role: gpio}
+  "uio[2]": {role: gpio}
+  "uio[3]": {role: gpio}
+  "uio[4]": {role: gpio}
+  "uio[5]": {role: gpio}
+  "uio[6]": {role: gpio}
+  "uio[7]": {role: gpio}
+  "analog[0]": {role: analog_in, drive: analog}
+  "analog[1]": {role: analog_in, drive: analog}
+  "analog[2]": {role: analog_in, drive: analog}
+  "analog[3]": {role: analog_in, drive: analog}
+  "analog[4]": {role: analog_in, drive: analog}
+  "analog[5]": {role: analog_in, drive: analog}
+  "analog[6]": {role: analog_in, drive: analog}
+  "analog[7]": {role: analog_in, drive: analog}
+  "analog[8]": {role: analog_in, drive: analog}
+  "analog[9]": {role: analog_in, drive: analog}
+  "analog[10]": {role: analog_in, drive: analog}
+  "analog[11]": {role: analog_in, drive: analog}
+  clk: {drive: input}
+  rst_n: {role: reset, active: low, drive: input}
+  resetb: {role: reset, active: low, drive: input}
+  ctrl_ena: {drive: input}
+  ctrl_sel_inc: {drive: input}
+  ctrl_sel_rst_n: {role: reset, active: low, drive: input}
+  vssa: {role: gnd}
+  vssa1: {role: gnd}
+  vssa2: {role: gnd}
+  vssd: {role: gnd}
+  vssd1: {role: gnd}
+  vssd2: {role: gnd}
+  vssio: {role: gnd}
+  ThermalPad: {role: gnd}
+  NC: {role: nc}
+  reserved: {role: nc}

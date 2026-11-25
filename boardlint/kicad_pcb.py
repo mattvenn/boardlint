@@ -69,11 +69,16 @@ def load_board(path: str):
         layer = str(value(fp, 'layer', 'F.Cu'))
         attr = child(fp, 'attr') or []
         if ref in comps:
-            notes.append(f"duplicate reference {ref} on the board")
+            # stitching vias and the like are often many footprints with one reference: not worth a note
+            msg = f"duplicate reference {ref} on the board"
+            if 'board_only' not in attr and msg not in notes:
+                notes.append(msg)
             continue
         c = Component(ref=ref, value=props.get('Value', ''), footprint=str(fp[1]), props=props,
                       pos=(fx, fy), side='B' if layer.startswith('B') else 'F',
                       dnp='dnp' in attr)
+        if 'board_only' in attr:
+            c.props['_board_only'] = True
         a = math.radians(rot)
         for pad in children(fp, 'pad'):
             num = str(pad[1])

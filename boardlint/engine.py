@@ -38,10 +38,12 @@ def prepare(path, parts_dirs=(), **kw):
     return d
 
 
-def run(d, only=(), skip=(), no_sim=False):
+def run(d, only=(), skip=(), no_sim=False, board_only=False):
     reg = _checks.load_all()
     findings, log = [], []
     for cid, c in sorted(reg.items()):
+        if board_only and not c['needs_board']:
+            continue
         sel = (not only or any(fnmatch.fnmatch(cid, o) or o == c['family'] for o in only)) and \
             not any(fnmatch.fnmatch(cid, s) or s == c['family'] for s in skip)
         if not sel:

@@ -400,6 +400,74 @@ def _has_source(d, net, seen):
     return False
 
 
+@check('power.unpowered', 'power', doc='Supply pins of fitted parts sit on a net that something fitted actually feeds')
+def unpowered(d):
+    """A rail can be drawn and still be dead: the 0 ohm link or regulator that feeds it is marked
+    do-not-populate.  Walk from each net that has supply pins through whatever is fitted and can
+    pass supply current, and look for anything that can be a source."""
+    def passes(c):
+        if c.dnp:
+            return []
+        links = [(a, b) for a, b, _, _ in power_links(c)]
+        ps = list(c.pins.values())
+        if not links and len(ps) == 2 and (c.kind == 'L' or (c.kind == 'R' and c.num is not None and c.num <= 100)):
+            links = [(ps[0], ps[1])]                       # inductors and small filter resistors
+        return links
+
+    def source_on(n):
+        for p in n.pins:
+            c = p.comp
+            if c.dnp:
+                continue
+            m = c.model or {}
+            if c.kind in ('CONN', 'BATT'):
+                return f"{c.ref}"
+            for sec, key in (('regulator', 'vout'), ('charger', 'vbat')):
+                if m.get(sec) and p in _pins_named(c, m[sec].get(key)):
+                    return f"{c.ref} output"
+            if p.role == 'power_out' or p.etype == 'power_out':
+                return f"{p.label}"
+        return None
+
+    done = set()
+    for net in sorted(d.nets.values(), key=lambda n: n.name):
+        if net.is_ground or net.name in done:
+            continue
+        users = [p for p in net.pins if not p.comp.dnp and p.comp.kind in ('IC', 'LED', 'Q', 'OTHER') and
+                 (supply_spec(p.comp, p) is not None or p.etype == 'power_in' or p.role == 'power_in')]
+        if not users:
+            continue
+        seen, todo, found, unfitted = set(), [net], None, []
+        while todo and not found:
+            n = todo.pop()
+            if n.name in seen:
+                continue
+            seen.add(n.name)
+            found = source_on(n)
+            for p in n.pins:
+                c = p.comp
+                if c.dnp and c.kind in ('R', 'FB', 'L', 'JUMPER', 'CONN', 'IC', 'D', 'Q', 'FUSE') and c.ref not in unfitted:
+                    unfitted.append(c.ref)
+                for a, b in passes(c):
+                    if p is a or p is b:
+                        on = d.net_of(b if p is a else a)
+                        if on is not None and not on.is_ground:
+                            todo.append(on)
+        if found:
+            continue
+        done |= seen
+        refs = sorted({p.comp.ref for p in users})
+        yield F('power.unpowered', 'warning', f"{net.name}: supply pins of {', '.join(refs[:4])} have nothing fitted that feeds them",
+                f"{', '.join(p.label for p in users[:8])} {'are' if len(users) > 1 else 'is'} on {net.name}. Following every fitted link, "
+                f"fuse, bead, inductor and diode from there ({', '.join(sorted(seen))}) reaches no regulator output, connector or "
+                f"supply pin. " + (f"Parts on those nets marked do-not-populate: {', '.join(unfitted[:10])}. If one of them is the "
+                                   f"intended feed, the rail is dead as built; a header among them means it is meant to be fed from outside. "
+                                   if unfitted else "") +
+                "An unpowered supply pin is usually pulled up through the part's protection diodes by its other pins, which is not a supply.",
+                refs=refs[:6] + unfitted[:6], nets=sorted(seen),
+                basis='netlist and the do-not-populate flags in the schematic', confidence='medium')
+
+
 _R_POWER = {'0201': 0.05, '0402': 0.0625, '0603': 0.1, '0805': 0.125, '1206': 0.25, '1210': 0.5, '2010': 0.75, '2512': 1.0}
 
 

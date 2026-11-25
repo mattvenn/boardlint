@@ -1,0 +1,121 @@
+id: tlv1117lv33
+match:
+  lcsc: [C15578]              # TI TLV1117LV33DCYR (LCSC product page title read 2026-11-25)
+  value: ["TLV1117LV33*"]
+kind: IC
+class: ldo
+description: "1 A low-dropout regulator, 3.3 V fixed, 2 to 5.5 V input, 100 uA maximum quiescent current, no enable pin, SOT-223 (TLV1117LV33DCYR)"
+datasheet: "Texas Instruments TLV1117LV, SBVS160C, May 2011, revised January 2023"
+provenance:
+  source: "https://www.ti.com/lit/ds/symlink/tlv1117lv.pdf (SBVS160C, 25 pages), downloaded 2026-11-25. For the alternate part only: Diodes AZ1117C, DS36676 Rev. 5 - 2, September 2022, 24 pages, the PDF LCSC serves for C92102 (AZ1117CH-3.3TRG1), https://datasheet.lcsc.com/datasheet/pdf/73ec83269ecc00393489beefcda77d62.pdf, downloaded 2026-11-25 (www.diodes.com is not reachable from this session)."
+  verified: true
+  notes: >
+    Every number below is from the TI datasheet. Pin table 5-1 p.3 (DCY, SOT-223: 1 GND,
+    2 and tab OUT, 3 IN; the drawings call the pins INPUT and OUTPUT). Absolute maximum
+    ratings 6.1 p.4: VIN and VOUT -0.3 to 6 V, junction -55 to 150 C, output short circuit
+    indefinite. Recommended operating conditions 6.3 p.4: VIN 2 to 5.5 V, IOUT 0 to 1 A.
+    Thermal information 6.4 p.4: junction to ambient 62.9 C/W, junction to case (top) 47.2,
+    junction to board 12 (the row labels of the last two are garbled in Rev. C; the values are
+    as printed). Electrical characteristics 6.5 p.5 (VIN = VOUT + 1.5 V, IOUT = 10 mA,
+    COUT = 1 uF, TA = 25 C): output accuracy +/-1.5 % for VOUT > 2 V; line regulation 1 typ /
+    5 mV max; load regulation 1 typ / 35 mV max for 0 to 1 A; dropout for VOUT >= 3.3 V 90 mV
+    at 200 mA, 230 at 500 mA, 365 at 800 mA (typical only), 455 typ / 700 mV max at 1 A;
+    current limit 1.1 A min; quiescent current 50 typ / 100 uA max at no load; start-up 100 us
+    typ; undervoltage lockout 1.95 V typ, VIN rising; thermal shutdown 165 C, reset 145 C;
+    operating junction -40 to 125 C. Footnote 1 of that table: dropout "is measured for
+    devices with VOUT(nom) = 2.5 V", so the 3.3 V figures are by design, not tested on this
+    option. Section 8.2.2.1 p.13: "For stability, 1.0-uF ceramic capacitors are required at
+    the output"; "specified to be stable with no ESR"; "Effective output capacitance that
+    takes bias, temperature, and aging effects into consideration must be greater than 0.5 uF";
+    "Although an input capacitor is not required for stability, good analog design practice is
+    to connect a 0.1-uF to 1.0-uF, low-ESR capacitor across the IN pin and GND pin"; "If
+    source impedance is greater than 2 Ohm, a 0.1-uF input capacitor can also be necessary to
+    ensure stability". 8.3 p.14: "Use a ceramic output capacitor. Do not use an electrolytic
+    output capacitor." 8.5.1 p.14: capacitors as close to the pins as possible; "Higher value
+    ESR capacitors can degrade PSRR performance"; "For reliable operation, limit junction
+    temperature to 125 C maximum". 7.3.1 p.11: the pass transistor's body diode conducts when
+    OUT is above IN and that current is not limited ("external limiting to 5% of the rated
+    output current is recommended"). There is no enable pin and no minimum load ("Stable with
+    0-mA output current", p.1).
+    JUDGEMENT CALLS, for the reviewer:
+    (1) tol 0.015 is the 25 C, 10 mA accuracy. The datasheet gives no accuracy over
+    temperature; load regulation adds up to 35 mV at 1 A.
+    (2) dropout_mv is the table MAXIMUM at 1 A (700 mV); the typical value is in
+    dropout_typ_mv. 3.3 V out at 1 A therefore needs 4.0 V in, worst case.
+    (3) cout_min 0.5 uF is the EFFECTIVE capacitance the datasheet asks for (the schema's
+    meaning of the field); the nominal part it asks for is 1 uF ceramic (cout_nom_min).
+    (4) cin_min 0.1 uF is "good analog design practice", needed for stability only when the
+    source impedance is above 2 Ohm - which a resettable fuse or ferrite in the input path can
+    cause.
+    ALTERNATE PART. The schematic lists AZ1117CH-3.3TRG1 as an alternate. Its datasheet was
+    opened (Diodes DS36676 Rev. 5 - 2) and it is not equivalent, only pin compatible (SOT223
+    "H" package p.2: 1 ADJ/GND, 2 OUTPUT, 3 INPUT). Note 4 p.3: "The ESR of the output
+    capacitors must be less than 20 Ohm. A minimum of 10 uF output capacitor is required"
+    (typical circuit: 10 uF in, 22 uF out). p.4: input 18 V absolute maximum, 15 V recommended
+    maximum, no minimum stated; junction -20 to 125 C; SOT223 junction to ambient 125 C/W
+    without heatsink, 100 with. AZ1117C-3.3 table p.7: output 3.267 to 3.333 V at 25 C, 3.235
+    to 3.365 V over temperature, for VIN - VOUT of 1.5 to 10 V; dropout 1.2 typ / 1.3 V max at
+    0.8 A (SOT223); current limit 1 A min / 1.35 A typ; quiescent current 4 typ / 6 mA max.
+    None of the AZ1117C numbers are in the fields below: a board that fits the alternate has
+    to be checked against them by hand (see errata).
+    No errata search was done for either part.
+
+supplies:
+  - pins: [IN, INPUT, VI]
+    vmin: 2.0
+    vmax: 5.5
+    abs_max: 6.0
+    i_typ_ma: 0.05            # IQ at no load
+    i_max_ma: 0.1
+    decoupling:
+      - {c_min: 0.1u, count: 1, note: "0.1 to 1.0 uF low-ESR capacitor across IN and GND, as close to the pins as possible: good practice, and needed for stability if the source impedance is above 2 Ohm (8.2.2.1 p.13)"}
+
+pins:
+  "IN/INPUT/VI": {role: power_in, abs_max: 6.0}
+  GND: {role: gnd}
+  "OUT/OUTPUT/VO":
+    role: power_out
+    abs_max: 6.0
+
+regulator:
+  type: ldo
+  vin: "IN/INPUT/VI"
+  vout: "OUT/OUTPUT/VO"
+  vout_v: 3.3
+  tol: 0.015                  # at 25 C and 10 mA; no figure over temperature
+  i_max_ma: 1000
+  i_min_ma: 0                 # stable with no load
+  i_limit_min_ma: 1100
+  dropout_mv: 700             # MAXIMUM at 1 A for VOUT >= 3.3 V
+  dropout_typ_mv: 455
+  dropout_at_ma: 1000
+  dropout_typ_points: [{ma: 200, mv: 90}, {ma: 500, mv: 230}, {ma: 800, mv: 365}, {ma: 1000, mv: 455}]
+  uvlo_v: 1.95                # typ, VIN rising
+  cin_min: 0.1u               # not required for stability unless the source impedance is above 2 Ohm
+  cout_min: 0.5u              # effective, after bias, temperature and aging
+  cout_nom_min: 1u            # "1.0-uF ceramic capacitors are required at the output"
+  cout_esr_min: 0             # "specified to be stable with no ESR"
+  cout_type: "ceramic (X5R / X7R); do not use an electrolytic output capacitor"
+  line_reg_max_mv: 5
+  load_reg_max_mv: 35         # 0 to 1 A
+  iq_typ_ma: 0.05
+  iq_max_ma: 0.1
+  startup_us: 100
+  theta_ja: 62.9              # SOT-223 (DCY)
+  theta_jc_top: 47.2
+  theta_jb: 12
+  tj_max: 125
+  thermal_shutdown_c: 165     # resets at 145 C
+  reverse_current: "body diode conducts when OUT is above IN; not limited"
+
+errata:
+  - id: alternate-az1117c-not-equivalent
+    summary: >-
+      The alternate AZ1117CH-3.3TRG1 (Diodes AZ1117C) fits the footprint but is a different
+      kind of regulator: it requires at least 10 uF on the output (TLV1117LV: 1 uF), drops
+      1.3 V max at 0.8 A (TLV1117LV: 0.7 V max at 1 A) so 3.3 V out needs about 4.6 V in,
+      draws 4 mA typ / 6 mA max with no load (TLV1117LV: 0.05 / 0.1 mA) and accepts up to
+      15 V in (TLV1117LV: 5.5 V, 6 V absolute maximum). Check the output capacitor and the
+      input headroom for whichever part is fitted.
+    source: "Diodes AZ1117C DS36676 Rev. 5 - 2, note 4 p.3, ratings p.4, AZ1117C-3.3 table p.7; TI SBVS160C p.4-5, p.13"
+    severity: warning

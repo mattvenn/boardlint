@@ -26,7 +26,19 @@ def main(argv=None):
             p.add_argument('--skip', action='append', default=[], help='check id glob or family (repeatable)')
             p.add_argument('--no-sim', action='store_true', help='skip ngspice / Verilog simulations')
             p.add_argument('-v', '--verbose', action='store_true')
+    p = sub.add_parser('mate', help='check two boards that plug together: connector alignment, what meets what, and the joined system')
+    p.add_argument('base', help='the baseboard project')
+    p.add_argument('carrier', help='the board that plugs onto it')
+    p.add_argument('--base-conn', help='connector reference(s) on the baseboard, comma separated (default: found by fit)')
+    p.add_argument('--carrier-conn', help='connector reference(s) on the carrier, comma separated')
+    p.add_argument('--parts-dir', action='append', default=[], help='extra directory of part models (YAML)')
+    p.add_argument('-f', '--format', choices=('text', 'md', 'json'), default='text')
+    p.add_argument('-o', '--output', help='write the report to this file')
+    p.add_argument('--no-sim', action='store_true', help='skip ngspice / Verilog simulations')
+    p.add_argument('-v', '--verbose', action='store_true')
     a = ap.parse_args(argv)
+    if a.cmd == 'mate':
+        return _mate(a)
     if a.cmd == 'checks':
         from . import checks
         for cid, c in sorted(checks.load_all().items()):
@@ -47,6 +59,40 @@ def main(argv=None):
                 print(f"{n.name:16} {'GND' if n.is_ground else 'rail' if n.is_power else 'signal':6} {v:14} {n.vsrc}")
         return 0
     findings, log = run(d, only=a.only, skip=a.skip, no_sim=a.no_sim)
+    text = {'text': lambda: report.to_text(d, findings, log, a.verbose), 'md': lambda: report.to_markdown(d, findings, log),
+            'json': lambda: report.to_json(d, findings, log)}[a.format]()
+    if a.output:
+        with open(a.output, 'w') as f:
+            f.write(text)
+        print(report.to_text(d, findings, log).splitlines()[-1])
+    else:
+        print(text)
+    if any(l[1] == 'crashed' for l in log):
+        return 2
+    return 1 if any(f.severity == 'error' for f in findings) else 0
+
+
+def _mate(a):
+    from . import mate
+    base = prepare(a.base, parts_dirs=a.parts_dir)
+    car = prepare(a.carrier, parts_dirs=a.parts_dir)
+    m = mate.find_mating(base, car, a.base_conn.split(',') if a.base_conn else None,
+                         a.carrier_conn.split(',') if a.carrier_conn else None)
+    findings = list(mate.mate_findings(base, car, m))
+    log = [('mate.geometry', 'ran', ''), ('mate.pins', 'ran', '')]
+    # board-level checks belong to each board; they run before the two are joined
+    for d, who in ((base, 'baseboard'), (car, 'carrier')):
+        fs, lg = run(d, no_sim=a.no_sim, board_only=True)
+        for f in fs:
+            f.title = f"[{who}] {f.title}"
+            if who == 'carrier':
+                f.refs = [mate.TAG + r for r in f.refs]
+        findings += fs
+        log += [(f"{l[0]} ({who})",) + tuple(l[1:]) for l in lg]
+    d = mate.merge(base, car, m)
+    fs, lg = run(d, no_sim=a.no_sim)
+    findings += fs
+    log += [l for l in lg if l[1] != 'skipped' or 'no .kicad_pcb' not in l[2]]
     text = {'text': lambda: report.to_text(d, findings, log, a.verbose), 'md': lambda: report.to_markdown(d, findings, log),
             'json': lambda: report.to_json(d, findings, log)}[a.format]()
     if a.output:

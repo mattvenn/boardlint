@@ -1,0 +1,98 @@
+id: tt-asic-gf180-cob
+match:
+  value: ["TT_GF_0p2_ASIC*", "TT_GF_*ASIC*"]
+kind: IC
+class: asic
+description: "Tiny Tapeout GF180MCU chip, chip-on-board: 3.3 V core and I/O"
+datasheet: "KiCad symbol and the breakout-gf-cob schematic (github.com/TinyTapeout/breakout-pcb)"
+provenance:
+  source: "KiCad symbol and the breakout-gf-cob schematic (github.com/TinyTapeout/breakout-pcb)"
+  verified: false
+  notes: >
+    Not from a datasheet. The pin list is the KiCad symbol on the Tiny Tapeout breakout board; the
+    rail voltages are what that board's regulators and links give each supply pin as fitted, and
+    the Tiny Tapeout guide's statement that "All the I/O expects 3.3V logic levels"
+    (tinytapeout.com/guides/get-started-demoboard-etr, read 2026-11-25). Supply ranges are the
+    nominal value plus and minus 10 %, an assumption. No supply current is given: the chip's draw
+    depends on the project selected. I/O limits are assumed, not read from pad-cell documentation.
+    VDD_Core is fed from the baseboard 3.3 V through 0 ohm links (the AP2112K-3.3 position is not fitted); VDD_IO takes the baseboard's 3.3 V. VAA_Analog is the analog
+    supply; its voltage is taken to be the I/O voltage, which is how the GF breakout wires it.
+supplies:
+  - pins: [VDD_Core]
+    vmin: 2.97
+    vmax: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1, note: "no datasheet figure; the breakout fits 1 uF per pin pair"}
+  - pins: [VDD_IO]
+    vmin: 2.97
+    vmax: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1}
+  - pins: [VAA_Analog]
+    vmin: 2.97
+    vmax: 3.63
+io:
+  abs_max_over_supply: 0.3    # assumed: an ordinary CMOS pad with clamp diodes to its I/O rail
+  tolerant_5v: false
+pins:
+  "ui[0]": {drive: input}
+  "ui[1]": {drive: input}
+  "ui[2]": {drive: input}
+  "ui[3]": {drive: input}
+  "ui[4]": {drive: input}
+  "ui[5]": {drive: input}
+  "ui[6]": {drive: input}
+  "ui[7]": {drive: input}
+  "uo[0]": {drive: push_pull}
+  "uo[1]": {drive: push_pull}
+  "uo[2]": {drive: push_pull}
+  "uo[3]": {drive: push_pull}
+  "uo[4]": {drive: push_pull}
+  "uo[5]": {drive: push_pull}
+  "uo[6]": {drive: push_pull}
+  "uo[7]": {drive: push_pull}
+  "uio[0]": {role: gpio}
+  "uio[1]": {role: gpio}
+  "uio[2]": {role: gpio}
+  "uio[3]": {role: gpio}
+  "uio[4]": {role: gpio}
+  "uio[5]": {role: gpio}
+  "uio[6]": {role: gpio}
+  "uio[7]": {role: gpio}
+  "analog[0]": {role: analog_in, drive: analog}
+  "analog[1]": {role: analog_in, drive: analog}
+  "analog[2]": {role: analog_in, drive: analog}
+  "analog[3]": {role: analog_in, drive: analog}
+  "analog[4]": {role: analog_in, drive: analog}
+  "analog[5]": {role: analog_in, drive: analog}
+  "analog[6]": {role: analog_in, drive: analog}
+  "analog[7]": {role: analog_in, drive: analog}
+  "analog[8]": {role: analog_in, drive: analog}
+  "analog[9]": {role: analog_in, drive: analog}
+  "analog[10]": {role: analog_in, drive: analog}
+  "analog[11]": {role: analog_in, drive: analog}
+  "analog[12]": {role: analog_in, drive: analog}
+  "analog[13]": {role: analog_in, drive: analog}
+  "analog[14]": {role: analog_in, drive: analog}
+  "analog[15]": {role: analog_in, drive: analog}
+  "analog[16]": {role: analog_in, drive: analog}
+  "analog[17]": {role: analog_in, drive: analog}
+  "analog[18]": {role: analog_in, drive: analog}
+  "analog[19]": {role: analog_in, drive: analog}
+  "analog[20]": {role: analog_in, drive: analog}
+  "analog[21]": {role: analog_in, drive: analog}
+  u_clk: {drive: input}
+  u_rst_n: {role: reset, active: low, drive: input}
+  ctrl_ena: {drive: input}
+  ctrl_sel_inc: {drive: input}
+  ctrl_sel_rst_n: {role: reset, active: low, drive: input}
+  GND_IO: {role: gnd}
+  GND_Analog: {role: gnd}
+  GND_Core: {role: gnd}
+  SUB: {role: gnd}
+  "rsvd@4": {role: nc}
+  "rsvd@5": {role: nc}
+  "rsvd@6": {role: nc}
+  "rsvd@7": {role: nc}
+  "rsvd@8": {role: nc}
+

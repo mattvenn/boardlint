@@ -71,6 +71,8 @@ def i2c_buses(d):
                     grp[n] = entry
     buses = {}
     for c in d.components.values():
+        if c.dnp:
+            continue
         sda = [p for p in c.pins.values() if i2c_line(p) == 'i2c_sda' and p.net]
         scl = [p for p in c.pins.values() if i2c_line(p) == 'i2c_scl' and p.net]
         for s in sda:

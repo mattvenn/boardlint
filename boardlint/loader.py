@@ -82,6 +82,7 @@ def load_project(path: str, pcb: str | None = None, sch: str | None = None, netl
             elif want and bc.footprint and want.split(':')[-1] != bc.footprint.split(':')[-1]:
                 d.sync['fp'].append((ref, want, bc.footprint))
         d.sync['only_pcb'] = [r for r in bcomps if r not in scomps and not r.startswith(('REF', 'G*', 'H', 'FID', 'MH', 'LOGO'))
+                              and not bcomps[r].props.get('_board_only')
                               and any(p.net for p in bcomps[r].pins.values())]
         # schematic gives pin names/types and properties; board gives positions (and, by default, nets)
         for ref, sc in scomps.items():
