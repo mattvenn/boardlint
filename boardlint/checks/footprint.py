@@ -92,3 +92,26 @@ def schematic_board(d):
                 "before trusting either set of results for the other.",
                 refs=[r for r, _, _ in s['fp']][:6] + s['only_sch'][:6] + s['only_pcb'][:6],
                 basis='comparison of the schematic netlist, footprint fields and the board file', confidence='high')
+
+
+@check('bom.value_mpn', 'pins', doc='The value written on a resistor or capacitor agrees with what its manufacturer part number says')
+def value_mpn(d):
+    from ..classify import mpn_value, fmt_r, fmt_c
+    bad = {}
+    for c in d.components.values():
+        if c.kind not in ('R', 'C') or c.num is None:
+            continue
+        mv = mpn_value(c)
+        if mv is None:
+            continue
+        v, mpn = mv
+        if abs(v - c.num) > 0.02 * max(abs(v), abs(c.num), 1e-15):
+            bad.setdefault((c.kind, c.value, mpn, v), []).append(c.ref)
+    for (kind, value, mpn, v), refs in sorted(bad.items()):
+        says = fmt_c(v) if kind == 'C' else fmt_r(v)
+        refs = sorted(refs)
+        yield F('bom.value_mpn', 'warning', f"{', '.join(refs[:6])}{'...' if len(refs) > 6 else ''}: the value says {value}, the part number {mpn} is {says}",
+                f"The part number is what gets ordered and fitted; the value field is what a reader, and every "
+                f"calculation in this report, goes by. One of the two is out of date.",
+                refs=refs[:8], evidence={'value_field': value, 'part_number': mpn, 'part_number_decodes_to': says},
+                basis='value codes in the part numbers of common resistor and capacitor series', confidence='medium')

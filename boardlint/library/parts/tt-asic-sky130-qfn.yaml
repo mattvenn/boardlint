@@ -16,7 +16,9 @@ provenance:
     nominal value plus and minus 10 %, an assumption. No supply current is given: the chip's draw
     depends on the project selected. I/O limits are assumed, not read from pad-cell documentation.
     Core (vccd) is fed from an AP2112K-1.8 on the breakout; vddio and vdda take the baseboard's
-    3.3 V through 0 ohm links.
+    3.3 V through 0 ohm links. resetb (pin 21) is left open, behind an unfitted 0 ohm link, on
+    this breakout and on the TT06 to TT08 one before it, and those boards work, so it is not
+    given the reset role here. Whether the pad has an internal pull-up was not checked.
 supplies:
   - pins: [vccd, vccd1, vccd2]
     vmin: 1.62
@@ -75,7 +77,7 @@ pins:
   "analog[11]": {role: analog_in, drive: analog}
   clk: {drive: input}
   rst_n: {role: reset, active: low, drive: input}
-  resetb: {role: reset, active: low, drive: input}
+  resetb: {drive: input}      # not given the reset role: see the notes
   ctrl_ena: {drive: input}
   ctrl_sel_inc: {drive: input}
   ctrl_sel_rst_n: {role: reset, active: low, drive: input}

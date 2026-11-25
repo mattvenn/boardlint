@@ -270,11 +270,16 @@ def clock_source(d):
                             f"{q.comp.desc} has pins named for a crystal and this is not one of them.",
                             refs=[c.ref, q.comp.ref], confidence='medium')
             if caps[0] and caps[1]:
-                c1, c2 = sum(k.num for k in caps[0]), sum(k.num for k in caps[1])
+                from ..classify import mpn_value
+                # the part number is what is fitted: where it states a value, use that one
+                real = lambda k: (mpn_value(k) or (k.num,))[0]
+                c1, c2 = sum(real(k) for k in caps[0]), sum(real(k) for k in caps[1])
                 cl = c1 * c2 / (c1 + c2)
                 m = re.search(r'(\d+(?:\.\d+)?)\s*pF', c.value + ' ' + ' '.join(str(v) for v in c.props.values()), re.I)
                 spec = float(m.group(1)) * 1e-12 if m else None
-                ev = {'load_caps': f"{fmt_c(c1)} + {fmt_c(c2)}", 'series_value': fmt_c(round(cl, 13)),
+                ev = {'load_caps': f"{fmt_c(c1)} + {fmt_c(c2)}" + (' (from the part numbers; the value fields differ)'
+                                                                     if any(mpn_value(k) and abs(mpn_value(k)[0] - k.num) > 0.02 * k.num for k in caps[0] + caps[1]) else ''),
+                      'series_value': fmt_c(round(cl, 13)),
                       'with_3_to_5pF_stray': f"{(cl + 3e-12) * 1e12:.1f} to {(cl + 5e-12) * 1e12:.1f} pF"}
                 if spec and not (cl + 2e-12 <= spec <= cl + 7e-12):
                     yield F('clock.source', 'warning', f"Crystal {c.ref}: load capacitors give about {(cl + 4e-12) * 1e12:.0f} pF, the crystal asks for {spec * 1e12:g} pF",

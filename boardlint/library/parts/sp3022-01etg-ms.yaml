@@ -1,0 +1,56 @@
+id: sp3022-01etg-ms
+match:
+  lcsc: [C2836375]            # MSKSEMI SP3022-01ETG-MS (LCSC product page title read 2026-11-25)
+  value: ["SP3022-01ETG-MS*"] # not "SP3022-01ETG*": the Littelfuse original was not read, see notes
+kind: D
+class: tvs
+description: "Bidirectional ESD protection diode for one line, 5 V working voltage, 0.3 pF max, 0.5 uA max leakage, SOD-882 (MSKSEMI SP3022-01ETG-MS)"
+datasheet: "MSKSEMI SP3022-01ETG-MS product specification, no revision or date printed (PDF created 2024-12-31)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/63079231c48ef1818cac24d3154b81a9.pdf (MSKSEMI SP3022-01ETG-MS, 5 pages; linked from https://www.lcsc.com/product-detail/C2836375.html), downloaded 2026-11-25. Table values checked against the rendered page 3."
+  verified: true
+  notes: >
+    THIS IS NOT THE LITTELFUSE PART. The MPN on the schematic ends in "-MS" and LCSC C2836375
+    is MSKSEMI's SP3022-01ETG-MS, by its name a second source for the Littelfuse SP3022-01ETG. Every
+    number below is from the MSKSEMI datasheet. The Littelfuse SP3022 datasheet was not
+    opened (www.littelfuse.com is not reachable from this session), so nothing here may be
+    assumed for the Littelfuse part, and the match is limited to the "-MS" part number.
+    Maximum ratings p.3: IEC 61000-4-2 air +/-30 kV, contact +/-30 kV; human body model 16 kV;
+    total power dissipation 200 mW on an FR-5 board at 25 C; junction and storage -55 to
+    150 C. Electrical characteristics p.3 (25 C): VRWM 5 V max; IR 0.5 uA max at VRWM; VBR
+    6 V min at IT = 1.0 mA; clamping voltage 12 V max at IPP = 1 A and 20 V max at the maximum
+    IPP of 4 A; peak pulse power 80 W max; capacitance 0.25 pF typ / 0.3 pF max. p.2 defines C
+    as "Capacitance @ VR = 0 and f = 1.0 MHz" and the device as "Bi-Directional TVS"; the
+    surge waveform (Figure 1, p.3) is 8/20 us. Features p.2: "Response Time is Typically
+    < 1 ns", "IEC61000-4-2 Level 4 ESD Protection".
+    Things the datasheet does not give: leakage below 5 V or over temperature (0.5 uA at 5 V
+    is the only point), capacitance against bias, a maximum breakdown voltage, clamping
+    voltage for an ESD (TLP) pulse. The feature list says "ESD Rating of Class 3 (> 30 kV) per
+    Human Body Model" while the ratings table says 16 kV for the human body model: the table
+    value is recorded.
+    No supplies entry on purpose: the part sits on signal lines, and a supplies entry would
+    make every protected signal a supply rail for the power checks. So nothing checks the net
+    voltage against the 5 V working voltage; a line that idles above 5 V, or above 6 V where
+    the diode starts to conduct (1 mA), has to be found by hand.
+    No errata search was done.
+
+pins:
+  A1: {drive: analog}
+  A2: {drive: analog}
+
+tvs:
+  direction: bidirectional
+  vrwm: 5                     # maximum working voltage, either polarity
+  vbr_min: 6
+  vbr_it_ma: 1
+  v_clamp: [{ipp_a: 1, v: 12}, {ipp_a: 4, v: 20}]   # maximum, 8/20 us
+  ipp_a: 4
+  ppp_w: 80                   # 8/20 us
+  c_line_pf: 0.3              # maximum, at VR = 0, 1 MHz
+  c_line_typ_pf: 0.25
+  i_leak_max_na: 500          # 0.5 uA at VRWM = 5 V, 25 C
+  esd_contact_kv: 30
+  esd_air_kv: 30
+  esd_hbm_kv: 16
+  p_steady_w: 0.2             # FR-5 board, 25 C
+  tj_max: 150

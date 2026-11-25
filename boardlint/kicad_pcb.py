@@ -93,9 +93,14 @@ def load_board(path: str):
             if num == '' and net is None:
                 continue
             if num in c.pins:
-                # several pads with one number (shield tabs, thermal pads): keep the first, prefer a net
+                # several pads with one number (shield tabs, thermal pads): keep the first, prefer a net,
+                # and remember where the others are
                 if c.pins[num].net is None and net:
                     c.pins[num].net = net
+                osz = child(pad, 'size')
+                if num != '' and osz is not None and len(osz) > 2:
+                    c.pins[num].more += (((ax, ay), (fnum(osz[1]), fnum(osz[2])), layers,
+                                          fnum(pat[3]) if len(pat) > 3 and not isinstance(pat[3], list) else 0.0),)
                 continue
             psz = child(pad, 'size')
             drl = child(pad, 'drill')

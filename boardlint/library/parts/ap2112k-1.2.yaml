@@ -1,0 +1,104 @@
+id: ap2112k-1.2
+match:
+  value: ["AP2112K-1.2*"]     # no LCSC number was confirmed for this option
+kind: IC
+class: ldo
+description: "600 mA CMOS low-dropout regulator with enable and output discharge, 1.2 V fixed, 2.5 to 6 V input, SOT25 (AP2112K-1.2TRG1)"
+datasheet: "Diodes Incorporated AP2112, DS39724 Rev. 2 - 2, June 2017"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/5b29baebdc4332b382a530ff21092301.pdf (Diodes AP2112, DS39724 Rev. 2 - 2, June 2017, 18 pages: the manufacturer PDF LCSC serves for C176944, AP2112K-1.8TRG1), downloaded 2026-11-25. https://www.diodes.com/assets/Datasheets/AP2112.pdf is not reachable from this session, so a newer revision there, if any, was not seen."
+  verified: true
+  notes: >
+    Pin drawing p.1 and pin table p.2 (SOT25: 1 VIN, 2 GND, 3 EN, 4 NC, 5 VOUT; EN "Chip
+    Enable, H - normal work, L - shutdown output"). Features p.1: output current 600 mA min;
+    foldback short current protection 50 mA; "Stable with 1.0 uF Flexible Cap: Ceramic,
+    Tantalum and Aluminum Electrolytic"; output discharged through 60 Ohm when disabled.
+    Typical application p.2: CIN 1 uF, COUT 1 uF; note 4 "It is recommended to use X7R or X5R
+    dielectric capacitor if 1.0 uF ceramic capacitor is selected as input/output capacitors".
+    Block diagram p.2: 3 MOhm from EN to GND. Absolute maximum ratings p.3: supply voltage
+    6.5 V, junction 150 C, junction to ambient 184 C/W for SOT25 without heatsink.
+    Recommended operating conditions p.3: VIN 2.5 to 6.0 V, ambient -40 to 85 C. AP2112-1.2
+    table p.4 (VIN = 2.5 V, CIN = COUT = 1 uF ceramic, 25 C): VOUT 98.5 to 101.5 % for 1 to
+    30 mA; maximum output current 600 mA min with VOUT 1.182 to 1.218 V; load regulation
+    0.2 typ / 1 %/A max (VIN = 2.5 V); line regulation 0.02 typ / 0.1 %/V max for 2.5 to
+    6 V; dropout 1000 typ / 1300 mV max, the same figure at 10 mA, 300 mA and 600 mA;
+    quiescent current 55 typ / 80 uA max; standby 0.01 typ / 1.0 uA max; short current limit
+    50 mA typ at VOUT = 0; EN high 1.5 V min (6.0 V max), EN low 0.4 V max; start-up 20 us
+    typ; EN pull-down 3.0 MOhm typ; discharge resistor 60 Ohm typ; thermal shutdown 160 C
+    typ, hysteresis 25 C; junction to case 96 C/W (SOT25). Note 6: tested at 25 C only, "Over
+    temperature specifications guaranteed by design only". Application note p.11: "where a
+    current load could be present at the output before the part is enabled the fold back
+    current limiting may prevent the part from starting. Applications with multiple supplies
+    or negative supplies need to be evaluated for this possibility."
+    JUDGEMENT CALLS, for the reviewer:
+    (1) dropout_mv is the table MAXIMUM. It is 1300 mV at every load current from 10 mA to
+    600 mA: for this output voltage the "dropout" is really the 2.5 V minimum input
+    (1.2 + 1.3), not a resistance. A check that scales dropout with load understates it; the
+    limit that matters is supplies.vmin 2.5 V.
+    (2) The datasheet gives no ESR range and no "effective capacitance" figure: cin_min and
+    cout_min are the 1 uF of the test conditions and of the "stable with 1.0 uF" feature line.
+    (3) tj_max 150 C is the absolute maximum junction temperature: the datasheet has no
+    recommended junction limit, only the 85 C ambient limit.
+    (4) EN has no rating of its own: the only absolute maximum is the 6.5 V supply rating, so
+    no abs_max is given for the pin. With its 3 MOhm pull-down a floating EN means "off".
+    (5) No current-limit threshold is specified, only the 50 mA fold-back short-circuit current.
+    No errata search was done.
+
+supplies:
+  - pins: [VIN]
+    vmin: 2.5
+    vmax: 6.0
+    abs_max: 6.5
+    i_typ_ma: 0.055           # IQ at no load
+    i_max_ma: 0.08
+    i_shutdown_typ_ma: 0.00001
+    i_shutdown_max_ma: 0.001
+    decoupling:
+      - {c_min: 1u, count: 1, note: "input capacitor 1 uF (typical application p.2, test condition of every table); X5R or X7R if ceramic"}
+
+pins:
+  VIN: {role: power_in, abs_max: 6.5}
+  GND: {role: gnd}
+  EN:
+    role: enable
+    active: high
+    vih: 1.5
+    vil: 0.4
+    internal_pull: down       # floating = regulator off, output discharged through 60 Ohm
+    internal_pull_ohm: 3M     # typ
+    drive: input
+  NC: {role: nc}              # pin 4
+  VOUT: {role: power_out}
+
+regulator:
+  type: ldo
+  vin: VIN
+  vout: VOUT
+  en: EN
+  vout_v: 1.2
+  tol: 0.015                  # 1 to 30 mA at 25 C; 1.182 to 1.218 V up to 600 mA
+  i_max_ma: 600
+  i_short_circuit_ma: 50      # fold-back, typ, at VOUT = 0
+  dropout_mv: 1300            # MAXIMUM, the same at 10, 300 and 600 mA: it is the 2.5 V minimum input
+  dropout_typ_mv: 1000
+  dropout_at_ma: 600
+  dropout_points: [{ma: 10, typ_mv: 1000, max_mv: 1300}, {ma: 300, typ_mv: 1000, max_mv: 1300}, {ma: 600, typ_mv: 1000, max_mv: 1300}]
+  vin_min_for_spec: 2.5
+  cin_min: 1u
+  cout_min: 1u                # ceramic, tantalum or aluminium electrolytic; no ESR range given
+  line_reg_max_pct_per_v: 0.1
+  load_reg_max_pct_per_a: 1
+  iq_typ_ma: 0.055
+  iq_max_ma: 0.08
+  startup_us: 20
+  theta_ja: 184               # SOT25, no heatsink
+  theta_jc: 96
+  tj_max: 150                 # absolute maximum; no recommended junction limit is given
+  thermal_shutdown_c: 160     # typ, 25 C hysteresis
+  discharge_ohm: 60           # output discharge when EN is low (typ)
+
+errata:
+  - id: foldback-start-up
+    summary: "With a current load already on the output before the part is enabled (multiple or negative supplies, a current-source load) the fold-back current limit, 50 mA at VOUT = 0, may prevent start-up."
+    source: "Diodes AP2112 DS39724 Rev. 2 - 2, Application Note p.11"
+    severity: info

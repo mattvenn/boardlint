@@ -107,7 +107,7 @@ def load_project(path: str, pcb: str | None = None, sch: str | None = None, netl
                     if not use_pcb_nets:
                         sp.net = None
                 sp.pos, sp.layers, sp.size, sp.drill, sp.angle, sp.shape = bp.pos, bp.layers, bp.size, bp.drill, bp.angle, bp.shape
-                sp.anchor, sp.polys = bp.anchor, bp.polys
+                sp.anchor, sp.polys, sp.more = bp.anchor, bp.polys, bp.more
                 if use_pcb_nets:
                     sp.net = bp.net
             if use_pcb_nets:

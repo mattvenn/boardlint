@@ -1,0 +1,56 @@
+id: 0603esda-aec1
+match:
+  lcsc: [C6961594]            # Eaton 0603ESDA-AEC1 (LCSC product page title read 2026-11-25)
+  value: ["0603ESDA-AEC1*"]   # matched through the MPN property; the schematic Value is just "TVS"
+kind: D
+class: esd_suppressor
+description: "Bidirectional ESD suppressor for one line, 30 V rated, 0.05 pF typ / 0.15 pF max, triggers at about 300 V and clamps to about 35 V, 0603 (Eaton 0603ESDA-AEC1). Not a TVS diode"
+datasheet: "Eaton Technical Data ELX1146, 0603ESDA-AEC1 Automotive grade ESD suppressor, effective January 2022"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/953ed8b29a96d8b5cd013069c09e39ec.pdf (Eaton Technical Data ELX1146, effective January 2022, 4 pages: the manufacturer PDF LCSC serves for C6961594), downloaded 2026-11-25. Table values checked against the rendered page 2. The www.eaton.com link on the schematic is not reachable from this session; the document number matches the one in that link (elx1146)."
+  verified: true
+  notes: >
+    Product specifications table p.2, one row: rated voltage 30 Vdc maximum; clamping voltage
+    35 V typical; trigger voltage 300 V typical; capacitance at 1 MHz 0.05 pF typical, 0.15 pF
+    maximum; attenuation change 0 to 6 GHz -0.2 dB typical; leakage current at 12 Vdc
+    "<1.0" nA typical; IEC 61000-4-2 direct discharge 8 kV typical, air discharge 15 kV
+    typical; ESD pulse withstand ">1000" typical. Footnotes: clamping voltage is "Per
+    IEC61000-4-2, Level 4 waveform (8 kV direct 30 A) measured 30 ns after initial pulse";
+    trigger voltage is measured with a transmission line pulse (TLP); "Minor shifting in
+    characteristics may be observed over multiple ESD pulses at very rapid rate". Features
+    p.1: "Single-line, bi-directional device", response time < 1 ns, AEC-Q200 qualified.
+    General specifications p.2: operating -55 to +125 C. Design considerations p.2: "the
+    device should be placed as close to the signal input as possible and ahead of any other
+    component ... it is recommended to use a '0-stub' pad design (pad directly on the
+    signal/data line and second pad directly on common ground)".
+    READ THIS BEFORE RELYING ON IT. The schematic calls this part "TVS" with the note "Bidir
+    TVS Diode". The datasheet calls it an ESD suppressor and its figures are not those of a
+    silicon TVS diode: it does nothing until the line reaches the trigger voltage (300 V
+    typical), then holds about 35 V (measured 30 ns into the pulse). An IC pin behind it sees
+    that, not a clamp just above the working voltage. In return it adds almost no
+    capacitance (0.15 pF max) and almost no leakage.
+    Every figure except the rated voltage and the capacitance maximum is TYPICAL: the
+    datasheet gives no maximum for clamping voltage, trigger voltage or leakage, and the
+    leakage is stated at 12 V only. vrwm is the 30 Vdc "rated voltage (maximum)".
+    No supplies entry on purpose (the part sits on signal lines; see sp3022-01etg-ms).
+    No errata search was done.
+
+pins:
+  A1: {drive: analog}
+  A2: {drive: analog}
+
+tvs:
+  direction: bidirectional
+  vrwm: 30                    # "rated voltage (Vdc) maximum"
+  v_trigger_typ: 300          # TLP; the part does not conduct below this
+  v_clamp_typ: 35             # IEC 61000-4-2 level 4 (8 kV direct, 30 A), 30 ns after the initial pulse
+  c_line_pf: 0.15             # maximum, at 1 MHz
+  c_line_typ_pf: 0.05
+  i_leak_typ_na: 1.0          # "<1.0" nA typical at 12 Vdc; no maximum given
+  i_leak_at_v: 12
+  attenuation_db: -0.2        # change over 0 to 6 GHz, typical
+  esd_contact_kv: 8           # typical
+  esd_air_kv: 15              # typical
+  esd_pulses: 1000            # ">1000" typical
+  t_min_c: -55
+  t_max_c: 125

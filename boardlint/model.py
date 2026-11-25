@@ -21,6 +21,7 @@ class Pin:
     shape: str = ''               # rect, roundrect, oval, circle, custom, ...
     anchor: Optional[tuple] = None  # custom pads: size of the anchor; `size` is then the extent of the drawn copper
     polys: tuple = ()             # custom pads: drawn polygons, in pad axes (mm)
+    more: tuple = ()              # further pads with this number (a tab, a second row): (pos, size, layers, angle)
 
     @property
     def id(self) -> str:

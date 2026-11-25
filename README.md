@@ -21,11 +21,11 @@ AI model, running in Claude Code) in one working session directed by Matt. Where
 what was tested, verified, or assumed, that is Claude's statement about its own work. None of the
 findings on the example boards has been checked on hardware at the time of writing.
 
-Status: v0.1, a working framework. 38 checks, 42 part models. Tested on two real boards (one with 28 injected faults, all flagged; one
+Status: v0.1, a working framework. 40 checks, 53 part models. Tested on two real boards (one with 28 injected faults, all flagged; one
 with a published errata list, both wiring errata found) and on eight public projects with a known fix
 commit (six flagged before the fix; the other two cannot be seen in the design files). Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
 
-Reviews of real boards, each with the tool's full report: [DinoLight](docs/dino-board-review.md), [basic-ecp5-pcb](docs/ecp5-board-review.md), [ezbldc](docs/ezbldc-review.md), and [Density](docs/density-review.md).
+Reviews of real boards, each with the tool's full report: [DinoLight](docs/dino-board-review.md), [basic-ecp5-pcb](docs/ecp5-board-review.md), [ezbldc](docs/ezbldc-review.md), [Density](docs/density-review.md), and the [Tiny Tapeout ETR demo board with its three carriers](docs/tt-etr-review.md), checked as two mated boards.
 
 Supply resistance, track current and trace impedance are extracted from the routed copper: [docs/copper-extraction.md](docs/copper-extraction.md) gives the method, the evidence and the limits. The resistances were checked against an independent solver, kicad-irdrop, on four boards: 37 cases agree within 10 %, median 1.6 % ([docs/crosscheck.md](docs/crosscheck.md)).
 
@@ -46,6 +46,10 @@ boardlint check path/to/project -f md -o review.md     # full report with eviden
 ```
 
 ```bash
+boardlint mate path/to/baseboard path/to/carrier       # two boards that plug together, checked as one system
+```
+
+```bash
 boardlint parts path/to/project            # which part model matched each component
 ```
 
@@ -63,11 +67,12 @@ Without them those checks are skipped and the report says so. KiCad itself is no
 | Protocol | UART TX/RX direction; I2C SDA/SCL crossing, pull-up presence and value (3 mA limit, rise time), pull-up rail against each device's pin limit, address clashes from the strap wiring; SPI MOSI/MISO swaps, undriven clocks, shared chip selects; addressable-LED chain direction, undriven or doubly-driven inputs, logic level at the first LED; USB D+/D- swaps and Type-C CC resistors |
 | Signals at MCU / FPGA pins | an audit of every used pin: what arrives there and whether the pin can do it. Analog signals on pins with no ADC (or only the radio-shared ADC2 on ESP32), interrupts on pins that cannot wake the part, signals arriving at pins the design cannot read (ECP5 `CCLK`), fixed peripheral pins used for the wrong line (RP2040) |
 | Clock and reset | oscillator outputs reach clock-capable pins; crystals have both load capacitors and sit on oscillator pins; each reset: pull-up, capacitor, time constant, who can drive it, push-pull against a button; strap resistors strong enough against the internal pull |
-| Schematic against board | nets, parts and footprints that differ between the two files |
+| Schematic against board | nets, parts and footprints that differ between the two files; a resistor or capacitor value that disagrees with its manufacturer part number |
+| Two mated boards | `boardlint mate`: the carrier's connector pads over the baseboard's (a mirrored or turned footprint), what each board puts on every contact (ground, rail voltage, bus bit numbers, signal names), then every electrical check on the two netlists joined |
 | Switched loads | buzzers, relays, motors: flyback diode present and the right way round; voltage across a buzzer coil |
 | Footprints | every symbol pin has a pad of the same number and the reverse; polarised capacitors the right way round |
 | Pins | every connection a part model says the datasheet requires (reference resistors, bypass pins, mode straps); floating enable / reset pins; open-drain outputs with no pull-up; boot-strap pins pulled the wrong way |
-| Power | rail voltages and where they come from; each part's supply inside its range; no pin above its absolute maximum (dividers, pull-ups, 5 V into 3.3 V); divided-down signals that never reach a logic high; regulator load, dropout and temperature; fuse / FET / switch current; decoupling count, value and distance; regulator capacitors after DC-bias derating |
+| Power | rail voltages and where they come from; each part's supply inside its range; no pin above its absolute maximum (dividers, pull-ups, 5 V into 3.3 V); divided-down signals that never reach a logic high; supply pins that nothing fitted feeds (an unfitted 0 Ω link); regulator load, dropout and temperature; fuse / FET / switch current; decoupling count, value and distance; regulator capacitors after DC-bias derating |
 | Ratings | capacitor voltage, resistor power, FET Vds / Vgs and whether the gate drive turns it on |
 | Layout | aggressor / victim coupling (fast nets beside or across touch, analog and high-impedance nets) with an estimated capacitance; fast nets without ground under them; voltage lost in the copper between each supply and its loads, from a resistor-network solve of tracks, vias and pours; the current in each track segment against IPC-2221; loads and ground pads with no copper path; impedance, delay and capacitance of fast nets from the stack-up, clocks long enough to need a series resistor, and the USB pair |
 | Simulation | ngspice: each LDO rail through its worst load step at minimum and nominal input. Icarus Verilog: an I2C address scan and ID read on the bus as wired; a frame clocked down every LED chain |

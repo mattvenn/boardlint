@@ -206,6 +206,14 @@ class CopperNet:
             for l, n in zip(ls, nodes):
                 for shape in shapes:
                     areas.append((l, shape, n, True))
+            for (mx, my), (mw, mh), mlayers, mang in p.more:        # a tab or second pad of the same pin: joined inside the part
+                a2 = math.radians(mang)
+                for l in self.layers:
+                    if l in mlayers or (l == self.layers[0] and 'F.Cu' in mlayers) or '*.Cu' in mlayers:
+                        n2 = self._node(l, mx, my, tag=('pad2', p.comp.ref, p.number, l, round(mx, 3), round(my, 3)))
+                        self._edge(n2, nodes[0], TIE)
+                        self.pour_reach[n2] = max(mw, mh) / 2 + 0.7
+                        areas.append((l, ('rect', mx, my, mw / 2, mh / 2, math.cos(a2), math.sin(a2)), n2, True))
         # spatial hash of tracks
         cell = 2.0
         grid = defaultdict(list)

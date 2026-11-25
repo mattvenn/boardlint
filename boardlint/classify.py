@@ -54,6 +54,53 @@ def package_of(c: Component):
     return m.group(1) if m else None
 
 
+def _eia(code):
+    """'104' -> 100000, '4R7' -> 4.7, '1001' -> 1000 (significant digits then a count of zeros)."""
+    code = code.upper()
+    if 'R' in code:
+        try:
+            return float(code.replace('R', '.'))
+        except ValueError:
+            return None
+    if code.isdigit() and len(code) in (3, 4):
+        return int(code[:-1]) * 10 ** int(code[-1])
+    return None
+
+
+# manufacturer part numbers whose value can be read off: (pattern, kind, how to turn the code into SI)
+_MPN_VALUE = [
+    (r'^CC\d{4}[A-Z]{2}[A-Z0-9]{3}\d[A-Z]{2}(\w{3})$', 'C', lambda c: _eia(c) and _eia(c) * 1e-12),          # Yageo CC0402KRX7R9BB104
+    (r'^CL\d{2}[A-Z](\d{3}|\dR\d)[A-Z]', 'C', lambda c: _eia(c) and _eia(c) * 1e-12),                        # Samsung CL05A104KA5NNNC
+    (r'^G[RC]M\d{2}\w\w{2}\w{2}(\d{3}|\dR\d)[A-Z]', 'C', lambda c: _eia(c) and _eia(c) * 1e-12),              # Murata GRM155R71C104KA88
+    (r'^C\d{4}C(\d{3}|\d[R9]\d)[A-Z]\d', 'C', lambda c: _eia(c) and _eia(c) * 1e-12),                       # Kemet C0402C104K4RAC
+    (r'^[RA]C\d{4}[A-Z]{2}-(?:07|10|13)(\w+?)L$', 'R', lambda c: parse_value(c.replace('R', 'R') if c != '0R' else '0', 'R')),   # Yageo RC0402FR-0710KL
+    (r'^CR\d{4}-[A-Z]{1,2}-(\d{3,4}|\dR\d+)[A-Z]', 'R', _eia),                                             # Bourns CR0402-FX-1001GLF
+    (r'^CRCW\d{4}(\d+[RKM]\d*)[A-Z]', 'R', lambda c: parse_value(c, 'R')),                                 # Vishay CRCW040210K0FKED
+    (r'^ERJ-?\w{2,3}[A-Z]{1,2}(\d{3,4}|\dR\d+)[A-Z]$', 'R', _eia),                                          # Panasonic ERJ-2RKF1002X
+    (r'^\d{4}W[A-Z]\w(\d{3}[\dKRLM])T', 'R', lambda c: _eia(c) if c.isdigit() else None),                   # UniOhm 0402WGF1002TCE
+]
+
+
+def mpn_value(c: Component):
+    """The value a part number itself states, for the common resistor and capacitor series, or None."""
+    for key in ('MPN', 'Mfr. Part #', 'Manufacturer Part Number', 'MFPN', 'PartNumber'):
+        mpn = str(c.props.get(key) or '').strip().upper()
+        if not mpn:
+            continue
+        for pat, kind, conv in _MPN_VALUE:
+            if kind != c.kind:
+                continue
+            m = re.match(pat, mpn)
+            if m:
+                try:
+                    v = conv(m.group(1))
+                except (ValueError, TypeError):
+                    v = None
+                if v is not None:
+                    return v, mpn
+    return None
+
+
 def fmt_r(v):
     if v is None:
         return '?'
@@ -197,12 +244,20 @@ def guess_role(pin: Pin) -> str:
             if rx.match(alias):
                 if role.startswith('led_') and not is_led:
                     continue
+                if role in ('usb_dp', 'usb_dm') and re.fullmatch(r'D[PMN]', alias, re.I):
+                    # a bare "DP" is also a display's decimal point: a USB pin has its partner on the same part
+                    other = _USB_RE['usb_dm' if role == 'usb_dp' else 'usb_dp']
+                    if not any(other.match(a) for q in c.pins.values() for a in pin_aliases(q.name)):
+                        continue
                 if is_led and role in ('spi_sdi', 'spi_sdo'):
                     role = 'led_din' if role == 'spi_sdi' else 'led_dout'
                 if role in ('spi_sdi', 'spi_sdo') and alias in ('DI', 'DO', 'SI', 'SO') and c.kind != 'IC':
                     continue
                 return role
     return ''
+
+
+_USB_RE = {r: rx for r, rx in _ROLE_RE if r in ('usb_dp', 'usb_dm')}
 
 
 def is_series_part(c: Component, max_ohm: float = 1000.0) -> bool:

@@ -1,0 +1,63 @@
+id: polyfuse-0805-0.35a
+match:
+  lcsc: [C5468856, C1884490]  # C5468856 is Bel Fuse 0ZCK0035FF2G; C1884490 is Jinrui JK-SMD0805-035-12V (see notes)
+  # "350mA" matches on the Value alone, whatever the part is: the matcher cannot ask for
+  # "value 350mA AND a fuse". A ferrite bead or inductor valued "350mA" would get this model
+  # and be turned into a FUSE. Drop that glob if it ever catches the wrong part.
+  value: ["0ZCK0035FF2G*", "350mA"]
+kind: FUSE
+class: pptc
+description: "Resettable fuse (PPTC), 0805, 0.35 A hold, 0.75 A trip, 6 V, 0.25 to 1.2 Ohm (Bel Fuse 0ZCK0035FF2G)"
+datasheet: "Bel Fuse 0ZCK Series - 0805 Chip, Rev. 0ZCK Apr2023"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/bda57f9d2562bb16763e6bf86ac6ca21.pdf (Bel Fuse 0ZCK Series, Rev. 0ZCK Apr2023, 4 pages: the manufacturer PDF LCSC serves for C5468856, 0ZCK0035FF2G), downloaded 2026-11-25. Also read: https://datasheet.lcsc.com/datasheet/pdf/9727e872b289d764455b2b783953147f.pdf (Jinrui JK-SMD0805-035-12V, edition A0, 3 pages, the PDF for C1884490). www.belfuse.com is not reachable from this session."
+  verified: true
+  notes: >
+    Every field is the Bel Fuse 0ZCK0035FF2G row of the electrical characteristics table p.1
+    (at 23 C): hold current 0.35 A, trip current 0.75 A, rated voltage 6 Vdc, maximum fault
+    current 100 A, typical power when tripped 0.5 W, maximum time to trip 0.10 s at 8.00 A,
+    Rmin 0.250 Ohm, R1max 1.200 Ohm. Definitions p.1: hold current is "the maximum current at
+    which the device will not trip in still air at 23 C"; Rmin is the "minimum device
+    resistance at 23 C in initial un-soldered state"; R1max the "maximum device resistance at
+    23 C, 1 hour after initial device trip, or after being soldered to PCB". Temperature
+    range -40 to 85 C. Temperature derating table p.3, row "0020 thru 0110" (per cent of hold
+    and trip current): 134 % at -40 C, 123 % at -20 C, 113 % at 0 C, 100 % at 23 C, 92 % at
+    30 C, 81 % at 40 C, 78 % at 50 C, 75 % at 60 C, 64 % at 70 C, 49 % at 85 C. Tripped
+    resistance is not a constant: p.2 gives R = E^2 / W with W the typical power (0.5 W), so
+    about 50 Ohm at 5 V by that formula. Cautionary notes p.3: not for repeated or prolonged
+    faults; "may not be suitable for use in circuits with a large inductance, as the PTC trip
+    can generate circuit voltage spikes above the PTC rated voltage".
+    TWO PARTS BEHIND ONE SYMBOL. LCSC C1884490 is not the Bel part: it is Jinrui
+    JK-SMD0805-035-12V. Its datasheet (table 2, p.1, at 25 C) gives the same hold 0.35 A, trip
+    0.75 A, Imax 100 A, Pd 0.50 W, 0.10 s at 8.0 A, Rimin 0.250 Ohm, R1max 1.200 Ohm (and a
+    typical initial resistance of 0.650 Ohm), but a 12 V rating where Bel gives 6 V. v_max is
+    the Bel 6 V, the lower of the two. The second alternate named on the schematic,
+    SMD0805B035TF, was NOT looked up: no datasheet for it was opened.
+    r_max is R1max, the resistance after soldering or one trip: at the 0.35 A hold current
+    that is a drop of up to 0.42 V (0.35 A x 1.2 Ohm, worked out here: it is not a datasheet
+    figure).
+
+fuse:
+  i_hold_a: 0.35              # at 23 C in still air; 75 % of this at 60 C, 49 % at 85 C
+  i_trip_a: 0.75
+  v_max: 6                    # Bel 0ZCK0035FF2G; the Jinrui part behind LCSC C1884490 is rated 12 V
+  i_max_a: 100
+  r_min: 0.25                 # initial, unsoldered
+  r_max: 1.2                  # R1max: 1 hour after a trip, or after soldering
+  r_typ: 0.65                 # Jinrui datasheet only (typical initial resistance); Bel gives no typical value
+  t_trip_s: 0.1               # maximum, at 8 A
+  t_trip_at_a: 8
+  pd_trip_w: 0.5              # typical power dissipated when tripped
+  t_min_c: -40
+  t_max_c: 85
+  hold_derating:              # per cent of hold and trip current against ambient temperature
+    - {c: -40, pct: 134}
+    - {c: -20, pct: 123}
+    - {c: 0, pct: 113}
+    - {c: 23, pct: 100}
+    - {c: 30, pct: 92}
+    - {c: 40, pct: 81}
+    - {c: 50, pct: 78}
+    - {c: 60, pct: 75}
+    - {c: 70, pct: 64}
+    - {c: 85, pct: 49}

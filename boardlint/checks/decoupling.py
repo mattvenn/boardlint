@@ -131,8 +131,16 @@ def regulator_caps(d):
                 continue
             n = d.nets[pins[0].net]
             caps = caps_to_ground(d, n.name)
+            far = None
             if d.board and pins[0].pos:
-                local = [(k, kp) for k, kp in caps if kp.pos and dist(kp.pos, pins[0].pos) <= 10.0]
+                spots = [q.pos for q in pins if q.pos] + [m[0] for q in pins for m in q.more]
+                near = lambda kp: min(dist(kp.pos, s_) for s_ in spots)
+                local = [(k, kp) for k, kp in caps if kp.pos and near(kp) <= 10.0]
+                if sum(k.num or 0 for k, _ in local) < cmin * 0.8 and sum(k.num or 0 for k, _ in caps) >= cmin * 0.8:
+                    # the capacitance is on the rail, only not next to the regulator
+                    big = sorted(((near(kp), k) for k, kp in caps if kp.pos and (k.num or 0) >= cmin * 0.8), key=lambda x: x[0])
+                    far = big[0] if big else (min(near(kp) for k, kp in caps if kp.pos), None)
+                    local = caps
             else:
                 local = caps
             v = n.vmax
@@ -141,7 +149,17 @@ def regulator_caps(d):
             tot_eff = sum(e for _, e, _ in eff)
             ev = {'required': fmt_c(cmin), 'nominal': fmt_c(tot_nom), 'after_bias_est': fmt_c(round(tot_eff, 9)),
                   'bias_v': v, 'caps': {k.ref: f"{fmt_c(k.num)} {package_of(k) or ''}".strip() for k, _ in local}}
-            if tot_nom < cmin * 0.8:
+            if far is not None:
+                yield F('decoupling.regulator_caps', 'warning',
+                        f"{c.ref} has no {what} capacitor within 10 mm: the nearest of {fmt_c(cmin)} or more is "
+                        f"{far[1].ref + ' at ' if far[1] is not None else ''}{far[0]:.0f} mm",
+                        f"{c.desc} on {n.name}. The rail carries {fmt_c(tot_nom)} in all, so the amount is there; the distance adds "
+                        f"about 1 nH per millimetre in series with it, which is what a regulator's stability figures do not allow for. "
+                        f"Measured from the nearest pad of the pin, tab included.",
+                        refs=[c.ref] + ([far[1].ref] if far[1] is not None else []), nets=[n.name],
+                        evidence={'required': fmt_c(cmin), 'on_the_rail': fmt_c(tot_nom), 'nearest_mm': round(far[0], 1)},
+                        basis=model_basis(c) + '; the 10 mm distance is a rule of thumb, not a datasheet figure', confidence='low')
+            elif tot_nom < cmin * 0.8:
                 yield F('decoupling.regulator_caps', 'error',
                         f"{c.ref} {what} capacitance {fmt_c(tot_nom)} is below the required {fmt_c(cmin)}",
                         f"{c.desc} on {n.name}" + (" (capacitors within 10 mm of the pin)" if d.board else "") + ".",
