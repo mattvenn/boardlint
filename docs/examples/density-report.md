@@ -1,6 +1,6 @@
 # boardlint review: density_proto
 
-**0 errors, 2 warnings, 16 notes.** 186 components, 104 nets; netlist from the board.
+**0 errors, 5 warnings, 18 notes.** 186 components, 104 nets; netlist from the board.
 
 - schematic and board netlists agree (104 multi-pin nets)
 
@@ -18,6 +18,57 @@ U4 (MCP6002T-I/SN) wants 1 within 2 mm of its supply pin; closest are C29 at 4.4
 | nearest_mm | 4.38 |
 
 Basis: part model parts/mcp6002.yaml (verified against datasheet): local bypass 0.01 uF to 0.1 uF within 2 mm of the VDD pin (section 4.4); distance measured on the board.
+
+### ADC_SCK is electrically long: 58 mm end to end, 347 ps one way
+
+`layout.impedance` · parts: A1 · nets: ADC_SCK · confidence: low
+
+clock. 58 mm between its furthest pads (59 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 56 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. On a clock that can be seen as a second edge. A 22 to 47 ohm resistor at the driver is the usual fix. Line impedance about 72 ohm.
+
+| | |
+|---|---|
+| end_to_end_mm | 57.7 |
+| routed_mm | 58.8 |
+| delay_ps | 347 |
+| z0 | 72 |
+| assumed_rise_ns | 2.0 |
+| stack_up | assumed |
+
+Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
+
+### SR_CLK is electrically long: 108 mm end to end, 663 ps one way
+
+`layout.impedance` · parts: A1 · nets: SR_CLK · confidence: low
+
+clock. 108 mm between its furthest pads (119 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 54 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. On a clock that can be seen as a second edge. A 22 to 47 ohm resistor at the driver is the usual fix. Line impedance about 81 ohm.
+
+| | |
+|---|---|
+| end_to_end_mm | 108.0 |
+| routed_mm | 119.0 |
+| delay_ps | 663 |
+| z0 | 81 |
+| assumed_rise_ns | 2.0 |
+| stack_up | assumed |
+
+Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
+
+### +5V: a 0.5 mm segment carries 811 mA; IPC-2221 gives 723 mA for a 10 C rise
+
+`layout.track_current` · nets: +5V · confidence: medium
+
+At (88.4, 62.7) mm on In2.Cu, an inner layer. 23.0 mm of the net's track is over its limit with every load at maximum. This is the current that segment actually carries in the solved network, not the net's total.
+
+| | |
+|---|---|
+| segment | (88.4, 62.7) mm on In2.Cu |
+| width_mm | 0.5 |
+| current_A | 0.811 |
+| ipc2221_A | 0.72 |
+| length_over_limit_mm | 23.0 |
+| net_total_A | 0.811 |
+
+Basis: IPC-2221 formula; segment current from the resistor-network solve; loads are model maxima.
 
 ### A1.1(5V) supplies +5V: up to 811 mA is drawn, and it is the USB port's VBUS (500 mA from a USB 2.0 port)
 
@@ -49,8 +100,8 @@ Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
-| bus_c_est_pF | 85 |
-| t_rise_ns | 340 |
+| bus_c_est_pF | 88 |
+| t_rise_ns | 350 |
 
 ### I2C net SDA leaves the board with 4.7k already fitted
 
@@ -64,14 +115,14 @@ Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
-| bus_c_est_pF | 86 |
-| t_rise_ns | 341 |
+| bus_c_est_pF | 89 |
+| t_rise_ns | 355 |
 
 ### I2C pull-up on SCL (4.7k) is too weak for 400 kHz once a cable and module are plugged in
 
 `i2c.bus` · parts: R10 · nets: SCL · confidence: medium
 
-Estimated rise time 340 ns with about 85 pF (board alone: 141 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
+Estimated rise time 350 ns with about 88 pF (board alone: 151 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
 
 | | |
 |---|---|
@@ -79,8 +130,8 @@ Estimated rise time 340 ns with about 85 pF (board alone: 141 ns; 50 pF allowed 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
-| bus_c_est_pF | 85 |
-| t_rise_ns | 340 |
+| bus_c_est_pF | 88 |
+| t_rise_ns | 350 |
 
 Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
@@ -88,7 +139,7 @@ Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
 `i2c.bus` · parts: R11 · nets: SDA · confidence: medium
 
-Estimated rise time 341 ns with about 86 pF (board alone: 142 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
+Estimated rise time 355 ns with about 89 pF (board alone: 156 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
 
 | | |
 |---|---|
@@ -96,40 +147,20 @@ Estimated rise time 341 ns with about 86 pF (board alone: 142 ns; 50 pF allowed 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 1.022k |
-| bus_c_est_pF | 86 |
-| t_rise_ns | 341 |
+| bus_c_est_pF | 89 |
+| t_rise_ns | 355 |
 
 Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
-
-### ADC_MISO couples into BUFB (analog / measurement node)
-
-`layout.coupling` · nets: ADC_MISO, BUFB · confidence: low
-
-ADC_MISO (SPI) runs 3 mm side by side on one layer, down to 1.13 mm apart. Each aggressor edge kicks the victim by about 8 mV (capacitive divider against 5 pF on the node). Estimated 0.01 pF; closed-form estimate, not a field solve.
-
-| | |
-|---|---|
-| coupled_C_est_pF | 0.011 |
-| side_by_side_mm | 3.2 |
-| min_gap_mm | 1.13 |
-| crossing_over_mm | 0.0 |
-| of_which_over_ground_mm | 3.2 |
-| aggressor | ADC_MISO: SPI, 3.465 V swing |
-| victim | BUFB: analog / measurement node |
-| victim_node_C_pF | 5.0 |
-| injected_step_est_mV | 7.7 |
-
-Basis: coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:).
 
 ### LEDC14 couples into BUFA (analog / measurement node)
 
 `layout.coupling` · nets: BUFA, LEDC14 · confidence: low
 
-LEDC14 (addressable-LED data (800 kHz, nanosecond edges)) runs 1 mm side by side on one layer, down to 0.66 mm apart. Each aggressor edge kicks the victim by about 8 mV (capacitive divider against 5 pF on the node). Estimated 0.01 pF; closed-form estimate, not a field solve.
+LEDC14 (addressable-LED data (800 kHz, nanosecond edges)) runs 1 mm side by side on one layer, down to 0.66 mm apart. Each aggressor edge kicks the victim by about 7 mV (capacitive divider against 5 pF on the node). Estimated 0.01 pF; closed-form estimate, not a field solve.
 
 | | |
 |---|---|
-| coupled_C_est_pF | 0.012 |
+| coupled_C_est_pF | 0.011 |
 | side_by_side_mm | 0.9 |
 | min_gap_mm | 0.66 |
 | crossing_over_mm | 0.0 |
@@ -137,7 +168,7 @@ LEDC14 (addressable-LED data (800 kHz, nanosecond edges)) runs 1 mm side by side
 | aggressor | LEDC14: addressable-LED data (800 kHz, nanosecond edges), 3.3 V swing |
 | victim | BUFA: analog / measurement node |
 | victim_node_C_pF | 5.0 |
-| injected_step_est_mV | 7.9 |
+| injected_step_est_mV | 7.0 |
 
 Basis: coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:).
 
@@ -146,6 +177,53 @@ Basis: coplanar-strip and parallel-plate capacitance formulas on the board geome
 `layout.coupling` · confidence: medium
 
 Aggressors: ADC_MISO, ADC_MOSI, ADC_SCK, LEDC1, LEDC10, LEDC11, LEDC12, LEDC13, LEDC14, LEDC15, LEDC16, LEDC17, LEDC18, LEDC19.... Victims: ADC0, ADC1, BUFA, BUFB, FADER1, MUXA, PED1_TIP, PED2_TIP, PEDAL1, PEDAL2, POT1, POT10, POT11, POT12, POT13, POT14, POT15, POT16, POT2, POT3....
+
+### ADC_MISO is electrically long: 60 mm end to end, 358 ps one way
+
+`layout.impedance` · parts: A1, U3 · nets: ADC_MISO · confidence: low
+
+SPI. 60 mm between its furthest pads (61 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 56 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. This is a data line sampled after it settles, so it matters less than on a clock. Line impedance about 72 ohm.
+
+| | |
+|---|---|
+| end_to_end_mm | 59.6 |
+| routed_mm | 61.3 |
+| delay_ps | 358 |
+| z0 | 72 |
+| assumed_rise_ns | 2.0 |
+| stack_up | assumed |
+
+Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
+
+### Line parameters of 25 fast net(s)
+
+`layout.impedance` · confidence: low
+
+SR_CLK: 119 mm, 0.15 mm on B.Cu, 81 ohm, 730 ps, 9.1 pF, 97% over a plane, 4 vias; ADC_MISO: 61 mm, 0.15 mm on F.Cu, 72 ohm, 368 ps, 5.0 pF, 98% over a plane, 0 vias; ADC_SCK: 59 mm, 0.15 mm on F.Cu, 72 ohm, 353 ps, 4.8 pF, 98% over a plane, 0 vias; ADC_MOSI: 33 mm, 0.15 mm on F.Cu, 72 ohm, 203 ps, 2.7 pF, 95% over a plane, 2 vias; LEDC16: 33 mm, 0.15 mm on In2.Cu, 64 ohm, 230 ps, 3.5 pF, 94% over a plane, 2 vias; LEDC4: 27 mm, 0.15 mm on In2.Cu, 65 ohm, 186 ps, 2.9 pF, 99% over a plane, 2 vias; LEDC12: 27 mm, 0.15 mm on In2.Cu, 65 ohm, 186 ps, 2.9 pF, 99% over a plane, 2 vias; LEDC8: 26 mm, 0.15 mm on F.Cu, 72 ohm, 153 ps, 2.1 pF, 100% over a plane, 0 vias; LEDC10: 24 mm, 0.15 mm on In2.Cu, 89 ohm, 162 ps, 2.0 pF, 95% over a plane, 2 vias; LEDC7: 23 mm, 0.15 mm on In2.Cu, 65 ohm, 153 ps, 2.3 pF, 96% over a plane, 2 vias....
+
+| | |
+|---|---|
+| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.06 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
+
+Basis: microstrip / stripline formulas on the stack-up.
+
+### +5V: 115 mV is lost in the copper on the way to D5.2(VDD) (2.3% of the rail)
+
+`layout.ir_drop` · parts: D5, A1 · nets: +5V · confidence: medium
+
+With every load on +5V at its maximum (811 mA in all), fed from A1 5V pin. Supply side 115 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | A1 5V pin |
+| total_load_A | 0.811 |
+| worst | D5.2(VDD): 115 mV (115 supply + 0 return) |
+| next | D4.2(VDD) 115 mV; D3.2(VDD) 113 mV; D6.2(VDD) 111 mV |
+| copper | 290 track segments, 21 vias, 0 pour cells |
+| ground | ground return through GND to A1.2(GND) included (19995 pour cells, grid 1.6 mm) |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
 
 ### LEDC14: 26% of its 23 mm has no ground or supply plane on the next layer
 
@@ -265,10 +343,12 @@ U3.10(~{CS}/SHDN) floats while the MCU is in reset or booting; a 10k pull-up kee
 | `decoupling.per_part` | ran | 1 finding(s), 0.00 s |
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 0 finding(s), 0.00 s |
-| `i2c.bus` | ran | 4 finding(s), 0.00 s |
-| `layout.coupling` | ran | 3 finding(s), 3.23 s |
-| `layout.return_path` | ran | 1 finding(s), 1.57 s |
-| `layout.track_current` | ran | 0 finding(s), 0.00 s |
+| `i2c.bus` | ran | 4 finding(s), 0.13 s |
+| `layout.coupling` | ran | 2 finding(s), 3.80 s |
+| `layout.impedance` | ran | 4 finding(s), 0.44 s |
+| `layout.ir_drop` | ran | 1 finding(s), 3.17 s |
+| `layout.return_path` | ran | 1 finding(s), 1.82 s |
+| `layout.track_current` | ran | 1 finding(s), 0.00 s |
 | `led.chain` | ran | 2 finding(s), 0.00 s |
 | `load.inductive` | ran | 0 finding(s), 0.00 s |
 | `mcu.alt_function` | ran | 0 finding(s), 0.00 s |

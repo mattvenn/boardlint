@@ -39,6 +39,20 @@ def load_board(path: str):
             if str(value(l, 'type', '')) == 'copper' and value(l, 'thickness'):
                 board.copper_um = fnum(value(l, 'thickness')) * 1000
                 break
+        for l in children(stack, 'layer'):
+            typ = str(value(l, 'type', '')).lower()
+            th = fnum(value(l, 'thickness'), 0.0)
+            if typ == 'copper':
+                board.stackup.append((str(l[1]), 'copper', th or 0.035, 1.0))
+            elif typ in ('core', 'prepreg') and th:
+                board.stackup.append((str(l[1]), 'dielectric', th, fnum(value(l, 'epsilon_r'), 4.5)))
+        names = [s[0] for s in board.stackup if s[1] == 'copper']
+        if names == board.copper_layers and any(s[1] == 'dielectric' for s in board.stackup):
+            board.stackup_assumed = False
+        else:
+            board.stackup = []
+    if not board.stackup:
+        board.stackup = default_stackup(board.copper_layers or ['F.Cu', 'B.Cu'], board.thickness, board.copper_um / 1000)
 
     comps = {}
     for fp in children(doc, 'footprint') + children(doc, 'module'):
@@ -78,8 +92,29 @@ def load_board(path: str):
                 if c.pins[num].net is None and net:
                     c.pins[num].net = net
                 continue
+            psz = child(pad, 'size')
+            drl = child(pad, 'drill')
+            dval = 0.0
+            if drl is not None:
+                nums = [fnum(x, 0.0) for x in drl[1:] if not isinstance(x, list) and str(x) != 'oval']
+                dval = max(nums) if nums else 0.0
+            size = (fnum(psz[1]), fnum(psz[2])) if psz is not None and len(psz) > 2 else None
+            prim = child(pad, 'primitives')
+            if size and prim is not None:
+                # custom pad: the copper is the drawn shape, (size) is only the anchor
+                ex = ey = 0.0
+                for g in prim[1:]:
+                    if not isinstance(g, list):
+                        continue
+                    w = fnum(value(g, 'width'), 0.0)
+                    pts = child(g, 'pts')
+                    xy = [q for q in (pts or [])[1:] if isinstance(q, list) and q and str(q[0]) == 'xy']
+                    xy += [q for q in g[1:] if isinstance(q, list) and q and str(q[0]) in ('start', 'end', 'center')]
+                    for q in xy:
+                        ex, ey = max(ex, abs(fnum(q[1])) + w / 2), max(ey, abs(fnum(q[2])) + w / 2)
+                size = (max(size[0], 2 * ex), max(size[1], 2 * ey))
             c.pins[num] = Pin(comp=c, number=num, name=str(pf) if pf else '', etype=str(pt).split('+')[0] if pt else '',
-                              net=net, pos=(ax, ay), layers=layers)
+                              net=net, pos=(ax, ay), layers=layers, size=size, drill=dval)
         comps[ref] = c
 
     for s in children(doc, 'segment') + children(doc, 'arc'):
@@ -89,8 +124,10 @@ def load_board(path: str):
                                   width=fnum(value(s, 'width'), 0.2)))
     for v in children(doc, 'via'):
         at = child(v, 'at')
+        vl = child(v, 'layers')
         board.vias.append(Via(net=netname(v) or '', x=fnum(at[1]), y=fnum(at[2]),
-                              size=fnum(value(v, 'size'), 0.6), drill=fnum(value(v, 'drill'), 0.3)))
+                              size=fnum(value(v, 'size'), 0.6), drill=fnum(value(v, 'drill'), 0.3),
+                              layers=tuple(str(x) for x in vl[1:]) if vl is not None else ()))
     unfilled = 0
     for g in children(doc, 'gr_poly') + children(doc, 'gr_rect'):
         layer = str(value(g, 'layer', ''))
@@ -127,3 +164,23 @@ def load_board(path: str):
         notes.append(f"{unfilled} zone(s) are saved unfilled: plane-dependent layout checks see no copper there "
                      f"(refill zones in KiCad and save)")
     return comps, board, notes
+
+
+def default_stackup(copper_layers, thickness, t_cu=0.035):
+    """A plausible stack-up when the board file gives none: thin prepreg under the outer layers of
+    a multilayer board, the rest shared between the cores.  Returns the same list form as a real one."""
+    n = len(copper_layers)
+    out = []
+    if n <= 1:
+        return [(copper_layers[0] if copper_layers else 'F.Cu', 'copper', t_cu, 1.0)]
+    if n == 2:
+        gaps = [max(thickness - 2 * t_cu, 0.1)]
+    else:
+        outer = 0.2
+        inner = max(thickness - n * t_cu - 2 * outer, 0.1 * (n - 3)) / max(n - 3, 1)
+        gaps = [outer] + [inner] * (n - 3) + [outer]
+    for i, name in enumerate(copper_layers):
+        out.append((name, 'copper', t_cu, 1.0))
+        if i < n - 1:
+            out.append((f"dielectric {i + 1}", 'dielectric', gaps[i], 4.5))
+    return out

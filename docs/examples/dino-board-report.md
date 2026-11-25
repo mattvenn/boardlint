@@ -1,29 +1,29 @@
 # boardlint review: dinolight
 
-**1 error, 12 warnings, 33 notes.** 144 components, 84 nets; netlist from the board.
+**1 error, 16 warnings, 42 notes.** 144 components, 84 nets; netlist from the board.
 
 - schematic and board netlists agree (84 multi-pin nets)
 
 ## Errors
 
-### +3V3 sags to 2.04 V under load
+### +3V3 sags to 2.05 V under load
 
 `power.droop` · parts: U3, U4 · nets: +3V3, +BATT · confidence: low
 
-U4 (ESP32-S3-MINI-1-N8) needs 3 V. Worst corner: minimum input, everything switching (source at 3.00 V): +3V3 dips to 2.04 V and settles at 2.04 V, with +BATT pulled down to 2.42 V across 0.45 ohm of source path. At nominal input on its own the rail holds 3.06 V.
+U4 (ESP32-S3-MINI-1-N8) needs 3 V. Worst corner: minimum input, everything switching (source at 3.00 V): +3V3 dips to 2.05 V and settles at 2.05 V, with +BATT pulled down to 2.42 V across 0.45 ohm of source path. At nominal input on its own the rail holds 3.07 V.
 
 | | |
 |---|---|
 | load_step | 95 -> 356 mA in 10 us (U4 355 mA, U7 0.393 mA, U5 0.185 mA, U6 0.03 mA) |
 | source_path | 0.45 ohm: Q1 Rds(on) 85 mohm at |Vgs| 2.5 V; SJ1 10 mohm; F1 fuse 0.21 ohm max; cell and its protection circuit 0.15 ohm assumed |
 | output_caps_effective | 20.8uF |
-| copper | 150 mm (pad to pad x 1.4) of 0.40 mm track: 185 mohm, 212 nH |
+| copper | extracted from the routed copper, U3.5(VOUT) to U4.3(3V3): 156 mohm, 94 nH |
 | regulator_model | PI loop, 50 kHz crossover (assumed), dropout 0.88 ohm, limit 780 mA |
 | other_loads_on_input | 914 mA (D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, D4 43.5 mA, +17 more) |
-| nominal input, this rail only | Vin 3.60 V: +3V3 min 3.058 V, settles 3.058 V; +BATT min 3.438 V |
-| minimum input, this rail only | Vin 3.00 V: +3V3 min 2.458 V, settles 2.458 V; +BATT min 2.838 V |
-| nominal input, everything switching | Vin 3.60 V: +3V3 min 2.643 V, settles 2.643 V; +BATT min 3.023 V |
-| minimum input, everything switching | Vin 3.00 V: +3V3 min 2.043 V, settles 2.043 V; +BATT min 2.423 V |
+| nominal input, this rail only | Vin 3.60 V: +3V3 min 3.069 V, settles 3.069 V; +BATT min 3.438 V |
+| minimum input, this rail only | Vin 3.00 V: +3V3 min 2.469 V, settles 2.469 V; +BATT min 2.838 V |
+| nominal input, everything switching | Vin 3.60 V: +3V3 min 2.653 V, settles 2.653 V; +BATT min 3.023 V |
+| minimum input, everything switching | Vin 3.00 V: +3V3 min 2.053 V, settles 2.053 V; +BATT min 2.423 V |
 
 Basis: part model parts/rt9080-33.yaml (verified against datasheet): dropout, current limit; simplified ngspice model, see docs/simulation.md. Source resistance and loop bandwidth are assumptions unless set in boardlint.yaml.
 
@@ -72,35 +72,17 @@ Basis: part model parts/mpr121.yaml (verified against datasheet): VDD is always 
 
 `layout.coupling` · nets: PAD_SPINE6, USB_DM · confidence: low
 
-USB_DM (USB data) runs 31 mm side by side on one layer, down to 1.44 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.36 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.36 pF; closed-form estimate, not a field solve.
+USB_DM (USB data) runs 31 mm side by side on one layer, down to 1.44 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.35 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.35 pF; closed-form estimate, not a field solve.
 
 | | |
 |---|---|
-| coupled_C_est_pF | 0.362 |
+| coupled_C_est_pF | 0.349 |
 | side_by_side_mm | 30.5 |
 | min_gap_mm | 1.44 |
 | crossing_over_mm | 0.0 |
 | of_which_over_ground_mm | 28.7 |
 | aggressor | USB_DM: USB data, 3.366 V swing |
 | victim | PAD_SPINE6: capacitive-touch electrode of U7 |
-
-Basis: coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:).
-
-### USB_DP couples into PAD_SPINE4 (capacitive-touch electrode of U7)
-
-`layout.coupling` · nets: PAD_SPINE4, USB_DP · confidence: low
-
-USB_DP (USB data) runs 25 mm side by side on one layer, down to 1.34 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.31 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.31 pF; closed-form estimate, not a field solve.
-
-| | |
-|---|---|
-| coupled_C_est_pF | 0.307 |
-| side_by_side_mm | 25.2 |
-| min_gap_mm | 1.34 |
-| crossing_over_mm | 0.0 |
-| of_which_over_ground_mm | 25.2 |
-| aggressor | USB_DP: USB data, 3.366 V swing |
-| victim | PAD_SPINE4: capacitive-touch electrode of U7 |
 
 Basis: coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:).
 
@@ -112,7 +94,7 @@ USB_DP (USB data) runs 33 mm side by side on one layer, down to 0.62 mm apart. A
 
 | | |
 |---|---|
-| coupled_C_est_pF | 0.723 |
+| coupled_C_est_pF | 0.715 |
 | side_by_side_mm | 32.6 |
 | min_gap_mm | 0.62 |
 | crossing_over_mm | 0.0 |
@@ -122,7 +104,53 @@ USB_DP (USB data) runs 33 mm side by side on one layer, down to 0.62 mm apart. A
 
 Basis: coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:).
 
-### SPINE_DATA: 51% of its 32 mm has no ground copper on the other layer
+### +3V3: 1 load(s) are not joined to the source by copper
+
+`layout.ir_drop` · parts: U7 · nets: +3V3 · confidence: medium
+
+No copper path on +3V3 from U3 output to U7.20(VDD). Either the connection is unrouted, or it runs through a zone that is saved unfilled.
+
+Basis: copper connectivity in the board file.
+
+### +BATT: 140 mV is lost in the copper on the way to Q2.2(S) (3.9% of the rail)
+
+`layout.ir_drop` · parts: Q2, Q1 · nets: +BATT · confidence: medium
+
+With every load on +BATT at its maximum (1269 mA in all), fed from Q1 (from BAT_RAW). Supply side 140 mV; the ground return is not included. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | Q1 (from BAT_RAW) |
+| total_load_A | 1.269 |
+| worst | Q2.2(S): 140 mV (140 supply + 0 return) |
+| next | U3.1(VIN) 7 mV |
+| copper | 47 track segments, 2 vias, 0 pour cells |
+| ground | no copper path through GND from J2.MP(MountPin) to the loads' ground pads |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### BAT_P1: 1 load(s) are not joined to the source by copper
+
+`layout.ir_drop` · parts: F1 · nets: BAT_P1 · confidence: medium
+
+No copper path on BAT_P1 from connector J2 to F1.1. Either the connection is unrouted, or it runs through a zone that is saved unfilled.
+
+Basis: copper connectivity in the board file.
+
+### GND is in separate pieces: 27 part(s) have no copper return path to their supply
+
+`layout.ir_drop` · parts: D1, D10, D11, D12, D13, D14, D15, D16 · nets: GND · confidence: medium
+
+No copper on GND joins U2.2(V_{SS}) to J1.A1(GND); D1.4(GND) to J2.MP(MountPin); D10.4(GND) to J2.MP(MountPin); D11.4(GND) to J2.MP(MountPin); D12.4(GND) to J2.MP(MountPin); D13.4(GND) to J2.MP(MountPin); D14.4(GND) to J2.MP(MountPin); D15.4(GND) to J2.MP(MountPin).... The supply current of those parts has no return path on the board as drawn: the ground pour is in fragments, or it is saved unfilled. (A pad counts as joined to a pour of its own net within about a millimetre.)
+
+| | |
+|---|---|
+| pairs_without_a_path | 27 |
+
+Basis: copper connectivity in the board file.
+
+### SPINE_DATA: 51% of its 32 mm has no ground or supply plane on the next layer
 
 `layout.return_path` · nets: SPINE_DATA · confidence: medium
 
@@ -134,24 +162,41 @@ SPINE_DATA (addressable-LED data (800 kHz, nanosecond edges)). Where the referen
 | uncovered_mm | 16.3 |
 | stretches | 16 |
 
-Basis: filled ground zones in the board file, sampled every 0.5 mm along the tracks.
+Basis: filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks.
 
-### 0.4 mm supply tracks carry up to 1269 mA (+BATT, BAT_P1, BAT_P1F, BAT_RAW)
+### BAT_P1F: a 0.4 mm segment carries 1269 mA; IPC-2221 gives 1231 mA for a 10 C rise
 
-`layout.track_current` · nets: +BATT, BAT_P1, BAT_P1F, BAT_RAW · confidence: low
+`layout.track_current` · nets: BAT_P1F · confidence: medium
 
-IPC-2221 gives 1.23 A for a 10 C rise at this width in 35 um copper. +BATT: 1269 mA, 160 mm at this width; BAT_P1: 1269 mA, 7 mm at this width; BAT_P1F: 1269 mA, 6 mm at this width; BAT_RAW: 1269 mA, 16 mm at this width. Not every segment carries a net's whole current: check the ones between the source and the loads, and widen or pour them. The resistance also costs voltage: see the droop result.
+At (102.4, 46.4) mm on F.Cu. 5.7 mm of the net's track is over its limit with every load at maximum. This is the current that segment actually carries in the solved network, not the net's total.
 
 | | |
 |---|---|
-| narrowest_mm | 0.4 |
-| length_at_that_width_mm | 160.2 |
-| capacity_A | 1.23 |
-| load_max_mA | 1269 |
-| loads | U4 355 mA, D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, +21 more |
-| drop_mV_at_max | 249.8 |
+| segment | (102.4, 46.4) mm on F.Cu |
+| width_mm | 0.4 |
+| current_A | 1.269 |
+| ipc2221_A | 1.23 |
+| length_over_limit_mm | 5.7 |
+| net_total_A | 1.269 |
 
-Basis: IPC-2221 external-layer formula; load is the sum of model maxima, all on at once.
+Basis: IPC-2221 formula; segment current from the resistor-network solve; loads are model maxima.
+
+### BAT_RAW: a 0.4 mm segment carries 1269 mA; IPC-2221 gives 1231 mA for a 10 C rise
+
+`layout.track_current` · nets: BAT_RAW · confidence: medium
+
+At (101.2, 49.6) mm on F.Cu. 15.2 mm of the net's track is over its limit with every load at maximum. This is the current that segment actually carries in the solved network, not the net's total.
+
+| | |
+|---|---|
+| segment | (101.2, 49.6) mm on F.Cu |
+| width_mm | 0.4 |
+| current_A | 1.269 |
+| ipc2221_A | 1.23 |
+| length_over_limit_mm | 15.2 |
+| net_total_A | 1.269 |
+
+Basis: IPC-2221 formula; segment current from the resistor-network solve; loads are model maxima.
 
 ### F1 may carry 1269 mA; its hold current is 1100 mA
 
@@ -223,7 +268,7 @@ Basis: part model parts/esp32-s3-mini-1.yaml (verified against datasheet): C1 22
 
 ### I2C bus SDA / SCL address map
 
-`i2c.bus` · parts: U5, U7 · nets: SCL, SDA · confidence: high
+`i2c.bus` · parts: U4, U5, U7 · nets: SCL, SDA · confidence: high
 
 0x19 U5 LIS2DH12TR (U5.3(SA0/SDO)=1); 0x5A U7 MPR121QR2 (U7.4(ADDR) on GND)
 
@@ -239,8 +284,8 @@ Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 989R |
-| bus_c_est_pF | 99 |
-| t_rise_ns | 393 |
+| bus_c_est_pF | 95 |
+| t_rise_ns | 379 |
 
 ### I2C net SDA leaves the board with 4.7k already fitted
 
@@ -254,14 +299,14 @@ Breakout modules usually carry their own pull-ups (2.2k to 10k each); every one 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 989R |
-| bus_c_est_pF | 97 |
-| t_rise_ns | 385 |
+| bus_c_est_pF | 94 |
+| t_rise_ns | 374 |
 
 ### I2C pull-up on SCL (4.7k) is too weak for 400 kHz once a cable and module are plugged in
 
 `i2c.bus` · parts: R18 · nets: SCL · confidence: medium
 
-Estimated rise time 393 ns with about 99 pF (board alone: 194 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
+Estimated rise time 379 ns with about 95 pF (board alone: 180 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
 
 | | |
 |---|---|
@@ -269,8 +314,8 @@ Estimated rise time 393 ns with about 99 pF (board alone: 194 ns; 50 pF allowed 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 989R |
-| bus_c_est_pF | 99 |
-| t_rise_ns | 393 |
+| bus_c_est_pF | 95 |
+| t_rise_ns | 379 |
 
 Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
@@ -278,7 +323,7 @@ Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
 `i2c.bus` · parts: R17 · nets: SDA · confidence: medium
 
-Estimated rise time 385 ns with about 97 pF (board alone: 186 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
+Estimated rise time 374 ns with about 94 pF (board alone: 175 ns; 50 pF allowed for the connector): fine at 100 kHz (limit 1000 ns), over the 300 ns limit of fast mode.
 
 | | |
 |---|---|
@@ -286,8 +331,8 @@ Estimated rise time 385 ns with about 97 pF (board alone: 186 ns; 50 pF allowed 
 | effective | 4.7k |
 | rail | +3V3 |
 | r_min_3mA | 989R |
-| bus_c_est_pF | 97 |
-| t_rise_ns | 385 |
+| bus_c_est_pF | 94 |
+| t_rise_ns | 374 |
 
 Basis: I2C specification (UM10204) table 11: tr; bus capacitance is an estimate.
 
@@ -305,7 +350,7 @@ SPINE_OUT (addressable-LED data (800 kHz, nanosecond edges)) runs 7 mm directly 
 
 | | |
 |---|---|
-| coupled_C_est_pF | 0.19 |
+| coupled_C_est_pF | 0.191 |
 | side_by_side_mm | 0.0 |
 | min_gap_mm | None |
 | crossing_over_mm | 6.9 |
@@ -369,7 +414,144 @@ USB_DP (USB data) runs 5 mm side by side on one layer, down to 0.45 mm apart. A 
 
 Basis: coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:).
 
-### EYE_DATA: 72% of its 26 mm has no ground copper on the other layer
+### USB_DP couples into PAD_SPINE4 (capacitive-touch electrode of U7)
+
+`layout.coupling` · nets: PAD_SPINE4, USB_DP · confidence: low
+
+USB_DP (USB data) runs 25 mm side by side on one layer, down to 1.34 mm apart. A fingertip changes an electrode by around a picofarad or less. 0.30 pF to a line toggling 3.366 V can show up as touch noise or false touches while that line is active. Estimated 0.30 pF; closed-form estimate, not a field solve.
+
+| | |
+|---|---|
+| coupled_C_est_pF | 0.295 |
+| side_by_side_mm | 25.2 |
+| min_gap_mm | 1.34 |
+| crossing_over_mm | 0.0 |
+| of_which_over_ground_mm | 25.2 |
+| aggressor | USB_DP: USB data, 3.366 V swing |
+| victim | PAD_SPINE4: capacitive-touch electrode of U7 |
+
+Basis: coplanar-strip and parallel-plate capacitance formulas on the board geometry; net classes from pin roles (override in boardlint.yaml net_classes:).
+
+### Line parameters of 25 fast net(s)
+
+`layout.impedance` · confidence: low
+
+USB_DM: 105 mm, 0.15 mm on F.Cu, 141 ohm, 650 ps, 4.0 pF, 61% over a plane, 5 vias; USB_DP: 96 mm, 0.15 mm on F.Cu, 141 ohm, 598 ps, 3.7 pF, 61% over a plane, 4 vias; SPINE_DATA: 60 mm, 0.15 mm on B.Cu, 141 ohm, 369 ps, 2.3 pF, 62% over a plane, 6 vias; EYE_DATA: 33 mm, 0.15 mm on F.Cu, 141 ohm, 225 ps, 1.2 pF, 6% over a plane, 4 vias; SPINE_OUT: 13 mm, 0.15 mm on F.Cu, 141 ohm, 90 ps, 0.5 pF, 15% over a plane, 0 vias; SPINE_17: 10 mm, 0.2 mm on F.Cu, 134 ohm, 58 ps, 0.4 pF, 100% over a plane, 0 vias; SPINE_12: 10 mm, 0.2 mm on F.Cu, 134 ohm, 58 ps, 0.4 pF, 100% over a plane, 0 vias; SPINE_11: 10 mm, 0.2 mm on F.Cu, 134 ohm, 58 ps, 0.4 pF, 100% over a plane, 0 vias; SPINE_10: 10 mm, 0.2 mm on F.Cu, 134 ohm, 58 ps, 0.4 pF, 100% over a plane, 0 vias; SPINE_9: 10 mm, 0.2 mm on F.Cu, 134 ohm, 57 ps, 0.4 pF, 100% over a plane, 0 vias....
+
+| | |
+|---|---|
+| stack_up | assumed: F.Cu / 1.53 mm er 4.5 / B.Cu |
+
+Basis: microstrip / stripline formulas on the stack-up.
+
+### SPINE_DATA is electrically long: 59 mm end to end, 366 ps one way
+
+`layout.impedance` · parts: U4 · nets: SPINE_DATA, SPINE_DIN · confidence: low
+
+addressable-LED data (800 kHz, nanosecond edges). 59 mm between its furthest pads (60 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 54 mm (delay over one sixth of the rise time). It has R14 (330R) in series, which damps the reflection. Line impedance about 141 ohm.
+
+| | |
+|---|---|
+| end_to_end_mm | 59.1 |
+| routed_mm | 59.6 |
+| delay_ps | 366 |
+| z0 | 141 |
+| assumed_rise_ns | 2.0 |
+| stack_up | assumed |
+
+Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
+
+### USB pair: about 193 ohm differential, 8.5 mm length mismatch
+
+`layout.impedance` · nets: USB_DM, USB_DP · confidence: low
+
+D+ 96 mm, D- 105 mm (mismatch 8.5 mm). Routed as a pair for 43 mm at a 0.67 mm gap: about 193 ohm differential; USB asks for 90 ohm +/- 15 %. At full speed (12 Mbit/s) this is tolerant; at high speed (480 Mbit/s) both the impedance and a mismatch over about 1 mm matter.
+
+| | |
+|---|---|
+| d_plus_mm | 96.2 |
+| d_minus_mm | 104.7 |
+| mismatch_mm | 8.5 |
+| routed_as_a_pair_mm | 43.3 |
+| stack_up | assumed |
+| gap_mm | 0.67 |
+| z_diff | 193 |
+
+Basis: edge-coupled microstrip formula on the stack-up.
+
+### +3V3: 55 mV is lost in the copper on the way to U4.3(3V3) (1.7% of the rail)
+
+`layout.ir_drop` · parts: U4, U3 · nets: +3V3 · confidence: medium
+
+With every load on +3V3 at its maximum (356 mA in all), fed from U3 output. Supply side 55 mV; the ground return is not included. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | U3 output |
+| total_load_A | 0.356 |
+| worst | U4.3(3V3): 55 mV (55 supply + 0 return) |
+| next | U6.3(VDD) 40 mV; U5.9(Vdd) 12 mV; U5.10(Vdd_IO) 12 mV |
+| copper | 75 track segments, 8 vias, 0 pour cells |
+| ground | no copper path through GND from U3.2(GND) to the loads' ground pads |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### BAT_P1F: 9 mV is lost in the copper on the way to SJ1.2(C) (0.2% of the rail)
+
+`layout.ir_drop` · parts: SJ1, F1 · nets: BAT_P1F · confidence: medium
+
+With every load on BAT_P1F at its maximum (1269 mA in all), fed from F1 (from BAT_P1). Supply side 9 mV; the ground return is not included. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | F1 (from BAT_P1) |
+| total_load_A | 1.269 |
+| worst | SJ1.2(C): 9 mV (9 supply + 0 return) |
+| next | none |
+| copper | 3 track segments, 0 vias, 0 pour cells |
+| ground | ground return not included (the loads here have no ground pad of their own) |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### BAT_RAW: 24 mV is lost in the copper on the way to Q1.3(D) (0.7% of the rail)
+
+`layout.ir_drop` · parts: Q1, SJ1 · nets: BAT_RAW · confidence: medium
+
+With every load on BAT_RAW at its maximum (1269 mA in all), fed from SJ1 (from BAT_P1F). Supply side 24 mV; the ground return is not included. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | SJ1 (from BAT_P1F) |
+| total_load_A | 1.269 |
+| worst | Q1.3(D): 24 mV (24 supply + 0 return) |
+| next | none |
+| copper | 7 track segments, 0 vias, 0 pour cells |
+| ground | ground return not included (the loads here have no ground pad of their own) |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### VLED: 80 mV is lost in the copper on the way to D20.2(VDD) (2.2% of the rail)
+
+`layout.ir_drop` · parts: D20, Q2 · nets: VLED · confidence: medium
+
+With every load on VLED at its maximum (914 mA in all), fed from Q2 (from +BATT). Supply side 80 mV; the ground return is not included. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | Q2 (from +BATT) |
+| total_load_A | 0.913 |
+| worst | D20.2(VDD): 80 mV (80 supply + 0 return) |
+| next | D19.2(VDD) 79 mV; D18.2(VDD) 79 mV; D17.2(VDD) 78 mV |
+| copper | 156 track segments, 0 vias, 0 pour cells |
+| ground | no copper path through GND from J2.MP(MountPin) to the loads' ground pads |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### EYE_DATA: 72% of its 26 mm has no ground or supply plane on the next layer
 
 `layout.return_path` · nets: EYE_DATA · confidence: medium
 
@@ -381,9 +563,9 @@ EYE_DATA (addressable-LED data (800 kHz, nanosecond edges)). Where the reference
 | uncovered_mm | 18.3 |
 | stretches | 10 |
 
-Basis: filled ground zones in the board file, sampled every 0.5 mm along the tracks.
+Basis: filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks.
 
-### SPINE_DIN: 49% of its 28 mm has no ground copper on the other layer
+### SPINE_DIN: 49% of its 28 mm has no ground or supply plane on the next layer
 
 `layout.return_path` · nets: SPINE_DIN · confidence: medium
 
@@ -395,9 +577,9 @@ SPINE_DIN (addressable-LED data (800 kHz, nanosecond edges)). Where the referenc
 | uncovered_mm | 13.6 |
 | stretches | 9 |
 
-Basis: filled ground zones in the board file, sampled every 0.5 mm along the tracks.
+Basis: filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks.
 
-### SPINE_OUT: 70% of its 13 mm has no ground copper on the other layer
+### SPINE_OUT: 70% of its 13 mm has no ground or supply plane on the next layer
 
 `layout.return_path` · nets: SPINE_OUT · confidence: medium
 
@@ -409,9 +591,9 @@ SPINE_OUT (addressable-LED data (800 kHz, nanosecond edges)). Where the referenc
 | uncovered_mm | 9.4 |
 | stretches | 2 |
 
-Basis: filled ground zones in the board file, sampled every 0.5 mm along the tracks.
+Basis: filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks.
 
-### USB_DM: 40% of its 105 mm has no ground copper on the other layer
+### USB_DM: 40% of its 105 mm has no ground or supply plane on the next layer
 
 `layout.return_path` · nets: USB_DM · confidence: medium
 
@@ -423,9 +605,9 @@ USB_DM (USB data). Where the reference copper is missing the return current deto
 | uncovered_mm | 41.9 |
 | stretches | 26 |
 
-Basis: filled ground zones in the board file, sampled every 0.5 mm along the tracks.
+Basis: filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks.
 
-### USB_DP: 36% of its 96 mm has no ground copper on the other layer
+### USB_DP: 36% of its 96 mm has no ground or supply plane on the next layer
 
 `layout.return_path` · nets: USB_DP · confidence: medium
 
@@ -437,24 +619,41 @@ USB_DP (USB data). Where the reference copper is missing the return current deto
 | uncovered_mm | 34.7 |
 | stretches | 23 |
 
-Basis: filled ground zones in the board file, sampled every 0.5 mm along the tracks.
+Basis: filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks.
 
-### VLED: about 148 mV lost in 132 mm of 0.4 mm track at 914 mA
+### +BATT: a 0.4 mm segment carries 914 mA; IPC-2221 gives 1231 mA for a 10 C rise
 
-`layout.track_current` · nets: VLED · confidence: low
+`layout.track_current` · nets: +BATT · confidence: medium
 
-If that length is in series with the load, it is 162 mohm.
+At (194.9, 60.0) mm on B.Cu. 0.0 mm of the net's track is over its limit with every load at maximum. This is the current that segment actually carries in the solved network, not the net's total.
 
 | | |
 |---|---|
-| narrowest_mm | 0.4 |
-| length_at_that_width_mm | 131.6 |
-| capacity_A | 1.23 |
-| load_max_mA | 914 |
-| loads | D21 43.5 mA, D1 43.5 mA, D2 43.5 mA, D3 43.5 mA, D4 43.5 mA, +16 more |
-| drop_mV_at_max | 147.7 |
+| segment | (194.9, 60.0) mm on B.Cu |
+| width_mm | 0.4 |
+| current_A | 0.914 |
+| ipc2221_A | 1.23 |
+| length_over_limit_mm | 0.0 |
+| net_total_A | 1.269 |
 
-Basis: copper resistivity; assumes the narrow segments are in series.
+Basis: IPC-2221 formula; segment current from the resistor-network solve; loads are model maxima.
+
+### VLED: a 0.4 mm segment carries 914 mA; IPC-2221 gives 1231 mA for a 10 C rise
+
+`layout.track_current` · nets: VLED · confidence: medium
+
+At (197.9, 53.6) mm on F.Cu. 0.0 mm of the net's track is over its limit with every load at maximum. This is the current that segment actually carries in the solved network, not the net's total.
+
+| | |
+|---|---|
+| segment | (197.9, 53.6) mm on F.Cu |
+| width_mm | 0.4 |
+| current_A | 0.914 |
+| ipc2221_A | 1.23 |
+| length_over_limit_mm | 0.0 |
+| net_total_A | 0.913 |
+
+Basis: IPC-2221 formula; segment current from the resistor-network solve; loads are model maxima.
 
 ### LED chain on EYE_DATA
 
@@ -641,32 +840,36 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `decoupling.per_part` | ran | 4 finding(s), 0.00 s |
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 0 finding(s), 0.00 s |
-| `i2c.bus` | ran | 5 finding(s), 0.00 s |
-| `layout.coupling` | ran | 8 finding(s), 0.54 s |
-| `layout.return_path` | ran | 6 finding(s), 0.27 s |
-| `layout.track_current` | ran | 2 finding(s), 0.00 s |
+| `i2c.bus` | ran | 5 finding(s), 0.04 s |
+| `layout.coupling` | ran | 8 finding(s), 0.80 s |
+| `layout.impedance` | ran | 3 finding(s), 0.11 s |
+| `layout.ir_drop` | ran | 8 finding(s), 0.28 s |
+| `layout.return_path` | ran | 6 finding(s), 0.35 s |
+| `layout.track_current` | ran | 4 finding(s), 0.00 s |
 | `led.chain` | ran | 4 finding(s), 0.00 s |
 | `load.inductive` | ran | 0 finding(s), 0.00 s |
 | `mcu.alt_function` | ran | 0 finding(s), 0.00 s |
 | `mcu.pin_use` | ran | 1 finding(s), 0.00 s |
 | `mcu.strapping` | ran | 1 finding(s), 0.00 s |
+| `net.name_mismatch` | ran | 0 finding(s), 0.00 s |
 | `pin.floating_control` | ran | 0 finding(s), 0.00 s |
 | `pin.name_voltage` | ran | 0 finding(s), 0.00 s |
 | `pin.requirements` | ran | 1 finding(s), 0.00 s |
 | `pin.strap_strength` | ran | 0 finding(s), 0.00 s |
 | `polarity.polarised_parts` | ran | 0 finding(s), 0.00 s |
 | `power.budget` | ran | 2 finding(s), 0.00 s |
-| `power.droop` | ran | 1 finding(s), 0.72 s |
+| `power.droop` | ran | 1 finding(s), 1.02 s |
 | `power.logic_level` | ran | 0 finding(s), 0.00 s |
 | `power.pin_voltage` | ran | 2 finding(s), 0.01 s |
 | `power.rails` | ran | 1 finding(s), 0.00 s |
 | `power.regulator` | ran | 1 finding(s), 0.00 s |
+| `power.source_pin` | ran | 0 finding(s), 0.00 s |
 | `power.supply_range` | ran | 2 finding(s), 0.00 s |
 | `ratings.fets` | ran | 1 finding(s), 0.00 s |
 | `ratings.passives` | ran | 1 finding(s), 0.00 s |
 | `reset.circuit` | ran | 1 finding(s), 0.00 s |
-| `sim.i2c` | ran | 1 finding(s), 0.02 s |
-| `sim.led_chain` | ran | 1 finding(s), 0.04 s |
+| `sim.i2c` | ran | 1 finding(s), 0.04 s |
+| `sim.led_chain` | ran | 1 finding(s), 0.07 s |
 | `spi.bus` | ran | 0 finding(s), 0.00 s |
 | `sync.schematic_board` | ran | 0 finding(s), 0.00 s |
 | `uart.direction` | ran | 0 finding(s), 0.00 s |

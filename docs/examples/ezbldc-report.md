@@ -1,6 +1,6 @@
 # boardlint review: bldc_driver_board
 
-**0 errors, 3 warnings, 11 notes.** 100 components, 76 nets; netlist from the board.
+**0 errors, 3 warnings, 17 notes.** 100 components, 76 nets; netlist from the board.
 
 - schematic and board netlists agree (76 multi-pin nets)
 
@@ -36,6 +36,107 @@ XINGLIGHT XL-5050RGBC-WS2812B, a WS2812B-compatible addressable RGB LED, 5050 pa
 Basis: part model parts/xl-5050rgbc-ws2812b.yaml (verified against datasheet).
 
 ## Notes
+
+### ENC1_CLK is electrically long: 153 mm end to end, 966 ps one way
+
+`layout.impedance` · parts: U1 · nets: ENC1_CLK, ENC2_CLK, ENC3_CLK, ENC4_CLK, ENC_CLK · confidence: low
+
+clock. 153 mm between its furthest pads (160 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 53 mm (delay over one sixth of the rise time). It has R12 (47R), R22 (47R), R32 (47R), R42 (47R) in series, which damps the reflection. Line impedance about 64 ohm.
+
+| | |
+|---|---|
+| end_to_end_mm | 153.0 |
+| routed_mm | 160.0 |
+| delay_ps | 966 |
+| z0 | 64 |
+| assumed_rise_ns | 2.0 |
+| stack_up | assumed |
+
+Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
+
+### Line parameters of 1 fast net(s)
+
+`layout.impedance` · confidence: low
+
+ENC1_CLK: 160 mm, 0.2 mm on B.Cu, 64 ohm, 1010 ps, 11.5 pF, 63% over a plane, 10 vias.
+
+| | |
+|---|---|
+| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.06 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
+
+Basis: microstrip / stripline formulas on the stack-up.
+
+### +12V: 12 mV is lost in the copper on the way to U7.1(IN) (0.1% of the rail)
+
+`layout.ir_drop` · parts: U7, D1 · nets: +12V · confidence: medium
+
+With every load on +12V at its maximum (386 mA in all), fed from D1 (from 12V_JACK). Supply side 11 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | D1 (from 12V_JACK) |
+| total_load_A | 0.386 |
+| worst | U7.1(IN): 12 mV (11 supply + 0 return) |
+| next | F4.1 0 mV; F3.1 0 mV; F2.1 0 mV |
+| copper | 21 track segments, 14 vias, 1579 pour cells |
+| ground | ground return through GND to J1.2 included (20235 pour cells, grid 0.7 mm) |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### +3V3: 1 mV is lost in the copper on the way to D3.1(VDD) (0.0% of the rail)
+
+`layout.ir_drop` · parts: D3, U1 · nets: +3V3 · confidence: medium
+
+With every load on +3V3 at its maximum (36 mA in all), fed from U1 output. Supply side 1 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | U1 output |
+| total_load_A | 0.036 |
+| worst | D3.1(VDD): 1 mV (1 supply + 0 return) |
+| next | U6.16(VCC) 0 mV |
+| copper | 49 track segments, 22 vias, 19962 pour cells |
+| ground | ground return through GND to U1.13(GND) included (20235 pour cells, grid 0.7 mm) |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### +5V: 7 mV is lost in the copper on the way to D2.2(A) (0.1% of the rail)
+
+`layout.ir_drop` · parts: D2, U7 · nets: +5V · confidence: medium
+
+With every load on +5V at its maximum (358 mA in all), fed from U7 output. Supply side 7 mV; the ground return is not included. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | U7 output |
+| total_load_A | 0.358 |
+| worst | D2.2(A): 7 mV (7 supply + 0 return) |
+| next | none |
+| copper | 11 track segments, 0 vias, 0 pour cells |
+| ground | ground return not included (the loads here have no ground pad of their own) |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
+
+### XIAO_5V: 2 mV is lost in the copper on the way to U1.14(5V/VBUS) (0.0% of the rail)
+
+`layout.ir_drop` · parts: U1, D2 · nets: XIAO_5V · confidence: medium
+
+With every load on XIAO_5V at its maximum (358 mA in all), fed from D2 (from +5V). Supply side 2 mV, ground return 0 mV. Solved on the routed copper: track resistance, via barrels and pours as a sheet-resistance mesh. Copper at 20 C; thermal-relief spokes are not modelled.
+
+| | |
+|---|---|
+| source | D2 (from +5V) |
+| total_load_A | 0.358 |
+| worst | U1.14(5V/VBUS): 2 mV (2 supply + 0 return) |
+| next | none |
+| copper | 1 track segments, 0 vias, 0 pour cells |
+| ground | ground return through GND to U7.2(GND) included (20235 pour cells, grid 0.7 mm) |
+| stack_up | assumed |
+
+Basis: resistor-network solve of the net's copper (boardlint/extract.py); loads are model maxima.
 
 ### D3 DIN logic level is met
 
@@ -175,9 +276,11 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 0 finding(s), 0.00 s |
 | `i2c.bus` | ran | 2 finding(s), 0.00 s |
-| `layout.coupling` | ran | 0 finding(s), 0.01 s |
-| `layout.return_path` | ran | 0 finding(s), 0.25 s |
-| `layout.track_current` | ran | 0 finding(s), 0.01 s |
+| `layout.coupling` | ran | 0 finding(s), 0.00 s |
+| `layout.impedance` | ran | 2 finding(s), 0.05 s |
+| `layout.ir_drop` | ran | 4 finding(s), 6.19 s |
+| `layout.return_path` | ran | 0 finding(s), 0.34 s |
+| `layout.track_current` | ran | 0 finding(s), 0.00 s |
 | `led.chain` | ran | 3 finding(s), 0.00 s |
 | `load.inductive` | ran | 0 finding(s), 0.00 s |
 | `mcu.alt_function` | ran | 0 finding(s), 0.00 s |
@@ -189,7 +292,7 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `pin.requirements` | ran | 1 finding(s), 0.00 s |
 | `pin.strap_strength` | ran | 0 finding(s), 0.00 s |
 | `polarity.polarised_parts` | ran | 0 finding(s), 0.00 s |
-| `power.budget` | ran | 0 finding(s), 0.01 s |
+| `power.budget` | ran | 0 finding(s), 0.00 s |
 | `power.droop` | ran | 0 finding(s), 0.00 s |
 | `power.logic_level` | ran | 0 finding(s), 0.00 s |
 | `power.pin_voltage` | ran | 0 finding(s), 0.01 s |
@@ -201,7 +304,7 @@ Basis: behavioural Verilog model (boardlint/sim/verilog/serial_led.v) wired from
 | `ratings.passives` | ran | 1 finding(s), 0.00 s |
 | `reset.circuit` | ran | 0 finding(s), 0.00 s |
 | `sim.i2c` | ran | 0 finding(s), 0.00 s |
-| `sim.led_chain` | ran | 1 finding(s), 0.07 s |
+| `sim.led_chain` | ran | 1 finding(s), 0.02 s |
 | `spi.bus` | ran | 0 finding(s), 0.00 s |
 | `sync.schematic_board` | ran | 0 finding(s), 0.00 s |
 | `uart.direction` | ran | 0 finding(s), 0.00 s |

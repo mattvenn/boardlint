@@ -63,3 +63,11 @@ Checks that changed because of this board:
 - Regulator temperature is judged on typical load, with the sustained-peak figure given as a note.
 - A supply plane on the next layer counts as a reference for `layout.return_path`. Before that, the
   encoder clock was reported as having no ground beneath it while running over the 3.3 V plane.
+
+## Update, 2026-11-25: copper extraction
+
+The linked report was regenerated with the copper extraction
+([copper-extraction.md](copper-extraction.md)): 0 errors, 3 warnings, 17 notes. No new warnings.
+The new notes: 12 mV lost on +12V at 386 mA, 7 mV on +5V, 1 mV on +3V3; the encoder clock is
+153 mm end to end and has 47 Ω resistors in series (R12, R22, R32, R42), which damp it. Motor
+current is not in the DRV8313 model, so the motor supply tracks are not judged.

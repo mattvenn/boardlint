@@ -54,7 +54,7 @@ Since the board has no known bugs, 26 were injected one at a time
 (`python3 tools/fault_report.py <dino-board>`): each is one edit to the loaded design, and the test
 requires a *new* error or warning from the check that should own it.
 
-**26 of 26 are flagged.** On the first run it was 20 of 22: an address clash on a newly added part
+**26 of 26 are flagged** (28 of 28 since 2026-11-25, when two layout faults were added). On the first run it was 20 of 22: an address clash on a newly added part
 and a too-low logic divider were missed, and a crossed I2C device and a P-FET with no gate
 pull-down were caught only by unrelated findings. All four led to fixes in the checks. This is a test of the checks against mistakes Claude chose, on the
 board they were developed on: it shows the mechanisms work, not what fraction of real mistakes they catch.
@@ -99,6 +99,25 @@ found. The last two are the kind of thing a part-model plus simulation approach 
 the others need footprint and mechanical data.
 
 ---
+
+## Update, 2026-11-25: copper extraction
+
+The linked report was regenerated after boardlint gained a resistor-network extraction of the
+routed copper ([copper-extraction.md](copper-extraction.md)), so it now reads 1 error, 16 warnings,
+42 notes. The text above describes the first run and is left as it was. What the new checks add on
+this commit:
+
+- `layout.ir_drop`: 140 mV (3.9 %) is lost between the reverse-protection transistor Q1 and the LED
+  switch Q2 on +BATT at 1269 mA. The earlier estimate could not see a rail fed through a transistor.
+- `layout.ir_drop`: the ground pour is in separate pieces, and 27 parts have no copper return path
+  to their supply. The board's notes say the same: "79 ground items unconnected".
+- `layout.ir_drop`: U7 pin 20 (VDD) and the battery connector's path to fuse F1 have no copper at
+  this commit. KiCad's DRC reports these as unrouted; they are listed here because the current
+  solve cannot reach them.
+- `power.droop` now uses the extracted path from the regulator to the ESP32 module: 156 mΩ and
+  94 nH, where the estimate was 185 mΩ and 212 nH. The result is the same error (2.05 V).
+- `layout.impedance` (notes): on a two-layer board the USB pair is about 193 Ω differential, far
+  from 90 Ω. That is normal for two layers and tolerable at full speed.
 
 # Second run: commit `eb2fd13` (2026-11-23), with the owner's description to check against
 

@@ -21,11 +21,13 @@ AI model, running in Claude Code) in one working session directed by Matt. Where
 what was tested, verified, or assumed, that is Claude's statement about its own work. None of the
 findings on the example boards has been checked on hardware at the time of writing.
 
-Status: v0.1, a working framework. 36 checks, 42 part models. Tested on two real boards (one with 26 injected faults, all flagged; one
+Status: v0.1, a working framework. 38 checks, 42 part models. Tested on two real boards (one with 28 injected faults, all flagged; one
 with a published errata list, both wiring errata found) and on eight public projects with a known fix
 commit (six flagged before the fix; the other two cannot be seen in the design files). Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
 
 Reviews of real boards, each with the tool's full report: [DinoLight](docs/dino-board-review.md), [basic-ecp5-pcb](docs/ecp5-board-review.md), [ezbldc](docs/ezbldc-review.md), and [Density](docs/density-review.md).
+
+Supply resistance, track current and trace impedance are extracted from the routed copper: [docs/copper-extraction.md](docs/copper-extraction.md) gives the method, the evidence and the limits.
 
 A wider, blind test on 33 fix commits from projects listed by Kitspace flagged only one of them; [docs/kitspace-survey.md](docs/kitspace-survey.md) says why and what that means for the roadmap.
 
@@ -67,7 +69,7 @@ Without them those checks are skipped and the report says so. KiCad itself is no
 | Pins | every connection a part model says the datasheet requires (reference resistors, bypass pins, mode straps); floating enable / reset pins; open-drain outputs with no pull-up; boot-strap pins pulled the wrong way |
 | Power | rail voltages and where they come from; each part's supply inside its range; no pin above its absolute maximum (dividers, pull-ups, 5 V into 3.3 V); divided-down signals that never reach a logic high; regulator load, dropout and temperature; fuse / FET / switch current; decoupling count, value and distance; regulator capacitors after DC-bias derating |
 | Ratings | capacitor voltage, resistor power, FET Vds / Vgs and whether the gate drive turns it on |
-| Layout | aggressor / victim coupling (fast nets beside or across touch, analog and high-impedance nets) with an estimated capacitance; fast nets without ground under them; supply track width against current |
+| Layout | aggressor / victim coupling (fast nets beside or across touch, analog and high-impedance nets) with an estimated capacitance; fast nets without ground under them; voltage lost in the copper between each supply and its loads, from a resistor-network solve of tracks, vias and pours; the current in each track segment against IPC-2221; loads and ground pads with no copper path; impedance, delay and capacitance of fast nets from the stack-up, clocks long enough to need a series resistor, and the USB pair |
 | Simulation | ngspice: each LDO rail through its worst load step at minimum and nominal input. Icarus Verilog: an I2C address scan and ID read on the bus as wired; a frame clocked down every LED chain |
 
 `boardlint checks` prints the list. [docs/checklist-coverage.md](docs/checklist-coverage.md) maps
@@ -76,7 +78,7 @@ it against Andrew Zonenberg's schematic and layout review checklists.
 ## How it works
 
 1. **Read the project.** A built-in reader and netlister for `.kicad_sch` (KiCad 6 to 10,
-   hierarchical) and a reader for `.kicad_pcb` (pads, tracks, zones, stack-up). If both are present
+   hierarchical) and a reader for `.kicad_pcb` (pads, tracks, vias, filled zones, stack-up). If both are present
    the two netlists are compared. KiCad 5 projects work when they have a board: pin names come from
    the `-cache.lib`, nets from the `.kicad_pcb`.
 2. **Recognise the parts.** Each component is matched to a *part model*: a YAML file of datasheet
@@ -105,6 +107,8 @@ net_classes:
   aggressor: [PWM_FAN]
   victim: [THERMISTOR]
 sim: {keep_dir: build/boardlint-sim, load_tr_us: 10}
+signals: {rise_ns: 2}        # edge rate assumed for the "electrically long" test
+track: {temp_rise_c: 10}     # allowed rise for the IPC-2221 track current
 waive:
   - {check: "power.budget", refs: [F1], reason: "firmware limits the LEDs to 30 %"}
 ```
@@ -123,7 +127,7 @@ BOARDLINT_DINO=/path/to/dino-board BOARDLINT_ECP5=/path/to/basic-ecp5-pcb/hardwa
 
 Unit tests need nothing else. The end-to-end tests use the
 [DinoLight board](https://github.com/mo-seph/dino-board) as a reference design (not vendored here)
-at commit `4da182c` and inject 26 classic mistakes into it in memory, requiring each to be flagged:
+at commit `4da182c` and inject 28 classic mistakes into it in memory, requiring each to be flagged:
 
 ```bash
 python3 tools/fault_report.py /path/to/dino-board
@@ -142,10 +146,15 @@ python3 tools/regress.py /tmp/boardlint-regress
 - Current budgets add every part's maximum. Real duty cycles are lower; record them as waivers.
 - Coupling and droop numbers are closed-form estimates and simple circuit models. They rank
   problems; they do not replace a field solver or a bench measurement.
+- Copper resistance and current are solved at direct current on the routed copper, with pours as
+  a coarse mesh and thermal-relief spokes left out. Impedance comes from formulas on the stack-up,
+  and the stack-up is assumed when the board file does not define one. See
+  [docs/copper-extraction.md](docs/copper-extraction.md).
+- numpy is optional. Without it the copper solve uses a coarser mesh and is slower.
 - KiCad 5 legacy schematics are not netlisted: a KiCad 5 project needs its board file.
 - Buses in the schematic (bus wires and bus entries) are not expanded by the built-in netlister.
   When a board file exists its netlist is used, so this only affects schematic-only runs.
-- Switching regulators, differential-pair impedance, antenna keep-outs, creepage and thermal design are not checked yet.
+- Switching regulators, antenna keep-outs, creepage and thermal design are not checked yet. Differential impedance is reported for the USB pair only.
 
 ## Layout of the repository
 
@@ -153,11 +162,12 @@ python3 tools/regress.py /tmp/boardlint-regress
 boardlint/
   sexpr.py  kicad_sch.py  kicad_pcb.py  loader.py    reading KiCad files
   model.py  classify.py  power.py                    design model and analysis
+  extract.py  tline.py                               copper resistor network; impedance from the stack-up
   library/  parts/*.yaml                             part models
   checks/                                            one module per family
   sim/      ngspice.py  busgen.py  verilog/*.v       simulation
   engine.py  report.py  cli.py  faults.py
-docs/       PROPOSAL.md  prior-art.md  part-model-schema.md  simulation.md  ...
+docs/       PROPOSAL.md  prior-art.md  part-model-schema.md  simulation.md  copper-extraction.md  ...
 tools/      extract_prompt.md  fault_report.py
 tests/
 ```

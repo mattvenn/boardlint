@@ -54,7 +54,7 @@ Three limits apply to every `covered` and `partial` row:
 | UV/OV protection thresholds | `planned` | Threshold fields in regulator models; compute trip points from the divider |
 | Rail load against regulator rating | `covered` | `power.regulator`. Loads without a model count as zero and are listed |
 | Sense resistor after the output capacitors | `planned` | Find series sense resistors on regulator outputs; check which side the capacitors are on |
-| Remote sense on low-voltage or high-current rails | `human` | Whether it is needed is a judgement. `layout.track_current` reports the IR drop that informs it |
+| Remote sense on low-voltage or high-current rails | `human` | Whether it is needed is a judgement. `layout.ir_drop` reports the voltage lost in the copper, which informs it |
 | LDO or reference stable with output capacitor ESR | `needs data` | Capacitor ESR per part number, and an ESR window in the model. `decoupling.regulator_caps` checks minimum capacitance only |
 | Rail sequencing | `planned` | Sequencing rules in part models; derive the order from the enable and power-good chain |
 
@@ -220,7 +220,7 @@ Three limits apply to every `covered` and `partial` row:
 | Checklist item | Status | Check id(s) or what it would take |
 |---|---|---|
 | Few plane slots from antipads | `planned` | Find via rows that cut slots in filled zones |
-| Copper wide enough for current | `partial` | `layout.track_current`: narrowest track per supply net, IPC-2221 external-layer formula. Zone necks and vias not checked |
+| Copper wide enough for current | `partial` | `layout.track_current`: the current each segment carries, from a resistor-network solve, against IPC-2221 (outer and inner layers). `layout.ir_drop`: voltage lost to each load. Necks in pours and via current not checked |
 
 ### Sensitive analog
 

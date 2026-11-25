@@ -1,6 +1,6 @@
 # boardlint review: basic-ecp5-pcb
 
-**2 errors, 6 warnings, 9 notes.** 80 components, 107 nets; netlist from the board.
+**2 errors, 7 warnings, 9 notes.** 80 components, 107 nets; netlist from the board.
 
 - KiCad 5 legacy schematic: pin names read from the cache library, nets taken from the board (the legacy schematic itself is not netlisted)
 - duplicate reference G*** on the board
@@ -86,6 +86,23 @@ X1 (SiT2001B), symbol clock:SiT2001B, footprint Package_TO_SOT_SMD:SOT-23-5. The
 
 Basis: pin numbers in the schematic symbol against pad numbers in the board file.
 
+### sd_clk is electrically long: 73 mm end to end, 444 ps one way
+
+`layout.impedance` · parts: U1 · nets: sd_clk · confidence: low
+
+SPI. 73 mm between its furthest pads (77 mm routed in all). For a 2 ns edge a trace acts as a transmission line beyond about 55 mm (delay over one sixth of the rise time). Nothing terminates it: expect overshoot and ringing at the far end. On a clock that can be seen as a second edge. A 22 to 47 ohm resistor at the driver is the usual fix. Line impedance about 72 ohm.
+
+| | |
+|---|---|
+| end_to_end_mm | 72.8 |
+| routed_mm | 77.3 |
+| delay_ps | 444 |
+| z0 | 72 |
+| assumed_rise_ns | 2.0 |
+| stack_up | assumed |
+
+Basis: microstrip / stripline formulas on the stack-up; rise time is an assumption (signals: rise_ns in boardlint.yaml).
+
 ### U1.N9(CCLK/MCLK/SCK) cannot be used as an input, and J9.23(Pin_23), J2.23(Pin_23) can drive it
 
 `mcu.pin_use` · parts: U1, J2, J9 · nets: sd_clk · confidence: medium
@@ -108,19 +125,17 @@ Net-(L2-Pad1), Net-(L3-Pad1): voltage-dependent checks skip them. Declare them u
 
 No series resistor: 22 to 33 ohm at the source tames edges on a long trace. 
 
-### sd_clk: 31% of its 77 mm has no ground copper on the other layer
+### Line parameters of 2 fast net(s)
 
-`layout.return_path` · nets: sd_clk · confidence: medium
+`layout.impedance` · confidence: low
 
-sd_clk (SPI). Where the reference copper is missing the return current detours, the loop area grows, and the trace both radiates and picks up more. 18 stretch(es) without cover.
+sd_clk: 77 mm, 0.15 mm on F.Cu, 72 ohm, 471 ps, 6.0 pF, 88% over a plane, 3 vias; clk: 19 mm, 0.15 mm on F.Cu, 72 ohm, 114 ps, 1.6 pF, 100% over a plane, 0 vias.
 
 | | |
 |---|---|
-| length_mm | 77.3 |
-| uncovered_mm | 24.0 |
-| stretches | 18 |
+| stack_up | assumed: F.Cu / 0.2 mm er 4.5, In1.Cu / 1.06 mm er 4.5, In2.Cu / 0.2 mm er 4.5 / B.Cu |
 
-Basis: filled ground zones in the board file, sampled every 0.5 mm along the tracks.
+Basis: microstrip / stripline formulas on the stack-up.
 
 ### U1 pin use: 75 pins in use (61 plain connector I/O not listed)
 
@@ -206,14 +221,17 @@ pull-up 10k (RN1.4); connector J9.13(Pin_13), J2.13(Pin_13), J10.10(Pin_10).
 | `decoupling.regulator_caps` | ran | 0 finding(s), 0.00 s |
 | `footprint.pin_map` | ran | 1 finding(s), 0.00 s |
 | `i2c.bus` | ran | 0 finding(s), 0.00 s |
-| `layout.coupling` | ran | 0 finding(s), 0.01 s |
-| `layout.return_path` | ran | 1 finding(s), 0.05 s |
+| `layout.coupling` | ran | 0 finding(s), 0.03 s |
+| `layout.impedance` | ran | 2 finding(s), 0.05 s |
+| `layout.ir_drop` | ran | 0 finding(s), 0.00 s |
+| `layout.return_path` | ran | 0 finding(s), 0.15 s |
 | `layout.track_current` | ran | 0 finding(s), 0.00 s |
 | `led.chain` | ran | 0 finding(s), 0.00 s |
 | `load.inductive` | ran | 0 finding(s), 0.00 s |
 | `mcu.alt_function` | ran | 0 finding(s), 0.00 s |
 | `mcu.pin_use` | ran | 2 finding(s), 0.00 s |
-| `mcu.strapping` | ran | 3 finding(s), 0.00 s |
+| `mcu.strapping` | ran | 3 finding(s), 0.01 s |
+| `net.name_mismatch` | ran | 0 finding(s), 0.00 s |
 | `pin.floating_control` | ran | 0 finding(s), 0.00 s |
 | `pin.name_voltage` | ran | 0 finding(s), 0.00 s |
 | `pin.requirements` | ran | 0 finding(s), 0.00 s |
@@ -222,9 +240,10 @@ pull-up 10k (RN1.4); connector J9.13(Pin_13), J2.13(Pin_13), J10.10(Pin_10).
 | `power.budget` | ran | 0 finding(s), 0.00 s |
 | `power.droop` | ran | 0 finding(s), 0.00 s |
 | `power.logic_level` | ran | 0 finding(s), 0.00 s |
-| `power.pin_voltage` | ran | 0 finding(s), 0.13 s |
+| `power.pin_voltage` | ran | 0 finding(s), 0.30 s |
 | `power.rails` | ran | 2 finding(s), 0.00 s |
 | `power.regulator` | ran | 0 finding(s), 0.00 s |
+| `power.source_pin` | ran | 0 finding(s), 0.00 s |
 | `power.supply_range` | ran | 0 finding(s), 0.00 s |
 | `ratings.fets` | ran | 0 finding(s), 0.00 s |
 | `ratings.passives` | ran | 1 finding(s), 0.00 s |

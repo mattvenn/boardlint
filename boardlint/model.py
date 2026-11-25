@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
-@dataclass
+@dataclass(eq=False)          # identity: pins are dictionary keys
 class Pin:
     comp: "Component"
     number: str
@@ -15,6 +15,8 @@ class Pin:
     spec: dict = field(default_factory=dict)   # per-pin data from the part model
     pos: Optional[tuple] = None  # absolute pad centre on the board (mm)
     layers: tuple = ()
+    size: Optional[tuple] = None  # pad size (mm), unrotated
+    drill: float = 0.0            # > 0 for through-hole pads
 
     @property
     def id(self) -> str:
@@ -99,6 +101,7 @@ class Via:
     y: float
     size: float
     drill: float
+    layers: tuple = ()        # first and last copper layer it joins; empty = through
 
 
 @dataclass
@@ -118,6 +121,8 @@ class Board:
     thickness: float = 1.6
     copper_um: float = 35.0
     path: str = ""
+    stackup: list = field(default_factory=list)   # [(name, kind 'copper'|'dielectric', thickness mm, epsilon_r)], top to bottom
+    stackup_assumed: bool = True
 
 
 @dataclass

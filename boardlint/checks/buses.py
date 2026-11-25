@@ -271,10 +271,13 @@ def i2c_bus(d):
 
 
 def _copper_pf(d, nets):
-    """Rough track capacitance: 0.06 pF/mm (0.15-0.25 mm trace on 1.6 mm FR4, some ground nearby)."""
+    """Track capacitance of a bus: from the stack-up where the tracks run over a plane, a small
+    figure per millimetre where they do not.  20 pF when there is no board."""
     if not d.board:
         return 20.0
-    return 0.06 * sum(t.length for t in d.board.tracks if t.net in nets)
+    from .. import tline
+    s = tline.net_summary(d, set(nets))
+    return s['c_pf'] if s else 0.0
 
 
 # ----------------------------------------------------------------------------- SPI / QSPI

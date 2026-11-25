@@ -53,3 +53,11 @@ agreement as encouraging, not as proof.
   pack is seen like any other strap.
 - I/O pins of a part with several supply domains are judged against its highest rail. Before
   that, every 3.3 V signal into the FPGA was reported as exceeding the 2.5 V auxiliary supply.
+
+## Update, 2026-11-25: copper extraction
+
+The linked report was regenerated with the copper extraction
+([copper-extraction.md](copper-extraction.md)): 2 errors, 7 warnings, 9 notes. One new warning:
+`layout.impedance` finds the SD card clock `sd_clk` 73 mm end to end with no series resistor
+(assumed 2 ns edge, low confidence). The supply rails are not solved on this board: its regulators have no model, and
+the FPGA model gives no supply current.

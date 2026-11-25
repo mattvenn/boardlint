@@ -97,7 +97,7 @@ unmodelled part means "not checked".
 | Pins | `pin.requirements`, `pin.floating_control`, `mcu.strapping`, `pin.name_voltage`, `footprint.pin_map` | Working; the first three depend on models. |
 | Power | `power.rails`, `power.supply_range`, `power.pin_voltage`, `power.logic_level`, `power.regulator`, `power.budget`, `decoupling.per_part`, `decoupling.regulator_caps` | Working. Currents are worst-case sums of model maxima. |
 | Ratings | `ratings.passives`, `ratings.fets`, `polarity.polarised_parts` | Working. Capacitor voltage ratings need a property on the part; most schematics have none. |
-| Layout | `layout.coupling`, `layout.return_path`, `layout.track_current` | Working as estimates. Closed-form capacitance, no field solver. |
+| Layout | `layout.coupling`, `layout.return_path`, `layout.ir_drop`, `layout.track_current`, `layout.impedance` | Coupling is a closed-form estimate. Resistance and current come from a resistor-network solve of the routed copper, impedance from formulas on the stack-up ([copper-extraction.md](copper-extraction.md)). No field solver. |
 | Simulation | `power.droop` (ngspice), `sim.i2c`, `sim.led_chain` (Icarus Verilog) | Working for LDOs, I2C targets and single-wire LEDs. |
 
 ## How we know it works
@@ -107,7 +107,7 @@ Two methods, because a clean report on a good board proves nothing.
 1. **Fault injection** (`tools/fault_report.py`, `tests/test_dino.py`). Start from a board believed
    good, apply one classic mistake in memory (swap SDA/SCL, leave off a pull-up, reverse an LED,
    tie both CC pins to one resistor, ...), and require a new finding from the expected check.
-   Currently 26 faults, 26 flagged. The first run flagged 20 of 22; the two misses and two
+   Currently 28 faults, 28 flagged. The first run flagged 20 of 22; the two misses and two
    caught-for-the-wrong-reason cases became fixes.
 2. **Historical bugs.** Public KiCad repositories where a commit fixes a real hardware mistake:
    check out the parent, expect a finding; check out the fix, expect it gone. Eight so far

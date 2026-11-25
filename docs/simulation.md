@@ -24,7 +24,7 @@ For every LDO with a part model, one transient run per corner:
 | `Rsrc` | sum of what is in the power path: fuse `r_max`, FET `rds_on` at the lowest specified gate voltage, 10 mΩ per jumper, plus the source itself | 0.15 Ω for a cell and its protection, 0.1 Ω otherwise. Override with `sources: {NET: {r: 0.08}}` |
 | LDO | PI current loop crossing over at `regulator.bw_khz`; pass current limited by the current limit and by `(Vin - Vout) / R_dropout`, with `R_dropout = dropout_mv / dropout_at_ma` | 50 kHz crossover; limit 1.3 x `i_max_ma` |
 | Capacitors | every capacitor on the rail, value derated for DC bias by package, ESR and ESL by package | 0603 |
-| `Rtr`, `Ltr` | pad-to-pad distance x 1.4, narrowest track on the net, copper thickness from the stack-up | 20 mΩ, 5 nH with no board |
+| `Rtr`, `Ltr` | extracted from the routed copper between the regulator's output pad and its largest load, ground return added ([copper-extraction.md](copper-extraction.md)) | pad-to-pad distance x 1.4 at the average track width when the two pads are not joined by copper; 20 mΩ, 5 nH with no board |
 | `I_load` | sum of `i_typ_ma` stepping to sum of `i_max_ma` of the parts on the rail | rise time 10 us (`sim: {load_tr_us: ...}`) |
 | `I_agg` | everything else fed from the regulator's input rail (LED strings, motors), switching at the same instant | |
 
@@ -32,7 +32,7 @@ Reported: the minimum and settled voltage at the load and the minimum input volt
 against the highest `vmin` of the parts on the rail.
 
 What it does not model: the regulator's real loop (PSRR, slew limits, foldback), battery
-dynamics beyond a resistor, plane inductance, thermal effects. Treat a failure as "work this out
+dynamics beyond a resistor, loop inductance from a field solve, thermal effects. Treat a failure as "work this out
 properly", and a pass as "no obvious problem".
 
 Switching regulators are not simulated yet.

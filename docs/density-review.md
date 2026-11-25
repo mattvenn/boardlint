@@ -56,3 +56,18 @@ Checks that changed because of this board:
 - SPI lines named for the ADC (`ADC_SCK`, `ADC_MISO`) are no longer classed as analogue nodes.
 - I2C buses on freely assignable MCU pins are found from nets named SDA and SCL.
 - `power.source_pin` is new, and treats a module's USB VBUS pad as a 500 mA source.
+
+## Update, 2026-11-25: copper extraction
+
+The linked report was regenerated with the copper extraction
+([copper-extraction.md](copper-extraction.md)): 0 errors, 5 warnings, 18 notes. The three new
+warnings have not been checked against the board's notes by its designer:
+
+- `layout.track_current`: a 0.5 mm segment of +5V on an inner layer carries all 811 mA of the LED
+  supply; IPC-2221 gives 723 mA there for a 10 °C rise. It depends on the same worst-case LED
+  current as the `power.source_pin` finding, so the firmware cap the notes ask for clears both.
+- `layout.impedance` x2: the shift-register clock `SR_CLK` (108 mm end to end) and the ADC clock
+  `ADC_SCK` (58 mm) have no series resistor. With an assumed 2 ns edge, anything over about 55 mm
+  can ring. Low confidence: the real edge rate of the RP2350 pin at its default drive is not modelled.
+
+A note: 115 mV (2.3 %) is lost on +5V on the way to the furthest LED.

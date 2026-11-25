@@ -107,6 +107,27 @@ def trace_rl(d, net, a, b):
     return r, l, f"{length:.0f} mm (pad to pad x 1.4) of {w:.2f} mm track: {r * 1000:.0f} mohm, {l * 1e9:.0f} nH"
 
 
+def extracted_rl(d, net, pin_out, pin_load):
+    """R and L between the regulator output pad and the load pad from the routed copper
+    (boardlint.extract), with the ground return added when both parts have a ground pad.
+    None when there is no board or the two pads are not joined by copper."""
+    if not d.board or pin_out is None or pin_load is None or not (d.board.tracks or d.board.zones):
+        return None
+    from ..extract import resistance_between
+    from .copper import copper_net, _ground_pin
+    r, l, _ = resistance_between(d, net.name, pin_out, pin_load, copper_net(d, net.name))
+    if r is None:
+        return None
+    desc = f"extracted from the routed copper, {pin_out.label} to {pin_load.label}: {r * 1000:.0f} mohm, {l:.0f} nH"
+    ga, gb = _ground_pin(d, pin_out.comp), _ground_pin(d, pin_load.comp)
+    if ga is not None and gb is not None and ga.net == gb.net:
+        rg, _, _ = resistance_between(d, ga.net, ga, gb, copper_net(d, ga.net))
+        if rg is not None:
+            r += rg
+            desc += f"; ground return {rg * 1000:.1f} mohm"
+    return r, l * 1e-9, desc
+
+
 def build_netlist(p):
     """p: dict of parameters (see droop()).  Returns the netlist text."""
     L = [f"* boardlint droop model: {p['title']}",
@@ -170,7 +191,8 @@ def droop(d):
         _, agg_ma, agg_parts = total_load(d, vin, {vout.name}, through_regs=False)
         agg_ma -= sum(l[2] for l in rail_loads(d, vin) if l[0] is c)
         rsrc, rpath = source_path(d, vin)
-        rtr, ltr, trdesc = trace_rl(d, vout, pin_out.pos, big_pin.pos if big_pin else None)
+        rtr, ltr, trdesc = extracted_rl(d, vout, pin_out, big_pin) or \
+            trace_rl(d, vout, pin_out.pos, big_pin.pos if big_pin else None)
         cin, cout = [], []
         _cap_lines(d, vin, 'i', 'vin', cin)
         ncout = _cap_lines(d, vout, 'o', 'out', cout, split=(pin_out.pos, big_pin.pos if big_pin else None, 'load'))

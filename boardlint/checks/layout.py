@@ -166,8 +166,13 @@ def coupling(d):
     agg, vic = classify_nets(d)
     if not agg or not vic or not b.tracks:
         return
+    from ..tline import Stack
+    stack = Stack(b)
     nl = max(len(b.copper_layers), 2)
-    h_adj = b.thickness / (nl - 1)                         # dielectric between neighbouring copper layers
+
+    def gap_between(la, lb):
+        g = stack.between(la, lb)
+        return g[0] if g else b.thickness / (nl - 1)
     order = {l: i for i, l in enumerate(b.copper_layers)}
     vt = [t for t in b.tracks if t.net in vic]
     grids = {}
@@ -183,6 +188,7 @@ def coupling(d):
             continue
         li = layers.index(t.layer) if t.layer in layers else 0
         adj = [layers[j] for j in (li - 1, li + 1) if 0 <= j < len(layers)]
+        h_adj = min([gap_between(t.layer, a) for a in adj] or [b.thickness])
         for x, y, dl in _samples(t, 0.25):
             hit = {}
             plane = any(z.layer in adj and _in_zone(x, y, z) for z in gz)
@@ -222,8 +228,7 @@ def coupling(d):
                         pr['c'] += cpm * dl
                         pr['gap'] = min(pr['gap'], gap)
                 elif inside:
-                    steps = abs(order.get(z.layer, 0) - order.get(t.layer, 0)) or 1
-                    h = h_adj * steps
+                    h = gap_between(t.layer, z.layer)
                     cpm = EPS0 * 4.5 * (t.width + 2 * 0.3 * h) / h      # parallel plate with a fringe allowance
                     pr = pair[(t.net, z.net)]
                     pr['over_mm'] += dl
@@ -316,44 +321,3 @@ def return_path(d):
                     nets=[net], evidence={'length_mm': round(tot, 1), 'uncovered_mm': round(unc, 1), 'stretches': gaps},
                     basis='filled ground and supply zones in the board file, sampled every 0.5 mm along the tracks',
                     confidence='medium')
-
-
-@check('layout.track_current', 'layout', needs_board=True,
-       doc='Supply tracks wide enough for the current behind them (IPC-2221, 10 C rise)')
-def track_current(d):
-    b = d.board
-    rise = float((d.config.get('track') or {}).get('temp_rise_c', 10))
-    over = defaultdict(list)
-    for n in d.nets.values():
-        if not n.is_power or n.is_ground:
-            continue
-        _, mx, parts = total_load(d, n)
-        if mx < 50:
-            continue
-        tr = [t for t in b.tracks if t.net == n.name and t.length >= 1.0]
-        if not tr:
-            continue
-        w = min(t.width for t in tr)
-        narrow = sum(t.length for t in tr if t.width <= w * 1.05)
-        area_mil2 = (w / 0.0254) * (b.copper_um / 25.4)
-        cap_a = 0.048 * rise ** 0.44 * area_mil2 ** 0.725
-        r_mohm = 1.72e-5 * narrow / (w * b.copper_um * 1e-3) * 1000
-        ev = {'narrowest_mm': w, 'length_at_that_width_mm': round(narrow, 1), 'capacity_A': round(cap_a, 2),
-              'load_max_mA': round(mx), 'loads': _summ(parts), 'drop_mV_at_max': round(r_mohm * mx / 1000, 1)}
-        if mx / 1000 > cap_a:
-            over[(w, round(cap_a, 2))].append((n.name, mx, narrow, ev))
-        elif r_mohm * mx / 1000 > 100 and n.vmax:
-            yield F('layout.track_current', 'info', f"{n.name}: about {r_mohm * mx / 1000:.0f} mV lost in {narrow:.0f} mm of {w:g} mm track at {mx:.0f} mA",
-                    f"If that length is in series with the load, it is {r_mohm:.0f} mohm.", nets=[n.name], evidence=ev,
-                    basis='copper resistivity; assumes the narrow segments are in series', confidence='low')
-    for (w, cap_a), lst in over.items():
-        lst.sort(key=lambda x: -x[1])
-        yield F('layout.track_current', 'warning',
-                f"{w:g} mm supply tracks carry up to {lst[0][1]:.0f} mA ({', '.join(x[0] for x in lst)})",
-                f"IPC-2221 gives {cap_a:.2f} A for a {rise:g} C rise at this width in {b.copper_um:g} um copper. "
-                + '; '.join(f"{nm}: {mx:.0f} mA, {nar:.0f} mm at this width" for nm, mx, nar, _ in lst)
-                + ". Not every segment carries a net's whole current: check the ones between the source and the "
-                  "loads, and widen or pour them. The resistance also costs voltage: see the droop result.",
-                nets=[x[0] for x in lst], evidence=lst[0][3],
-                basis='IPC-2221 external-layer formula; load is the sum of model maxima, all on at once',
-                confidence='low')

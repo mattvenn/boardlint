@@ -99,7 +99,7 @@ def load_project(path: str, pcb: str | None = None, sch: str | None = None, netl
                     sp = sc.pins[num] = Pin(comp=sc, number=num, name=bp.name, etype=bp.etype)
                     if not use_pcb_nets:
                         sp.net = None
-                sp.pos, sp.layers = bp.pos, bp.layers
+                sp.pos, sp.layers, sp.size, sp.drill = bp.pos, bp.layers, bp.size, bp.drill
                 if use_pcb_nets:
                     sp.net = bp.net
             if use_pcb_nets:

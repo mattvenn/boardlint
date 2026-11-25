@@ -76,6 +76,10 @@ FAULTS = [
      lambda d: fz.move_pin(d, fz.pin(d, 'U3', 'CE'), 'GND'), ['pin.floating_control']),
     ('fet-gate', 'Q2 gate pull-down path removed (R13): P-FET never turns on',
      lambda d: fz.remove(d, 'R13'), ['ratings.fets', 'pin.floating_control', 'power.rails']),
+    ('track-narrow', 'LED supply (VLED) routed at 0.15 mm instead of 0.4 mm',
+     lambda d: [setattr(t, 'width', 0.15) for t in d.board.tracks if t.net == 'VLED'], ['layout.track_current', 'layout.ir_drop']),
+    ('rail-thin', '3.3 V rail routed at 0.08 mm: too much resistance between the regulator and the module',
+     lambda d: [setattr(t, 'width', 0.08) for t in d.board.tracks if t.net == '+3V3'], ['layout.ir_drop']),
 ]
 
 
