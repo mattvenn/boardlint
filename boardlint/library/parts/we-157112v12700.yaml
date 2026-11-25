@@ -1,0 +1,72 @@
+id: we-157112v12700
+match:
+  value: ["157112V12700*"]
+kind: LED
+class: led_display
+description: "Single-digit seven-segment LED display with decimal point, common cathode, 7.6 mm digit, green, 10-pad SMT (Wuerth WL-S7DS 157112V12700)"
+datasheet: "Wuerth Elektronik 157112V12700 (www.we-online.com/catalog/datasheet/157112V12700.pdf): NOT opened. Alternate part read instead: Guangcai GS3011A/CX-X product specification, 2020.09.20 rev. A (LCSC C22462656, GS3011CR-G)"
+provenance:
+  source: "Wuerth datasheet not read: www.we-online.com and we-online.de are refused by this session's network policy and LCSC has no datasheet under C6976938 (2026-11-25). Read: https://datasheet.lcsc.com/datasheet/pdf/d693c58f8d8f6bc47d47c2d72f2e6166.pdf, linked from https://www.lcsc.com/datasheet/C22462656.pdf (Guangcai GS3011A/CX-X, 6 pages), the schematic's alternate part"
+  verified: false
+  unverified_fields: [description, display.common, display.color, display.segments, display.common_pins, display.vf_typ, display.vf_at_ma, display.pd_max_mw, display.if_peak_ma]
+  notes: >
+    NOTHING in this file was read from the Wuerth datasheet. Every figure for the 157112V12700
+    itself is second hand and listed in unverified_fields:
+    - common cathode: the schematic's own "Characteristics" field and distributor listing titles;
+    - green, 570 nm, 21 mcd, 7.6 mm digit, forward voltage 2 V at 20 mA, power dissipation
+      52 mW, "forward current 100 mA" (not said whether continuous or peak; recorded as peak
+      because 52 mW at 2 V is 26 mA): summaries of Digi-Key, RS and element14 listings returned
+      by a web search, not opened and not the manufacturer's text;
+    - pin-to-segment map: the board's KiCad symbol (drawn for a Kingbright KCSC02-106) and the
+      alternate part's datasheet below, which agree; Wuerth's own pin table was not read.
+    The Wuerth maximum forward voltage and the absolute-maximum continuous current per segment
+    are NOT KNOWN here and are left out. Open the datasheet and fill display.vf_max and
+    display.if_max_ma before trusting a margin calculation; until then use the test current
+    (20 mA) as the ceiling.
+    Read from the datasheet, for the alternate GS3011CR-G only (display.alternate): Guangcai
+    GS3011A/CX-X, p.1 (0.30 inch / 7.62 mm single digit SMD display); p.2 (suffix -X is the
+    face colour, B black, G gray); p.3 (drawing, read from the rendered page: pads 1 to 5 along
+    the bottom, 6 to 10 along the top; internal circuit GS3011Cx common cathode on pads 3 and 8,
+    anodes A 7, B 6, C 4, D 2, E 1, F 9, G 10, DP 5; GS3011Ax is the common-anode version with
+    the same pads); p.4 absolute maximum at 25 C: reverse voltage 5 V, forward current 30 mA,
+    power dissipation 100 mW, pulse current 150 mA (0.1 ms, 1 kHz), -40 to +85 C; p.4
+    electrical-optical at IF = 10 mA, colour code R (red, AlGaInP, peak 660 nm, dominant
+    645 nm): forward voltage 2.00 typ / 2.50 max, 20 to 50 mcd; colour code G (yellow green,
+    572 / 570 nm): 2.00 typ / 2.50 max, 20 to 60 mcd. "GS3011CR-G" is read here as common
+    cathode, colour code R (red), gray face. The datasheet does not say whether the limits are
+    per segment; they are taken as per segment (one LED die each).
+    That makes the alternate a RED display where the listings call the Wuerth part green: check
+    that the colour change is intended.
+    Worked example, computed: a 3.3 V output through 510 ohm into a segment at 2.0 V gives
+    (3.3 - 2.0) / 510 = 2.5 mA, less the driver's own drop.
+    kind is LED so that the checks treat the segment nets as LED loads. The schema has no
+    section for an LED display: display: is new in this file and no check reads it yet.
+
+display:
+  type: seven_segment
+  digits: 1
+  decimal_point: true
+  common: cathode
+  color: green
+  segments: {A: 7, B: 6, C: 4, D: 2, E: 1, F: 9, G: 10, DP: 5}   # segment: pad
+  common_pins: [3, 8]
+  vf_typ: 2.0                 # distributor listing, at vf_at_ma; maximum not known
+  vf_at_ma: 20
+  if_peak_ma: 100             # distributor listing "forward current 100 mA", conditions not known
+  pd_max_mw: 52               # distributor listing
+  alternate:                  # read from the Guangcai datasheet (see provenance)
+    mpn: GS3011CR-G
+    lcsc: C22462656
+    verified: true
+    common: cathode
+    color: red                # colour code R: peak 660 nm, dominant 645 nm
+    segments: {A: 7, B: 6, C: 4, D: 2, E: 1, F: 9, G: 10, DP: 5}
+    common_pins: [3, 8]
+    vf_typ: 2.0               # at IF = 10 mA
+    vf_max: 2.5
+    vf_at_ma: 10
+    if_max_ma: 30             # absolute maximum, continuous
+    if_peak_ma: 150           # 0.1 ms pulses at 1 kHz
+    pd_max_mw: 100
+    vr_max: 5
+    iv_mcd: [20, 50]          # at 10 mA

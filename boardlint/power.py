@@ -96,6 +96,8 @@ def analyse_power(d: Design):
     for n in d.nets.values():
         if n.is_ground or n.is_power:
             continue
+        if any(p.role == 'switch_node' for p in n.pins):
+            continue                  # the switched side of an inductor: not a rail with a voltage
         if any(p.etype in ('power_in', 'power_out') or supply_spec(p.comp, p) for p in n.pins):
             n.is_power = True
     # 5. propagate along the power path (fuses, jumpers, ferrites, FET channels, diodes)
@@ -117,6 +119,20 @@ def analyse_power(d: Design):
                              f"{src.name} through {c.ref}")
                         dst.feeds_from = (src.name, c.ref)
                         changed = True
+    # 5b. a supply pin behind an RC filter (a small series resistor and a capacitor to ground) sits at
+    #     the rail's voltage: the drop across the resistor is the pin's own small current
+    for c in d.components.values():
+        ps = list(c.pins.values())
+        if c.dnp or c.kind != 'R' or len(ps) != 2 or c.num is None or not (1.0 < c.num <= 100):
+            continue
+        na, nb = d.net_of(ps[0]), d.net_of(ps[1])
+        for src, dst in ((na, nb), (nb, na)):
+            if src is None or dst is None or src.vmin is None or not src.is_power or dst.vmin is not None or not dst.is_power:
+                continue
+            if any(q.comp.kind == 'C' and not q.comp.dnp and any(d.net_of(o) is not None and d.net_of(o).is_ground
+                                                                 for o in q.comp.pins.values() if o is not q) for q in dst.pins):
+                _set(dst, src.vmin, src.vmax, f"{src.name} through {c.ref} (RC filter)")
+                dst.feeds_from = (src.name, c.ref)
     _depths(d)
     # 6. resistor dividers between a known level and ground give signal-level voltages
     for n in list(d.nets.values()) * 2:

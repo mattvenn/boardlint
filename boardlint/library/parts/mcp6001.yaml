@@ -1,0 +1,220 @@
+# Three documents: MCP6001, MCP6001R and MCP6001U are the same amplifier in three different
+# SOT-23-5 pinouts, and the pins below are keyed by number. The first document carries the
+# full provenance; the other two differ only in match, pins and the supply pin number.
+id: mcp6001
+match:
+  lcsc: [C116490]             # LCSC's listing for MCP6001T-I/OT (page title read 2026-11-25)
+  value: ["MCP6001", "MCP6001-*", "MCP6001T*"]   # not MCP6001R* / MCP6001U*: those are the next two documents
+kind: IC
+class: opamp
+description: "Single 1 MHz rail-to-rail input / output CMOS op amp, 1.8 V to 6.0 V, 100 uA, SOT-23-5 / SC70-5 (pinout: 1 VOUT, 2 VSS, 3 VIN+, 4 VIN-, 5 VDD)"
+datasheet: "Microchip MCP6001/1R/1U/2/4, DS20001733L, 2020 (ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf)"
+provenance:
+  source: "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf (50 pages, opened 2026-11-25); the copy LCSC hosts for C116490 has the same text"
+  verified: true
+  notes: >
+    PINOUTS, package types p.1 (drawings) and Table 3-1 p.11, which agree:
+    MCP6001 (5-lead SC70 and SOT-23): 1 VOUT, 2 VSS, 3 VIN+, 4 VIN-, 5 VDD.
+    MCP6001R (5-lead SOT-23):         1 VOUT, 2 VDD, 3 VIN+, 4 VIN-, 5 VSS.
+    MCP6001U (5-lead SOT-23):         1 VIN+, 2 VSS, 3 VIN-, 4 VOUT, 5 VDD.
+    Product identification p.47: MCP6001T, MCP6001RT and MCP6001UT are the tape-and-reel
+    ordering codes of those three devices (examples MCP6001T-I/OT, MCP6001RT-I/OT,
+    MCP6001UT-E/OT); OT = SOT-23 (MCP6001, MCP6001R, MCP6001U), LT = SC70 (MCP6001 only).
+    A footprint laid out for one variant does not work with another: against the MCP6001, the
+    MCP6001U has its output on pin 4 and its inputs on pins 1 and 3, and the MCP6001R has the
+    supply pins 2 and 5 exchanged (reverse supply across the part).
+    MATCHING: a component whose value and part number name different variants (for example
+    value MCP6001-OT with MPN MCP6001UT-I/OT) is matched by its LCSC number if it has one, else
+    by this first document. boardlint does not compare the symbol's pin functions with the
+    variant in the part number: do that by hand whenever both appear on one component.
+    Features p.1 (GBWP 1 MHz typ, rail-to-rail input / output, 1.8 V to 6.0 V, IQ 100 uA typ,
+    phase margin 90 degrees typ, 45 degrees typ with a 500 pF load). Absolute maximum p.3:
+    VDD - VSS 7.0 V; analog inputs VSS - 1.0 V to VDD + 1.0 V and +/-2 mA; all other inputs and
+    outputs VSS - 0.3 V to VDD + 0.3 V; output and supply pins +/-30 mA; output short circuit
+    continuous. DC specifications p.3: offset +/-4.5 mV max; bias current 1 pA typ (19 pA at
+    85 C); common-mode range VSS - 0.3 V to VDD + 0.3 V; output swing VSS + 25 mV to VDD - 25 mV
+    (VDD = 5.5 V, 0.5 V overdrive, RL = 10 k to VDD / 2); short-circuit current 6 mA typ at
+    1.8 V, 23 mA typ at 5.5 V; supply 1.8 to 6.0 V (note 2: the other limits are measured at
+    1.8 V and 5.5 V); IQ 50 / 100 / 170 uA (VDD = 5.5 V). AC p.4: GBWP 1.0 MHz, slew rate
+    0.6 V/us, noise 28 nV/rtHz at 1 kHz; thermal resistance 256 C/W (SOT-23-5), 331 C/W (SC70).
+    Section 4.1.3 p.13 (the two input stages hand over at VCM = VDD - 1.1 V). Section 4.3 p.14
+    (capacitive loads: above 100 pF at G = +1 a small series output resistor RISO improves
+    phase margin; no value is given in the text and Figure 4-4 was not read for this file).
+    Section 4.4 p.14 (local bypass 0.01 uF to 0.1 uF within 2 mm of VDD, bulk 1 uF or larger
+    within 100 mm, which may be shared). The datasheet has no short-circuit or swing figure at
+    3.3 V. Pins are keyed by number because KiCad's op-amp symbols leave the output unnamed.
+    No errata sheet was searched for (offline extraction); the one entry below follows from the
+    datasheet's own pin tables.
+
+supplies:
+  - pins: ["#5", VDD, "V+"]
+    vmin: 1.8
+    vmax: 6.0
+    abs_max: 7.0
+    i_typ_ma: 0.1             # no load, VDD = 5.5 V
+    i_max_ma: 0.17
+    decoupling:
+      - {c_min: 10n, count: 1, max_mm: 2, note: "local bypass 0.01 uF to 0.1 uF within 2 mm of the VDD pin (section 4.4)"}
+      - {c_min: 1u, count: 1, max_mm: 100, note: "bulk 1 uF or larger within 100 mm; may be shared with nearby analog parts (section 4.4)"}
+
+io:
+  abs_max_over_supply: 0.3    # output and "all other" pins; the analog inputs allow 1.0 V at up to 2 mA
+  tolerant_5v: false
+
+pins:
+  "#1": {name: VOUT, drive: analog}
+  "#2": {name: VSS, role: gnd}
+  "#3": {name: VIN+, role: analog_in, drive: analog, abs_max_over_supply: 1.0}
+  "#4": {name: VIN-, role: analog_in, drive: analog, abs_max_over_supply: 1.0}
+  "#5": {name: VDD, role: power_in}
+
+opamp:
+  channels: 1
+  pinout: {variant: MCP6001, VOUT: 1, VSS: 2, "VIN+": 3, "VIN-": 4, VDD: 5}
+  gbw_mhz: 1.0
+  slew_v_per_us: 0.6
+  phase_margin_deg: 90
+  rail_to_rail_input: true
+  rail_to_rail_output: true
+  vcm_beyond_rails_v: 0.3     # common-mode range VSS - 0.3 V to VDD + 0.3 V
+  out_swing_from_rail_mv: 25  # RL = 10 k, VDD = 5.5 V
+  vos_max_mv: 4.5
+  ib_typ_pa: 1
+  isc_ma: {1.8: 6, 5.5: 23}   # typ
+  iq_per_amp_ua: [50, 100, 170]
+  input_i_max_ma: 2
+  theta_ja: 256               # SOT-23-5; 331 for SC70
+  cap_load: "above 100 pF at unity gain add a series output resistor (section 4.3)"
+  crossover_distortion_at: "VCM = VDD - 1.1 V (input stage hand-over)"
+
+errata:
+  - id: sot23-pinout-variants
+    summary: "MCP6001, MCP6001R and MCP6001U have three different SOT-23-5 pinouts (output on pin 1, 1 or 4; VDD on pin 5, 2 or 5). The ordering code (MCP6001T / MCP6001RT / MCP6001UT) has to be the variant the symbol and footprint were drawn for; this file assumes pin 1 VOUT, 2 VSS, 3 VIN+, 4 VIN-, 5 VDD."
+    source: "Microchip DS20001733L, package types p.1 and Table 3-1 p.11"
+    severity: info
+---
+id: mcp6001r
+match:
+  value: ["MCP6001R*"]
+kind: IC
+class: opamp
+description: "Single 1 MHz rail-to-rail input / output CMOS op amp, 1.8 V to 6.0 V, 100 uA, SOT-23-5, reversed supply pinout (1 VOUT, 2 VDD, 3 VIN+, 4 VIN-, 5 VSS)"
+datasheet: "Microchip MCP6001/1R/1U/2/4, DS20001733L, 2020 (ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf)"
+provenance:
+  source: "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf (50 pages, opened 2026-11-25)"
+  verified: true
+  notes: >
+    Same amplifier and same datasheet tables as the first document of this file (id mcp6001),
+    whose notes give the page of every number. Pinout from package types p.1 and Table 3-1
+    p.11: MCP6001R, 5-lead SOT-23: 1 VOUT, 2 VDD, 3 VIN+, 4 VIN-, 5 VSS. Ordering code
+    MCP6001RT (p.47).
+
+supplies:
+  - pins: ["#2", VDD, "V+"]
+    vmin: 1.8
+    vmax: 6.0
+    abs_max: 7.0
+    i_typ_ma: 0.1
+    i_max_ma: 0.17
+    decoupling:
+      - {c_min: 10n, count: 1, max_mm: 2, note: "local bypass 0.01 uF to 0.1 uF within 2 mm of the VDD pin (section 4.4)"}
+      - {c_min: 1u, count: 1, max_mm: 100, note: "bulk 1 uF or larger within 100 mm; may be shared with nearby analog parts (section 4.4)"}
+
+io:
+  abs_max_over_supply: 0.3
+  tolerant_5v: false
+
+pins:
+  "#1": {name: VOUT, drive: analog}
+  "#2": {name: VDD, role: power_in}
+  "#3": {name: VIN+, role: analog_in, drive: analog, abs_max_over_supply: 1.0}
+  "#4": {name: VIN-, role: analog_in, drive: analog, abs_max_over_supply: 1.0}
+  "#5": {name: VSS, role: gnd}
+
+opamp:
+  channels: 1
+  pinout: {variant: MCP6001R, VOUT: 1, VDD: 2, "VIN+": 3, "VIN-": 4, VSS: 5}
+  gbw_mhz: 1.0
+  slew_v_per_us: 0.6
+  phase_margin_deg: 90
+  rail_to_rail_input: true
+  rail_to_rail_output: true
+  vcm_beyond_rails_v: 0.3
+  out_swing_from_rail_mv: 25
+  vos_max_mv: 4.5
+  ib_typ_pa: 1
+  isc_ma: {1.8: 6, 5.5: 23}
+  iq_per_amp_ua: [50, 100, 170]
+  input_i_max_ma: 2
+  theta_ja: 256
+  cap_load: "above 100 pF at unity gain add a series output resistor (section 4.3)"
+  crossover_distortion_at: "VCM = VDD - 1.1 V (input stage hand-over)"
+
+errata:
+  - id: sot23-pinout-variants
+    summary: "MCP6001, MCP6001R and MCP6001U have three different SOT-23-5 pinouts. This file assumes the MCP6001R: pin 1 VOUT, 2 VDD, 3 VIN+, 4 VIN-, 5 VSS; on a footprint drawn for the plain MCP6001 the supply is reversed."
+    source: "Microchip DS20001733L, package types p.1 and Table 3-1 p.11"
+    severity: info
+---
+id: mcp6001u
+match:
+  value: ["MCP6001U*"]
+kind: IC
+class: opamp
+description: "Single 1 MHz rail-to-rail input / output CMOS op amp, 1.8 V to 6.0 V, 100 uA, SOT-23-5, U pinout (1 VIN+, 2 VSS, 3 VIN-, 4 VOUT, 5 VDD)"
+datasheet: "Microchip MCP6001/1R/1U/2/4, DS20001733L, 2020 (ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf)"
+provenance:
+  source: "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf (50 pages, opened 2026-11-25)"
+  verified: true
+  notes: >
+    Same amplifier and same datasheet tables as the first document of this file (id mcp6001),
+    whose notes give the page of every number. Pinout from package types p.1 and Table 3-1
+    p.11: MCP6001U, 5-lead SOT-23: 1 VIN+, 2 VSS, 3 VIN-, 4 VOUT, 5 VDD. Ordering code
+    MCP6001UT (p.47).
+
+supplies:
+  - pins: ["#5", VDD, "V+"]
+    vmin: 1.8
+    vmax: 6.0
+    abs_max: 7.0
+    i_typ_ma: 0.1
+    i_max_ma: 0.17
+    decoupling:
+      - {c_min: 10n, count: 1, max_mm: 2, note: "local bypass 0.01 uF to 0.1 uF within 2 mm of the VDD pin (section 4.4)"}
+      - {c_min: 1u, count: 1, max_mm: 100, note: "bulk 1 uF or larger within 100 mm; may be shared with nearby analog parts (section 4.4)"}
+
+io:
+  abs_max_over_supply: 0.3
+  tolerant_5v: false
+
+pins:
+  "#1": {name: VIN+, role: analog_in, drive: analog, abs_max_over_supply: 1.0}
+  "#2": {name: VSS, role: gnd}
+  "#3": {name: VIN-, role: analog_in, drive: analog, abs_max_over_supply: 1.0}
+  "#4": {name: VOUT, drive: analog}
+  "#5": {name: VDD, role: power_in}
+
+opamp:
+  channels: 1
+  pinout: {variant: MCP6001U, "VIN+": 1, VSS: 2, "VIN-": 3, VOUT: 4, VDD: 5}
+  gbw_mhz: 1.0
+  slew_v_per_us: 0.6
+  phase_margin_deg: 90
+  rail_to_rail_input: true
+  rail_to_rail_output: true
+  vcm_beyond_rails_v: 0.3
+  out_swing_from_rail_mv: 25
+  vos_max_mv: 4.5
+  ib_typ_pa: 1
+  isc_ma: {1.8: 6, 5.5: 23}
+  iq_per_amp_ua: [50, 100, 170]
+  input_i_max_ma: 2
+  theta_ja: 256
+  cap_load: "above 100 pF at unity gain add a series output resistor (section 4.3)"
+  crossover_distortion_at: "VCM = VDD - 1.1 V (input stage hand-over)"
+
+errata:
+  - id: sot23-pinout-variants
+    summary: "MCP6001, MCP6001R and MCP6001U have three different SOT-23-5 pinouts. This file assumes the MCP6001U: pin 1 VIN+, 2 VSS, 3 VIN-, 4 VOUT, 5 VDD; on a footprint drawn for the plain MCP6001 the output and inputs land on the wrong nets."
+    source: "Microchip DS20001733L, package types p.1 and Table 3-1 p.11"
+    severity: info

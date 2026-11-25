@@ -1,0 +1,108 @@
+id: 24lc02b
+match:
+  lcsc: [C612280]             # LCSC's listing for 24LC02BT-I/MC (page title read 2026-11-25)
+  value: ["24LC02", "24LC02B*"]
+kind: IC
+class: eeprom
+description: "2 Kbit (256 x 8) I2C serial EEPROM, 2.5 V to 5.5 V, 400 kHz, answers at every address 0x50 to 0x57, A0 to A2 not connected inside"
+datasheet: "Microchip 24AA02/24LC02B/24FC02, DS20001709N, 2021 (current revision, LCSC copy for C612280); DS21709C, 2003 (ww1.microchip.com/downloads/en/DeviceDoc/21709c.pdf, the schematic's link) read for comparison"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/67eed3e570c49a8041060620b37e84b5.pdf, linked from https://www.lcsc.com/datasheet/C612280.pdf (Microchip DS20001709N, 51 pages) and https://ww1.microchip.com/downloads/en/DeviceDoc/21709c.pdf (DS21709C, 24 pages); both opened 2026-11-25"
+  verified: true
+  notes: >
+    Two revisions were read. The schematic links DS21709C (2003), which has no DFN package: the
+    MC (DFN 2 x 3) package of the 24LC02BT-I/MC is only in later revisions, so the numbers below
+    are from DS20001709N (2021), read from the copy LCSC hosts for that part number
+    (www.microchip.com, where the current revision lives, is refused by this session's network
+    policy; ww1.microchip.com is reachable and served the 2003 file). Where the 2003
+    revision differs it is said so.
+    DS20001709N: device selection table p.1 (24LC02B 2.5 V to 5.5 V, 400 kHz, I and E
+    temperature; the 100 kHz below 2.5 V limit is the 24AA02's, the 24LC02B is not specified
+    below 2.5 V); features p.1 (page write time 5 ms max, 8-byte page buffer, hardware
+    write-protect, Schmitt-trigger inputs); package types p.1 (DFN / TDFN / UDFN, PDIP, MSOP,
+    SOIC, TSSOP: 1 A0, 2 A1, 3 A2, 4 VSS, 5 SDA, 6 SCL, 7 WP, 8 VCC; "Pins A0, A1 and A2 are
+    not used by the 24XX02 (no internal connections)"). Absolute maximum p.3: VCC 6.5 V; all
+    inputs and outputs -0.3 V to VCC + 1.0 V. DC Table 1-1 p.3: VIH 0.7 VCC, VIL 0.3 VCC,
+    hysteresis 0.05 VCC min, VOL 0.40 V max at 3.0 mA with VCC = 2.5 V, leakage +/-1 uA, pin
+    capacitance 10 pF max, write current 3 mA max and read current 1 mA max (VCC = 5.5 V, SCL =
+    400 kHz), standby 1 uA max (I temperature), 5 uA max (E temperature, 24LC02B). AC Table 1-2
+    p.4-5: clock 400 kHz max for 2.5 V <= VCC <= 5.5 V; SDA and SCL rise time 300 ns max, fall
+    time 300 ns max; input spike suppression 50 ns; write cycle 5 ms max; endurance 1,000,000
+    cycles. Pin Table 2-1 and sections 2.1 to 2.4 p.6: A0, A1, A2 "Not Connected ... may be
+    left floating or tied to either VSS or VCC"; SDA is open drain and "requires a pull-up
+    resistor to VCC (typical 10 k for 100 kHz, 2 k for 400 kHz and 1 MHz)"; WP "must be
+    connected to either VSS or VCC": VSS = normal read / write of the whole memory, VCC = write
+    operations inhibited, reads not affected (also section 6.3 p.9); note 1 "The exposed pad on
+    the TDFN/UDFN package can be connected to VSS or left floating" (the DFN (MC) package is not
+    named in that note and its drawing was not read). Device addressing section 5.0 p.8:
+    control code 1010, "the next three bits of the control byte are don't cares", so the part
+    acknowledges all eight 7-bit addresses 0x50 to 0x57 and nothing else of the 1010xxx group
+    can share its bus. No acknowledge during the internal write cycle (p.7). Ordering p.48:
+    24LC02BT-I/MC = tape and reel, industrial, 2.5 V, DFN 2 x 3 x 1.0 mm.
+    DS21709C (2003) agrees on supply range, absolute maximum, thresholds, VOL, clock frequency,
+    pin functions (Table 8-1 p.11), WP and the unused A0 to A2 pins; it additionally prints
+    typical currents (write 0.1 mA, read 0.05 mA, standby 0.01 uA) and "2 ms typical write
+    cycle time"; neither is in the current revision and neither is used below.
+    The datasheet has no decoupling recommendation and prints no requirement for a pull-up on
+    SCL (the I2C bus needs one all the same; the i2c.bus check covers it).
+    Computed, not printed: the address list (1010 followed by any three bits).
+    sim: the part has no identification register. ID_REG / ID_VAL are placeholders (the
+    behavioural target returns 0x00 for any other register, so 0x00 is expected at 0x00): the
+    simulation only shows that the part is powered and acknowledges, at 0x50 only.
+    No errata search was done (offline extraction).
+
+supplies:
+  - pins: [VCC]
+    vmin: 2.5
+    vmax: 5.5
+    abs_max: 6.5
+    i_max_ma: 3               # during a write, VCC = 5.5 V, SCL = 400 kHz (read: 1 mA max); no typical is printed in this revision
+    i_read_max_ma: 1
+    i_standby_max_ma: 0.001   # I temperature; 0.005 for E temperature
+
+io:
+  vih_frac: 0.7
+  vil_frac: 0.3
+  vhys_frac: 0.05             # Schmitt-trigger inputs, minimum
+  vol: 0.4                    # max at 3.0 mA, VCC = 2.5 V
+  abs_max_over_supply: 1.0    # all inputs and outputs: -0.3 V to VCC + 1.0 V
+  tolerant_5v: false
+
+pins:
+  SDA:                        # pin 5
+    role: i2c_sda
+    drive: open_drain
+    require:
+      - {pullup: {}, note: "SDA is open drain and requires a pull-up resistor to VCC (typical 10 k for 100 kHz, 2 k for 400 kHz)"}
+  SCL:                        # pin 6
+    role: i2c_scl
+    drive: input
+  WP:                         # pin 7
+    drive: input
+    active: high              # high = whole array (00-FF) write-protected, reads still work
+    require:
+      - {not_floating: true, note: "WP must be connected to either VSS (read / write) or VCC (write-protected); it may not float"}
+  A0: {role: nc, note: "not used by the 24LC02B, no internal connection; may float or be tied to VSS or VCC. It does not set the address"}   # pin 1
+  A1: {role: nc, note: "not used by the 24LC02B, no internal connection; may float or be tied to VSS or VCC. It does not set the address"}   # pin 2
+  A2: {role: nc, note: "not used by the 24LC02B, no internal connection; may float or be tied to VSS or VCC. It does not set the address"}   # pin 3
+  "VSS/GND": {role: gnd}      # pin 4
+  VCC: {role: power_in}       # pin 8
+
+i2c:
+  addresses: [0x50]           # what firmware normally uses; the checks take one address per part
+  answers_at: [0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57]   # 1010xxx: the three block-select bits are "don't care"
+  address_pins_used: false    # A0 to A2 are not connected inside: two of these parts cannot share a bus
+  max_khz: 400                # 2.5 V <= VCC <= 5.5 V, the whole range of the 24LC02B
+  t_rise_max_ns: 300
+  busy_nack_ms: 5             # no acknowledge during the write cycle (5 ms max)
+
+eeprom:
+  bytes: 256
+  page_bytes: 8
+  t_write_ms: 5               # max, byte or page
+  endurance_cycles: 1000000
+  write_protect: {pin: WP, protected_level: high, covers: "whole array"}
+
+sim:
+  model: i2c_target
+  params: {ID_REG: 0x00, ID_VAL: 0x00}   # placeholders: an EEPROM has no ID register (see provenance)

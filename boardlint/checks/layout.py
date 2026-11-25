@@ -93,6 +93,22 @@ _SWN = re.compile(r'^(SW|LX|PH|PHASE|BOOT|BST)\d*$', re.I)
 _ANA = re.compile(r'SENS|ADC|MON|MEAS|AIN|VREF|NTC|TEMP|MIC|AUDIO|_FB$', re.I)
 
 
+def _digital_only(n):
+    """A net with an analog-sounding name that sits on an MCU pin with no ADC: a PWM output on its
+    way to a filter (IREF_PWM, DAC_PWM), not a measurement node."""
+    for p in n.pins:
+        mcu = (p.comp.model or {}).get('mcu') or {}
+        adc = [str(x) for k in ('adc1_pins', 'adc2_pins') for x in (mcu.get(k) or [])]
+        if adc and p.role == 'gpio' and not any(a == p.name or a in (p.name or '').split('/') or (p.name or '').startswith(a + '_') for a in adc):
+            return True
+    return False
+
+
+def nn_digital(d, name):
+    n = d.nets.get(name)
+    return n is not None and _digital_only(n) and not any(p.role == 'analog_in' for p in n.pins)
+
+
 def classify_nets(d):
     """Returns (aggressors: net -> (reason, swing V), victims: net -> (kind, reason))."""
     agg, vic = {}, {}
@@ -132,7 +148,7 @@ def classify_nets(d):
             vkind = None
             if p.role == 'touch':
                 vkind = ('touch', f"capacitive-touch electrode of {c.ref}")
-            elif p.role == 'analog_in' or is_analog_name(n.name):
+            elif p.role == 'analog_in' or (is_analog_name(n.name) and not _digital_only(n)):
                 vkind = ('analog', 'analog / measurement node')
             elif c.kind == 'XTAL':
                 vkind = ('analog', 'crystal')
@@ -155,6 +171,8 @@ def classify_nets(d):
             vic.setdefault(nn, ('analog', 'boardlint.yaml'))
     for nn in list(agg):
         vic.pop(nn, None) if nn in vic and vic[nn][0] != 'touch' else None
+    for nn in [k for k, v in vic.items() if v[0] == 'analog' and nn_digital(d, k)]:
+        del vic[nn]
     return agg, vic
 
 

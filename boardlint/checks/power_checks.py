@@ -180,7 +180,15 @@ def logic_level(d):
                 continue          # a measurement divider, not a logic level
             ev = {'divider': f"{div[0].ref} {fmt_r(div[0].num)} / {div[1].ref} {fmt_r(div[1].num)} from {div[2].name}",
                   'net_v': f"{n.vmin:g}-{n.vmax:g} V", 'vih': round(float(vih), 3)}
-            if n.vmax < vih:
+            if n.vmax < vih and p.role == 'gpio' and div[2].is_power and not from_output:
+                # a pull-up against a stronger pull-down on a pin that can drive the line itself
+                yield F('power.logic_level', 'warning', f"{n.name} rests at {n.vmax:g} V: a pull-up and a pull-down oppose each other",
+                        f"{div[0].ref} ({fmt_r(div[0].num)}) pulls it to {div[2].name} and {div[1].ref} ({fmt_r(div[1].num)}) pulls it to "
+                        f"ground, so undriven it sits at {n.vmax:g} V, a logic low at {p.label}. {p.label} can drive the line, so it "
+                        f"works; but the pull-up does nothing except waste {n.vmax / div[1].num * 1000:.2f} mA, and whoever fitted it "
+                        f"expected a high when nothing drives the line.",
+                        refs=[c.ref, div[0].ref, div[1].ref], nets=[n.name], evidence=ev, basis='resistor values on the net', confidence='high')
+            elif n.vmax < vih:
                 yield F('power.logic_level', 'error', f"{n.name} never reaches a logic high at {p.label}",
                         f"The divider gives at most {n.vmax:g} V; the input needs {vih:.2f} V.",
                         refs=[c.ref, div[0].ref, div[1].ref], nets=[n.name], evidence=ev, basis=model_basis(c, 'VIH'),

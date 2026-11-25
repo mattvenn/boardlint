@@ -1,0 +1,184 @@
+id: rp2350b
+match:
+  value: ["RP2350B*", "RP2350*QFN80*", "RP2350-QFN80*"]
+  lib: ["RP2350B*", "RP2350*80*"]
+kind: IC
+class: mcu
+description: "Raspberry Pi RP2350B microcontroller, QFN-80: dual Cortex-M33 / RISC-V, 48 GPIO, on-chip switching regulator for the 1.1 V core"
+datasheet: "RP2350 Datasheet, RP-008373-DS-4 (1371 pages); Hardware design with RP2350, RP-008280-DS-2 (25 pages)"
+provenance:
+  source: "https://pip-assets.raspberrypi.com/categories/1214-rp2350/documents/RP-008373-DS-4-rp2350-datasheet.pdf and .../RP-008280-DS-2-hardware-design-with-rp2350.pdf, downloaded 2026-11-25 and read as extracted text"
+  verified: true
+  notes: >
+    Datasheet: Table 2 pin descriptions (RUN has an internal pull-up to IOVDD of about 50 kOhm and
+    may be left floating; USB_DM / USB_DP need a 27 Ohm series resistor each, pull-ups and
+    pull-downs are internal; VREG_LX max current 200 mA, 1.1 V after filtering; VREG_VIN nominal
+    2.7 V to 5.5 V; DVDD must be connected externally). Table 3 GPIO functions, Bank 0: the `alt`
+    lists below were generated from the extracted table for GPIO0 to GPIO47 (F1 SPI, F2 UART,
+    F3 I2C, and F11 "UART AUX", which puts a second TX on GPIO n with n mod 4 = 2 and RX on 3);
+    all 48 rows follow the regular pattern, checked by script. ADC inputs are GPIO40 to GPIO47 on
+    the QFN-80 (section 1.2.3 note). Table 1680 absolute maximum: DVDD 1.21 V; IOVDD and
+    QSPI_IOVDD 3.63 V; a standard pad IOVDD + 0.5 V; a fault-tolerant (FT) pad 5.5 V with
+    IOVDD = 3.3 V present, 3.63 V with IOVDD at 0 V. Which pads are FT was not extracted, so
+    tolerant_5v is false here (the safe reading). Table 1683: VIH 2.0 V, VIL 0.8 V, VOH 2.62 V
+    at IOVDD = 3.3 V; pull-up 32 to 86 kOhm, pull-down 36 to 113 kOhm at 3.3 V; total GPIO
+    current 100 mA, QSPI 20 mA. Table 1685: ADC input 0 to ADC_AVDD. Table 1686: crystal 1 to
+    50 MHz, 12 typical. Table 1688 supply ranges as below (ADC performance is compromised below
+    2.97 V). Table 1689 regulator: 200 mA, limit 260 / 500 / 800 mA, 3 MHz. Section 1 text on
+    reset state: GPIOs default to pull-down (design guide, figure note "GPIOs default to
+    pull-downs at power-up").
+    Hardware design guide, section 2.1: C6 (VREG_VIN), C7 (regulator output) and C9 (VREG_AVDD)
+    4.7 uF; L1 3.3 uH, Abracon AOTA-B201610S3R3-101-T, which has a polarity dot because the
+    orientation of the coil affects the regulator; VREG_AVDD through 33 Ohm with 4.7 uF, it draws
+    about 200 uA. Section 2.2.1: 100 nF per supply pin as a rule. Section 3.1: QSPI_SS is the boot
+    strap, read at boot; a 1 kOhm resistor in series with the BOOTSEL button; an optional 10 kOhm
+    pull-up, not needed with the flash they chose. Section 4: recommended crystal ABM8-272-T3,
+    12 MHz, 10 pF load, 50 Ohm maximum ESR, with 15 pF load capacitors and 1 kOhm in series with
+    XOUT; "Any deviation from the crystal circuit shown here ... will require extensive testing".
+    Section 5: 27 Ohm USB series resistors close to the chip.
+    No supply current is recorded: the datasheet gives per-peripheral figures in uA/MHz and
+    low-power states, not a single typical or maximum.
+
+supplies:
+  - pins: [IOVDD]
+    vmin: 1.62
+    vmax: 3.63
+    abs_max: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1, note: "100 nF close to each power pin as a rule (hardware design guide 2.2.1)"}
+  - pins: [QSPI_IOVDD]
+    vmin: 1.62
+    vmax: 3.63
+    abs_max: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1}
+  - pins: [USB_OTP_VDD]
+    vmin: 3.135
+    vmax: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1}
+  - pins: [ADC_AVDD]
+    vmin: 1.62                # ADC performance is compromised below 2.97 V
+    vmax: 3.63
+    decoupling:
+      - {c_min: 100n, count: 1}
+  - pins: [DVDD]
+    vmin: 1.05
+    vmax: 1.16
+    abs_max: 1.21
+    decoupling:
+      - {c_min: 100n, count: 1}
+  - pins: [VREG_VIN]
+    vmin: 2.7
+    vmax: 5.5
+    decoupling:
+      - {c_min: 4.7u, count: 1, max_mm: 5, note: "4.7 uF close to VREG_VIN: the regulator switches large currents from this pin (hardware design guide 2.1, C6)"}
+  - pins: [VREG_AVDD]
+    vmin: 3.135
+    vmax: 3.63
+
+io:
+  vih: 2.0                    # IOVDD = 3.3 V
+  vil: 0.8
+  voh: 2.62
+  abs_max_over_supply: 0.5    # standard pads; fault-tolerant pads take 5.5 V with IOVDD present
+  tolerant_5v: false
+
+pins:
+  "GPIO0": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI0 RX, UART0 TX, I2C0 SDA
+  "GPIO1": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI0 CSn, UART0 RX, I2C0 SCL
+  "GPIO2": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI0 SCK, UART0 CTS, I2C1 SDA, aux UART0 TX
+  "GPIO3": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI0 TX, UART0 RTS, I2C1 SCL, aux UART0 RX
+  "GPIO4": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI0 RX, UART1 TX, I2C0 SDA
+  "GPIO5": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI0 CSn, UART1 RX, I2C0 SCL
+  "GPIO6": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI0 SCK, UART1 CTS, I2C1 SDA, aux UART1 TX
+  "GPIO7": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI0 TX, UART1 RTS, I2C1 SCL, aux UART1 RX
+  "GPIO8": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI1 RX, UART1 TX, I2C0 SDA
+  "GPIO9": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI1 CSn, UART1 RX, I2C0 SCL
+  "GPIO10": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI1 SCK, UART1 CTS, I2C1 SDA, aux UART1 TX
+  "GPIO11": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI1 TX, UART1 RTS, I2C1 SCL, aux UART1 RX
+  "GPIO12": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI1 RX, UART0 TX, I2C0 SDA
+  "GPIO13": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI1 CSn, UART0 RX, I2C0 SCL
+  "GPIO14": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI1 SCK, UART0 CTS, I2C1 SDA, aux UART0 TX
+  "GPIO15": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI1 TX, UART0 RTS, I2C1 SCL, aux UART0 RX
+  "GPIO16": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI0 RX, UART0 TX, I2C0 SDA
+  "GPIO17": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI0 CSn, UART0 RX, I2C0 SCL
+  "GPIO18": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI0 SCK, UART0 CTS, I2C1 SDA, aux UART0 TX
+  "GPIO19": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI0 TX, UART0 RTS, I2C1 SCL, aux UART0 RX
+  "GPIO20": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI0 RX, UART1 TX, I2C0 SDA
+  "GPIO21": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI0 CSn, UART1 RX, I2C0 SCL
+  "GPIO22": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI0 SCK, UART1 CTS, I2C1 SDA, aux UART1 TX
+  "GPIO23": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI0 TX, UART1 RTS, I2C1 SCL, aux UART1 RX
+  "GPIO24": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI1 RX, UART1 TX, I2C0 SDA
+  "GPIO25": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI1 CSn, UART1 RX, I2C0 SCL
+  "GPIO26": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI1 SCK, UART1 CTS, I2C1 SDA, aux UART1 TX
+  "GPIO27": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI1 TX, UART1 RTS, I2C1 SCL, aux UART1 RX
+  "GPIO28": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI1 RX, UART0 TX, I2C0 SDA
+  "GPIO29": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI1 CSn, UART0 RX, I2C0 SCL
+  "GPIO30": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI1 SCK, UART0 CTS, I2C1 SDA, aux UART0 TX
+  "GPIO31": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI1 TX, UART0 RTS, I2C1 SCL, aux UART0 RX
+  "GPIO32": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI0 RX, UART0 TX, I2C0 SDA
+  "GPIO33": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI0 CSn, UART0 RX, I2C0 SCL
+  "GPIO34": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI0 SCK, UART0 CTS, I2C1 SDA, aux UART0 TX
+  "GPIO35": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI0 TX, UART0 RTS, I2C1 SCL, aux UART0 RX
+  "GPIO36": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI0 RX, UART1 TX, I2C0 SDA
+  "GPIO37": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI0 CSn, UART1 RX, I2C0 SCL
+  "GPIO38": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI0 SCK, UART1 CTS, I2C1 SDA, aux UART1 TX
+  "GPIO39": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI0 TX, UART1 RTS, I2C1 SCL, aux UART1 RX
+  "GPIO40_ADC0/GPIO40": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI1 RX, UART1 TX, I2C0 SDA
+  "GPIO41_ADC1/GPIO41": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI1 CSn, UART1 RX, I2C0 SCL
+  "GPIO42_ADC2/GPIO42": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI1 SCK, UART1 CTS, I2C1 SDA, aux UART1 TX
+  "GPIO43_ADC3/GPIO43": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI1 TX, UART1 RTS, I2C1 SCL, aux UART1 RX
+  "GPIO44_ADC4/GPIO44": {role: gpio, alt: [i2c_sda, uart_tx, spi_miso]}    # SPI1 RX, UART0 TX, I2C0 SDA
+  "GPIO45_ADC5/GPIO45": {role: gpio, alt: [i2c_scl, uart_rx, spi_ctrl_cs]}    # SPI1 CSn, UART0 RX, I2C0 SCL
+  "GPIO46_ADC6/GPIO46": {role: gpio, alt: [i2c_sda, uart_cts, spi_ctrl_sck, uart_tx]}    # SPI1 SCK, UART0 CTS, I2C1 SDA, aux UART0 TX
+  "GPIO47_ADC7/GPIO47": {role: gpio, alt: [i2c_scl, uart_rts, spi_mosi, uart_rx]}    # SPI1 TX, UART0 RTS, I2C1 SCL, aux UART0 RX
+  QSPI_SS:
+    role: boot_strap          # low at boot selects BOOTSEL (USB mass storage / UART boot)
+    internal_pull: up
+    require:
+      - {not_floating: true, note: "boot strap read at reset; the flash also needs its chip select high while it powers up (hardware design guide 3.1)"}
+  QSPI_SCLK: {role: spi_ctrl_sck}
+  QSPI_SD0: {role: qspi_io0}
+  QSPI_SD1: {role: qspi_io1}
+  QSPI_SD2: {role: qspi_io2}
+  QSPI_SD3: {role: qspi_io3}
+  USB_DP: {role: usb_dp}
+  USB_DM: {role: usb_dm}
+  XIN: {drive: analog}
+  XOUT: {drive: analog}
+  RUN: {role: reset, active: low, internal_pull: up, internal_pull_ohm: 50000}
+  SWCLK: {drive: input}
+  SWDIO: {}
+  VREG_LX: {role: switch_node}   # 3.3 uH inductor from here to the 1.1 V rail (AOTA-B201610S3R3-101-T, the right way round)
+  VREG_FB:
+    role: power_out           # the regulator holds this node at the core voltage: it is where the 1.1 V rail gets its value
+    vout_v: 1.1
+    tol: 0.03                 # Table 1689, normal mode
+    i_out_max_ma: 200
+    require:
+      - {cap_to_gnd: {min: 4.7u}, note: "regulator output capacitor, 4.7 uF, on the filtered side of the inductor where VREG_FB senses (C7)"}
+  VREG_AVDD:
+    role: power_in
+    require:
+      - {cap_to_gnd: {min: 4.7u}, note: "VREG_AVDD is sensitive to noise: 33 Ohm from 3.3 V and 4.7 uF to ground (hardware design guide 2.1)"}
+  VREG_VIN: {role: power_in}
+  VREG_PGND: {role: gnd}
+  IOVDD: {role: power_in}
+  QSPI_IOVDD: {role: power_in}
+  USB_OTP_VDD: {role: power_in}
+  ADC_AVDD: {role: power_in}
+  DVDD: {role: power_in}
+  GND: {role: gnd}
+
+mcu:
+  adc1_pins: [GPIO40, GPIO41, GPIO42, GPIO43, GPIO44, GPIO45, GPIO46, GPIO47,
+              GPIO40_ADC0, GPIO41_ADC1, GPIO42_ADC2, GPIO43_ADC3, GPIO44_ADC4, GPIO45_ADC5, GPIO46_ADC6, GPIO47_ADC7]
+  usb_series_ohm: 27
+  crystal:
+    f_mhz: 12
+    recommended: "ABM8-272-T3: 10 pF load, 50 Ohm maximum ESR, 15 pF load capacitors, 1 kOhm in series with XOUT"
+  regulator:
+    inductor: 3.3u
+    i_max_ma: 200
+    f_sw_mhz: 3

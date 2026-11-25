@@ -83,6 +83,8 @@ def _mate(a):
     # board-level checks belong to each board; they run before the two are joined
     for d, who in ((base, 'baseboard'), (car, 'carrier')):
         fs, lg = run(d, no_sim=a.no_sim, board_only=True)
+        fs2, lg2 = run(d, only=['decoupling.*'], no_sim=True)     # distances need the board too
+        fs, lg = fs + [f for f in fs2 if f.severity != 'info'], lg + lg2
         for f in fs:
             f.title = f"[{who}] {f.title}"
             if who == 'carrier':
@@ -90,7 +92,7 @@ def _mate(a):
         findings += fs
         log += [(f"{l[0]} ({who})",) + tuple(l[1:]) for l in lg]
     d = mate.merge(base, car, m)
-    fs, lg = run(d, no_sim=a.no_sim)
+    fs, lg = run(d, no_sim=a.no_sim, skip=['decoupling.*'])
     findings += fs
     log += [l for l in lg if l[1] != 'skipped' or 'no .kicad_pcb' not in l[2]]
     text = {'text': lambda: report.to_text(d, findings, log, a.verbose), 'md': lambda: report.to_markdown(d, findings, log),

@@ -21,7 +21,7 @@ AI model, running in Claude Code) in one working session directed by Matt. Where
 what was tested, verified, or assumed, that is Claude's statement about its own work. None of the
 findings on the example boards has been checked on hardware at the time of writing.
 
-Status: v0.1, a working framework. 40 checks, 53 part models. Tested on two real boards (one with 28 injected faults, all flagged; one
+Status: v0.1, a working framework. 40 checks, 59 part models. Tested on two real boards (one with 28 injected faults, all flagged; one
 with a published errata list, both wiring errata found) and on eight public projects with a known fix
 commit (six flagged before the fix; the other two cannot be seen in the design files). Read [docs/PROPOSAL.md](docs/PROPOSAL.md) for the design and the roadmap.
 

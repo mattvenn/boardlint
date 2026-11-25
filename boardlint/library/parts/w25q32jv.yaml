@@ -1,0 +1,60 @@
+id: w25q32jv
+match:
+  value: ["W25Q32JV*"]
+kind: IC
+class: flash
+description: "32 Mbit serial NOR flash, SPI / dual / quad, 2.7 V to 3.6 V, 133 MHz, SOIC-8 208 mil (W25Q32JVSSIQ)"
+datasheet: "Winbond W25Q32JV, Revision G, 27 March 2018 (80 pages)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/5e9d1528bd9ff612cdac1a3e34dc8d43.pdf, the distributor's copy of the Winbond datasheet for LCSC C179173 (winbond.com is not reachable from here); downloaded 2026-11-25 and read as extracted text"
+  verified: true
+  notes: >
+    Section 3.3 pin description, SOIC 150/208 mil: 1 /CS, 2 DO (IO1), 3 /WP (IO2), 4 GND,
+    5 DI (IO0), 6 CLK, 7 /HOLD or /RESET (IO3), 8 VCC. Section 7.1 status register: QE is 1,
+    "factory fixed default for part numbers with ordering options IQ & JQ", so on this part
+    pins 3 and 7 are IO2 and IO3 and the /WP and /HOLD functions are off. Section 6.1:
+    "the chip select pin (/CS) must track the VCC supply level at power-up until the VCC-min
+    level and tVSL time delay is reached ... If needed a pull-up resister on /CS can be used".
+    9.1 absolute maximum: VCC -0.6 to 4.6 V; any pin -0.6 V to VCC + 0.4 V. 9.2 operating
+    range: 3.0 to 3.6 V at 133 MHz, 2.7 to 3.0 V at 104 MHz. 9.3: VCC(min) to /CS low 20 us.
+    9.4 DC: standby 10 uA typ / 50 max; power-down 1 / 15 uA; read 12 mA typ / 20 max at
+    104 MHz; program and erase 20 mA typ / 25 max; VIL 0.3 x VCC, VIH 0.7 x VCC; outputs within
+    0.2 V of the rails at 100 uA. The KiCad symbol on the Tiny Tapeout board names the pins
+    ~{CS}, DI(IO0), DO(IO1), IO2, IO3, CLK.
+
+supplies:
+  - pins: [VCC]
+    vmin: 2.7                 # 3.0 V for the full 133 MHz
+    vmax: 3.6
+    abs_max: 4.6
+    i_typ_ma: 0.01            # standby
+    i_max_ma: 25              # program / erase
+    decoupling:
+      - {c_min: 100n, count: 1, note: "no figure in the datasheet; 100 nF at the VCC pin is the usual practice"}
+
+io:
+  vih_frac: 0.7
+  vil_frac: 0.3
+  abs_max_over_supply: 0.4
+  tolerant_5v: false
+
+pins:
+  "~{CS}/CS":
+    role: spi_cs
+    active: low
+    drive: input
+    require:
+      - {not_floating: true, note: "/CS must track VCC at power-up; a pull-up can be used for this (section 6.1)"}
+  "DI(IO0)/DI/IO0": {role: spi_sdi}
+  "DO(IO1)/DO/IO1": {role: spi_sdo}
+  "IO2/~{WP}/WP": {role: qspi_io2}        # QE = 1 is fixed on the IQ part: not a write-protect input
+  "IO3/~{HOLD}/HOLD/~{RESET}": {role: qspi_io3}
+  CLK: {role: spi_sck, drive: input}
+  VCC: {role: power_in}
+  GND: {role: gnd}
+
+flash:
+  size_mbit: 32
+  f_max_mhz: 133
+  qe_default: 1
+  t_vsl_us: 20

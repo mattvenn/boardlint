@@ -1,0 +1,111 @@
+id: nc7sv14
+match:
+  lcsc: [C184038]             # LCSC's listing for onsemi NC7SV14P5X (page title read 2026-11-25)
+  value: ["NC7SV14P5*", "NC7SP14P5*"]   # SC70 (P5X) only: the MicroPak (L6X) numbers its pads differently (5 NC, 6 VCC)
+kind: IC
+class: logic_schmitt_inverter
+description: "Single Schmitt-trigger inverter, 0.9 V to 3.6 V, 24 mA drive at 3 V, inputs tolerate 3.6 V at any VCC, SC70-5 (TinyLogic ULP-A)"
+datasheet: "Fairchild / ON Semiconductor NC7SV14, DS500607, June 2001, revised March 2004 (LCSC copy for C184038; onsemi.com/download/data-sheet/pdf/nc7sv14-d.pdf could not be opened)"
+provenance:
+  source: "https://datasheet.lcsc.com/datasheet/pdf/1f97f72c4219425cfc57915c967a1631.pdf, linked from https://www.lcsc.com/datasheet/C184038.pdf (NC7SV14P5X, 10 PDF pages: an ON Semiconductor cover sheet, then the Fairchild datasheet DS500607; opened 2026-11-25)"
+  verified: true
+  notes: >
+    The URL in the schematic's datasheet field, www.onsemi.com/download/data-sheet/pdf/nc7sv14-d.pdf,
+    was refused by this session's network policy (HTTP 403 from the proxy), so the numbers below
+    come from the copy of the manufacturer's datasheet that LCSC hosts for NC7SV14P5X. It is the
+    Fairchild-era revision (March 2004) behind an ON Semiconductor cover sheet. The current onsemi
+    revision (NC7SV14/D) was not read: compare it before relying on a marginal figure. Page
+    numbers are the printed ones (printed page 1 is PDF page 2).
+    Features p.1: 0.9 V to 3.6 V supply; "3.6V overvoltage tolerant I/O's at VCC from 0.9V to
+    3.6V"; "Power-Off high impedance inputs and outputs"; static drive +/-24 mA at 3.00 V, 18 mA
+    at 2.30 V, 6 mA at 1.65 V, 4 mA at 1.4 V, 2 mA at 1.1 V, 0.1 mA at 0.9 V; tPD 1.5 ns typ at
+    2.7 V to 3.6 V. Ordering p.1: NC7SV14P5X = 5-lead SC70 (top mark V14), NC7SV14L6X = 6-lead
+    MicroPak. Pin assignment p.2 (drawing, read from the rendered page): SC70 1 NC, 2 A, 3 GND,
+    4 Y, 5 VCC; MicroPak 1 NC, 2 A, 3 GND, 4 Y, 5 NC, 6 VCC. Function Y = not A.
+    Absolute maximum p.3: VCC -0.5 to +4.6 V; input -0.5 to +4.6 V (not tied to VCC); output
+    -0.5 V to VCC + 0.5 V in the high or low state, -0.5 to +4.6 V with VCC = 0 V; input diode
+    current +/-50 mA for VIN < 0 V only (no rating for VIN above VCC, which fits an input meant
+    to go above VCC); output source / sink
+    +/-50 mA; VCC or ground current +/-50 mA. Recommended operating conditions p.3: supply 0.9
+    to 3.6 V; input 0 to 3.6 V; output 0 V to VCC (0 to 3.6 V with VCC = 0 V); output current
+    +/-24 mA at VCC 3.0 to 3.6 V; -40 to +85 C; "Minimum Input Edge Rate 10 ns/V" (VIN 0.8 to
+    2.0 V, VCC = 3.0 V), printed in spite of the Schmitt input; note 3 "Unused inputs must be
+    held HIGH or LOW. They may not float."
+    DC characteristics p.3 (same limits at 25 C and -40 to +85 C), min / max by VCC:
+    VP 0.90 V: 0.3 / 0.7; 1.10: 0.4 / 1.0; 1.40: 0.5 / 1.4; 1.65: 0.7 / 1.5; 2.30: 1.0 / 1.8;
+    2.70: 1.3 / 2.2. VN 0.90: 0.10 / 0.6; 1.10: 0.15 / 0.7; 1.40: 0.20 / 0.8; 1.65: 0.25 / 0.9;
+    2.30: 0.4 / 1.15; 2.70: 0.6 / 1.5. VH 0.90: 0.07 / 0.5; 1.10: 0.08 / 0.6; 1.40: 0.10 / 0.8;
+    1.65: 0.15 / 1.0; 2.30: 0.25 / 1.1; 2.70: 0.40 / 1.2.
+    THE TABLE STOPS AT VCC = 2.70 V: this datasheet gives no threshold or hysteresis figure for
+    3.0 V to 3.6 V, so nothing is specified at 3.3 V. io.vih / io.vil are therefore left out
+    rather than extrapolated; the 2.7 V row is under logic.schmitt for a reviewer to judge.
+    DC characteristics p.4: VOH at 2.70 to 3.60 V: VCC - 0.2 V at -100 uA, 2.2 V at -12 mA,
+    2.4 V at -18 mA, 2.2 V at -24 mA; VOL 0.2 V at 100 uA, 0.4 V at 12 mA, 0.4 V at 18 mA,
+    0.55 V at 24 mA; input leakage +/-0.1 uA (25 C) / +/-0.5 uA for 0 to 3.6 V; power-off
+    leakage IOFF 0.5 uA max with VCC = 0 and 0 to 3.6 V on input or output; quiescent supply
+    current 0.9 uA max with the input at VCC or GND, +/-0.9 uA with the input between VCC and
+    3.6 V. AC p.4: tPD at 2.70 to 3.60 V 1.5 ns typ, 3.3 ns max at 25 C, 3.8 ns max to 85 C
+    (30 pF, 500 ohm); input capacitance 2.0 pF. The datasheet has no decoupling recommendation.
+    Computed, not printed: voh_frac = (2.7 - 0.2) / 2.7 at -100 uA.
+    NC7SP14 (ULP series), read the same day from Fairchild DS500601, June 2002, revised March
+    2004, LCSC copy for C184058 (NC7SP14P5X),
+    https://datasheet.lcsc.com/datasheet/pdf/1e85ca401d006048a74c9d6587d1ab03.pdf. Same as the
+    NC7SV14: supply 0.9 to 3.6 V, absolute maximum 4.6 V on VCC and on the input, 3.6 V
+    overvoltage tolerant, power-off high impedance (IOFF 0.5 uA), ICC 0.9 uA max, SC70 pinout,
+    VN limits. Different: (1) drive: +/-2.6 mA at 3.0 to 3.6 V (2.1 mA at 2.3 V, 1.5 mA at
+    1.65 V), VOH 2.55 V min at -2.6 mA and VOL 0.33 V max at 2.6 mA over temperature, against
+    24 mA for the NC7SV14; (2) speed: tPD 4.0 ns typ, 9.5 ns max (15 pF, 3.0 to 3.6 V) against
+    1.5 / 3.8 ns; (3) the threshold table runs to VCC = 3.00 V: VP 1.5 / 2.6 V, VN 0.6 / 1.5 V,
+    VH 0.60 / 1.8 V, so the NC7SP14 does have a specified hysteresis at 3 V (0.6 V min) where
+    the NC7SV14 sheet stops at 2.7 V (0.40 V min). In the rows both sheets print, VP max is
+    0.6 / 1.2 / 1.9 V (NC7SP14) against 0.7 / 1.4 / 1.8 V (NC7SV14) at VCC 0.90 / 1.40 / 2.30 V
+    and VH min is 0.09 / 0.10 V against 0.10 / 0.15 V at 1.40 / 1.65 V; every other limit is the
+    same.
+    This model matches both part numbers because the board it was written for carries both on
+    one symbol (value NC7SP14P5X, MPN NC7SV14P5X; its LCSC number C184058 is LCSC's listing for
+    the NC7SP14P5X, C184038 is the NC7SV14P5X). A design that really fits the NC7SP14 has a
+    tenth of the output drive given here: see logic.nc7sp14.
+    Pins are keyed by number because the board's symbol leaves A, Y and GND unnamed.
+    No errata search was done (offline extraction).
+
+supplies:
+  - pins: ["#5", VCC]
+    vmin: 0.9
+    vmax: 3.6
+    abs_max: 4.6
+    i_max_ma: 0.0009          # quiescent, input at VCC or GND; switching current is not included
+
+io:
+  voh_frac: 0.92              # VCC - 0.2 V at -100 uA, VCC 2.7 V to 3.6 V (computed at 2.7 V)
+  abs_max: 4.6                # input, whatever VCC is (also with VCC = 0 V); recommended maximum 3.6 V
+  tolerant_5v: false          # 3.6 V tolerant, not 5 V
+
+pins:
+  "#1": {name: NC, role: nc}
+  "#2":
+    name: A
+    drive: input
+    require:
+      - {not_floating: true, note: "Unused inputs must be held HIGH or LOW. They may not float (recommended operating conditions, note 3)"}
+  "#3": {name: GND, role: gnd}
+  "#4": {name: Y, drive: push_pull, abs_max_over_supply: 0.5, i_out_ma: 24, i_out_abs_max_ma: 50}
+  "#5": {name: VCC, role: power_in}
+
+logic:
+  function: "Y = not A, Schmitt-trigger input"
+  tpd_ns: 3.8                 # max, VCC 2.7 V to 3.6 V, 30 pF / 500 ohm, to 85 C (1.5 typ)
+  vin_max: 3.6                # recommended, at any VCC from 0 V to 3.6 V
+  power_off: "inputs and output are high impedance with VCC = 0 V (IOFF 0.5 uA max for 0 to 3.6 V)"
+  schmitt:                    # [min, max] in volts; highest VCC row the datasheet prints
+    specified_at_3v3: false
+    at_vcc: 2.7
+    vp: [1.3, 2.2]
+    vn: [0.6, 1.5]
+    vh: [0.40, 1.2]
+  i_out_ma: {3.0: 24, 2.3: 18, 1.65: 6, 1.4: 4, 1.1: 2, 0.9: 0.1}
+  nc7sp14:                    # the other part number this file matches (Fairchild DS500601)
+    i_out_ma: {3.0: 2.6, 2.3: 2.1, 1.65: 1.5, 1.4: 1.0, 1.1: 0.5, 0.9: 0.02}
+    voh_min_at_2ma6: 2.55     # VCC 3.0 V to 3.6 V, to 85 C
+    vol_max_at_2ma6: 0.33
+    tpd_ns: 9.5               # max, VCC 3.0 V to 3.6 V, 15 pF, to 85 C (4.0 typ)
+    schmitt: {at_vcc: 3.0, vp: [1.5, 2.6], vn: [0.6, 1.5], vh: [0.60, 1.8]}

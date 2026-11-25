@@ -23,9 +23,9 @@ Full output for each pairing: [sky](examples/tt-etr-demoboard-with-sky-qfn-repor
 [GF](examples/tt-etr-demoboard-with-gf-cob-report.md).
 
 ```
-tinytapeout-demo + breakout-sky-qfn: 0 errors, 3 warnings, 16 notes
-tinytapeout-demo + breakout-ihp-qfn: 0 errors, 4 warnings, 16 notes
-tinytapeout-demo + breakout-gf-cob:  0 errors, 3 warnings, 15 notes
+tinytapeout-demo + breakout-sky-qfn: 0 errors, 6 warnings, 22 notes
+tinytapeout-demo + breakout-ihp-qfn: 0 errors, 8 warnings, 22 notes
+tinytapeout-demo + breakout-gf-cob:  0 errors, 6 warnings, 20 notes
 ```
 
 ## The connector between the two boards
@@ -62,13 +62,22 @@ Things worth knowing, none of them faults:
 | | Finding | Evidence | Assessment |
 |---|---|---|---|
 | 1 | `power.unpowered` (IHP carrier): the chip's two `VAA_Analog` pins are on a net that nothing fitted feeds | The only paths to `VAA` are the 0 Ω link R9 and header J1 pin 6, and both are marked do-not-populate. The production bill of materials for v1.2 in `pcb-files` lists R3, R4, R6, R7, R8 and not R9. The GF carrier, drawn the same way, fits R9 | Real as built, unless it is intended: either IHP projects do not use the analog supply, or it is meant to be fed from outside through J1. Worth one sentence in the documentation either way |
+| 1a | The op-amp U5 has two part numbers with different pinouts | The schematic symbol and footprint are the plain MCP6001 pinout (pin 1 output, 2 V−, 3 +, 4 −, 5 V+). The MPN field, the Digi-Key number and the production bill of materials say `MCP6001UT-I/OT`, the "U" variant (pin 1 +, 2 V−, 3 −, 4 output, 5 V+). The LCSC number beside it, C116490, is the plain `MCP6001T-I/OT`. Read from Microchip DS20001733L, page 1 and Table 3-1 | Not a boardlint check; found while writing the part model. An assembler that goes by the LCSC number fits the right part. Anyone who buys by the manufacturer part number gets an op-amp with its inputs and output on the wrong pins, and the analog current source built round U5 and Q1 does not work |
+| 1b | `power.logic_level` (both boards together): `ctrl_ena` and `ctrl_sel_rst` each have a 10 kΩ pull-up on the baseboard (R38, R39) and a 1 kΩ pull-down on every carrier | Undriven, each line rests at 0.30 V. Seen only when the two netlists are joined | Works, because the RP2350 drives both lines. The carrier's pull-down sets the resting state (multiplexer disabled and held in reset), which is the safe one; the baseboard's pull-ups then do nothing but draw 0.3 mA each. Worth deciding which board owns the default |
 | 2 | `bom.value_mpn` (baseboard): crystal load capacitors C30 and C32 say 14 pF; their part number `CC0402CRNPO9BN4R0` is 4 pF | The production bill of materials lists them as 4 pF. The crystal is specified for a 7 pF load: 4 pF each gives about 6 pF with stray, which is right; 14 pF each would give about 11 pF | The board as built is right and the schematic's value field is wrong. boardlint first reported the crystal as mis-loaded, because it believed the value field; the check for a value that disagrees with its part number was added because of this |
 | 3 | `layout.impedance` (baseboard): the project clock runs 55 mm with no series resistor, then 25 mm more on the sky carrier | From RP2350 GPIO16 through a solder jumper to the connector; 51 Ω line over a plane. The Tiny Tapeout clock page gives a range up to 66.5 MHz | Low confidence: the 2 ns edge is an assumption, and the RP2350's default drive is slower. Worth a look on a scope at the chip if anyone sees double clocking at high rates. A resistor in place of the solder jumper would be the fix |
 | 4 | `decoupling.regulator_caps` (baseboard): the 3.3 V regulator U1 has no output capacitor within 10 mm; the nearest of 0.5 µF or more is C4 (22 µF) at 17 mm | Measured from the regulator's tab. The rail carries 42.5 µF in all. The TLV1117LV asks for 1 µF ceramic at its output and is stable with no series resistance | Low confidence; the 10 mm is a rule of thumb. It matters more with the alternate part in the schematic (next row) |
+| 4a | `decoupling.per_part` (baseboard): U5's nearest bypass capacitor is 10.4 mm away | The MCP6001 datasheet asks for 0.01 to 0.1 µF within 2 mm of the supply pin | Real against the datasheet's figure; the consequence for a slow current-source loop is small |
+| 4b | The crystal is not the one the RP2350 guide was tuned for | The guide recommends the ABM8-272-T3 (10 pF load, 50 Ω maximum resistance) with 1 kΩ in series, and says any deviation "will require extensive testing". The schematic describes Y1 as 7 pF and 100 Ω, with the same 1 kΩ | Not a boardlint check. Boards are in use, so it starts; the margin at temperature extremes is what the guide warns about |
 | 5 | The alternate for U1 is not equivalent | The schematic gives AZ1117CH-3.3 as the alternate to the TLV1117LV33. Read from the two datasheets: the AZ1117C needs 10 µF or more at its output, drops 1.3 V at full load against 0.455 V typical, and draws 6 mA against 50 µA | Not a boardlint check; found while writing the part model. With the alternate fitted and USB at the low end of its range (4.4 V), 3.3 V is no longer regulated: 4.4 − 1.3 = 3.1 V |
 | 6 | USB data lines: the protection parts D1 and D2 are polymer suppressors that trigger at about 300 V and clamp at about 35 V | From the Eaton 0603ESDA datasheet named in the schematic: 30 V rated, 0.15 pF. Typical figures only | Low capacitance, which is why they are used, but 35 V is far above what an RP2350 pin tolerates. They take the edge off a discharge; they do not clamp to the supply. Not a boardlint check |
 | 7 | USB pair is about 117 Ω differential, 1.0 mm length mismatch | 0.2 mm tracks at a 0.5 mm gap over a plane 0.19 mm away, routed as a pair for 67 mm | Note only. The RP2350 is full speed (12 Mbit/s), which tolerates this. It would matter at high speed |
 | 8 | Sky carrier: chip pin 21 `resetb` is connected to nothing | Its only connection is the 0 Ω link R6, not fitted | Almost certainly fine: the TT06 to TT08 breakout wires it the same way and those boards work. boardlint first called it an error (a floating reset); the chip's model now says why it is not |
+
+Smaller things from the part models: the inverters U2 and U3 are valued NC7SP14 with an MPN of
+NC7SV14 (same pinout and supply range; the SV drives harder and is faster, and neither has
+thresholds specified at 3.3 V); the display's alternate GS3011CR-G is red, 2.0 V at 10 mA, and
+510 Ω from 3.3 V gives about 2.5 mA per segment, well inside its 30 mA limit.
 
 Several part numbers in the schematics point at a different maker's part at the distributor than
 the one named: LCSC C5261054 is an HXY "DMG2305UX-7" (gate limit ±12 V where the Diodes Inc. part
@@ -88,17 +97,14 @@ None of these changes a finding here. They are recorded in the part models.
 
 ## What it did not look at
 
-- **The RP2350B, the flash, the op-amp, the Schmitt inverters, the EEPROM and the display have no
-  part model yet.** Their datasheet extraction was cut short by a usage limit on the account that
-  ran this review. Until they exist, nothing here checks the RP2350's own supplies and its
-  switching regulator (inductor, capacitors, the `VREG_AVDD` filter), its strap and QSPI wiring,
-  the debounce circuit's thresholds, the op-amp's pinout variant (the part number is the `U`
-  pinout), or the segment currents of the display. Two supply nets (`VREG_AVDD`, `VREG_LX`) have
-  no known voltage for the same reason.
-- **Supply currents.** No part on either board has a current in its model, so regulator load,
-  dropout under load, track current and voltage drop in the copper are not judged.
+- **Supply currents.** Almost no part on either board has a current in its model (the RP2350
+  datasheet gives none as a single figure, and the chips' draw depends on the project), so
+  regulator load, dropout under load, track current and voltage drop in the copper are not judged.
 - **The three chip models are not from datasheets.** They are the KiCad symbols plus the rail
-  voltages each carrier gives them.
+  voltages each carrier gives them. The display's model is from distributor listings, because
+  Würth's site could not be reached; every other model was read from its datasheet.
+- **Which RP2350 pads tolerate 5 V** was not extracted from the datasheet, so the model treats all
+  pins as 3.3 V only.
 - **The IHP "off by one" branch.** `breakout-pcb` has a branch whose IHP footprint numbers every
   pad one place round, for chips that were packaged that way. Nothing in the design files on
   `main` can show that; it is a fact about the packaged chips.
