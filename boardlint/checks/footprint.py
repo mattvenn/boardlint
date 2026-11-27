@@ -115,3 +115,26 @@ def value_mpn(d):
                 f"calculation in this report, goes by. One of the two is out of date.",
                 refs=refs[:8], evidence={'value_field': value, 'part_number': mpn, 'part_number_decodes_to': says},
                 basis='value codes in the part numbers of common resistor and capacitor series', confidence='medium')
+
+
+@check('parts.no_model', 'pins', doc='Parts that have no part model, so only name-based rules were applied to them')
+def no_model(d):
+    miss = sorted((c for c in d.components.values() if not c.dnp and not c.model and c.kind in ('IC', 'Q')
+                   and not c.ref.startswith(('carrier/STITCH', 'STITCH'))), key=lambda c: c.ref)
+    if not miss:
+        return
+    kinds = {}
+    for c in miss:
+        kinds.setdefault(c.value or c.ref, []).append(c.ref)
+    # a warning only when something with a supply pin is unmodelled; switches and encoders drawn as ICs are a note
+    ics = [c for c in miss if c.kind == 'IC' and any(p.etype == 'power_in' or re.match(r'^(VCC|VDD|VIN|V\+|VS|AVDD|DVDD|VBAT)', p.name or '', re.I)
+                                                     for p in c.pins.values())]
+    yield F('parts.no_model', 'warning' if ics else 'info',
+            f"{len(kinds)} kind(s) of part have no model: {', '.join(list(kinds)[:6])}{'...' if len(kinds) > 6 else ''}",
+            "For these, supply ranges, pin limits, required connections, bus addresses and decoupling were not checked: "
+            "only rules that work from pin names ran. " +
+            '; '.join(f"{v} ({', '.join(r[:4])}{'...' if len(r) > 4 else ''})" for v, r in list(kinds.items())[:12]) +
+            ". To add one: take the datasheet, the prompt in tools/extract_prompt.md and an existing model as an example, "
+            "have an LLM write the YAML, check it, and pass its folder with --parts-dir. Steps: docs/adding-parts.md "
+            "(https://github.com/mattvenn/boardlint/blob/main/docs/adding-parts.md).",
+            refs=[c.ref for c in miss[:8]], basis='the part library and --parts-dir', confidence='high')
